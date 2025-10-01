@@ -1,0 +1,359 @@
+<html>
+<head>
+  <title>BMS Kingdom of Taste - Menu</title>
+  <style>
+    
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background-color: #fff;
+      color: #222;
+    }
+
+    header {
+      background-color: #2f00ff;
+      color: white;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header h1 { margin: 0; font-size: 24px;}
+
+    nav ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      gap: 30px;
+    }
+    nav ul li a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    /* Filter buttons */
+    .filter-buttons {
+      text-align: center;
+      margin: 30px 0;
+    }
+    .filter-buttons button {
+      padding: 10px 20px;
+      margin: 5px;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      background-color: #2f00ff;
+      color: white;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+    .filter-buttons button:hover {
+      background-color: rgb(7, 4, 54);
+      padding: 12px 22px;
+      
+    }
+    .filter-buttons button.active {
+    background-color: #0f0f36;
+    box-shadow: 0 4px 12px rgba(47, 0, 255, 0.5);
+    padding: 15px 25px;
+    }
+
+
+    /* Menu Grid */
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      padding: 0 40px 40px 40px;
+    }
+    .menu-item {
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 15px;
+      text-align: center;
+      transition: 0.3s;
+      background-color: #fafafa;
+    }
+    .menu-item img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 10px;
+    }
+    .menu-item h3 {
+      margin: 10px 0 5px;
+      color: #2f00ff;
+    }
+    .menu-item p {
+      margin: 5px 0;
+      font-size: 15px;
+    }
+    .hidden { display: none; }
+
+    footer {
+      background-color:#2f00ff;
+      color: white;
+      text-align: center;
+      padding: 1px;
+      margin-top: 250px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <h1>BMS Kingdom of Taste - Menu</h1>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a class="active" href="#">Menu</a></li>
+        <li><a href="#">Promotions</a></li> 
+        <li><a href="#">Contact</a></li>
+        <li><a href="#">Reserve A Table</a></li>
+        <li><a href="#">Login</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Filter Buttons -->
+  <div class="filter-buttons">
+    <button onclick="filterMenu('all')">All</button>
+    <button onclick="filterMenu('kottu')">Kottu</button>
+    <button onclick="filterMenu('rice')">Rice</button>
+    <button onclick="filterMenu('noodles')">Noodles</button>
+    <button onclick="filterMenu('burgers')">Burgers</button>
+    <button onclick="filterMenu('submarines')">Submarines</button>
+    <button onclick="filterMenu('bites')">Bites</button>
+    <button onclick="filterMenu('sides')">Side Dishes</button>
+    <button onclick="filterMenu('juice')">Fresh Juice</button>
+    <button onclick="filterMenu('desserts')">Desserts</button>
+    
+  </div>
+  <!-- Menu Grid -->
+  <div class="menu-grid">
+    <!-- Kottu -->
+     <div class="menu-item kottu">
+      <img src="Chicken Kottu.avif" alt="Chicken Kottu">
+      <h3>Chicken Kottu</h3>
+      <p>Rs. xxx</p>
+    </div>
+    <div class="menu-item kottu">
+      <img src="Cheese Chicken Kottu.jpg" alt="Cheese & Chicken Kottu">
+      <h3>Cheese and Chicken Kottu</h3>
+      <p>Rs. xxx</p>
+    </div>
+    <div class="menu-item kottu">
+      <img src="Fish Kottu.jpg" alt="Fish Kottu">
+      <h3>Fish Kottu</h3>
+      <p>Rs. xxx</p>
+    </div>
+    <div class="menu-item kottu">
+      <img src="Veg Kottu.jpeg" alt="Vegetarian Kottu">
+      <h3>Vegetarian Kottu</h3>
+      <p>Rs. xxx</p>
+    </div>
+    <!-- Rice -->
+    <div class="menu-item rice">
+      <img src="RicenCurry.jpg" alt="Rice and Curry">
+      <h3>Rice and Curry</h3>
+      <p>Rs. xxx</p>
+    </div>
+    <div class="menu-item rice">
+      <img src="Fried Rice.jpg" alt="Fried Rice">
+      <h3>Fried Rice</h3>
+      <p>Rs. xxx</p>
+    </div>
+    <div class="menu-item rice">
+      <img src="Nasi Goreng.jpg" alt="Nasi Goreng">
+      <h3>Nasi Goreng</h3>
+      <p>Rs. xxx</p>
+    </div>
+    <div class="menu-item rice">
+      <img src="Biryani.jpg" alt="Biryani">
+      <h3>Biryani</h3>
+      <p>Rs. xxx</p>
+    </div>
+    <div class="menu-item rice">
+      <img src="Lumprais.jpg" alt="Lamprais">
+      <h3>Lamprais</h3>
+      <p>Rs. xxx</p>
+    </div>
+    <!-- Noodles -->
+     <div class="menu-item noodles">
+      <img src="noodles.jpeg" alt="Fried Noodles">
+      <h3>Fried Noodles</h3>
+      <p>Rs. xxx</p>
+    </div>
+    <!-- Burgers -->
+    <div class="menu-item burgers">
+      <img src="Cheese Chicken Burger.jpg" alt="Cheese and Chicken Burger">
+      <h3>Cheese & Chicken Burger</h3>
+      <p>Rs. 930</p>
+    </div>
+    <div class="menu-item burgers">
+      <img src="Crispy Chicken Burger.jpg" alt="Crispy Chicken Burger">
+      <h3>Crispy Chicken Burger</h3>
+      <p>Rs. 860</p>
+    </div>
+    <div class="menu-item burgers">
+      <img src="Double Chicken cheese burger.jpg" alt="Double cheese and chicken Burger">
+      <h3>Double Cheese & Chicken Burger</h3>
+      <p>Rs. 1220</p>
+    </div>
+    <!-- Submarines -->
+    <div class="menu-item submarines">
+      <img src="Crispy Submarine.jpeg" alt="Crispy Chicken Submarine">
+      <h3>Crispy Chicken Submarine</h3>
+      <p>Rs. 1220</p>
+    </div>
+    <div class="menu-item submarines">
+      <img src="CheeseChicken Sub.jpg" alt="Chicken & Cheese Submarine">
+      <h3>Cheese & Chicken Submarine</h3>
+      <p>Rs. 1360</p>
+    </div>
+
+    <!-- Bites-->
+    <div class="menu-item bites">
+      <img src="2.jpg" alt="Roast Chicken">
+      <h3>Roast Chicken</h3>
+      <p>Rs. xxx</p>
+    </div>
+    <div class="menu-item bites">
+      <img src="2.jpg" alt="Chicken Drumsticks">
+      <h3>Chicken Drumsticks</h3>
+      <p>Rs. xxx</p>
+    </div>
+    <div class="menu-item bites">
+      <img src="2.jpg" alt="Hot Butter Mushroom">
+      <h3>Hot Butter Mushroom</h3>
+      <p>Rs. 930</p>
+    </div>
+    <div class="menu-item bites">
+      <img src="2.jpg" alt="French Fries">
+      <h3>French Fries</h3>
+      <p>Rs. 1250</p>
+    </div>
+    <div class="menu-item bites">
+      <img src="2.jpg" alt="Egg (Bulls eye)">
+      <h3>Egg (Bulls Eye)</h3>
+      <p>Rs. 200</p>
+    </div>
+    <div class="menu-item bites">
+      <img src="2.jpg" alt="Egg Omlette">
+      <h3>Egg Omelette)</h3>
+      <p>Rs. 800</p>
+    </div>
+    <div class="menu-item bites">
+      <img src="2.jpg" alt="Devilled Chicken">
+      <h3>Devilled Chicken</h3>
+      <p>Rs. 1400</p>
+    </div>
+    <div class="menu-item bites">
+      <img src="2.jpg" alt="Devilled Fish">
+      <h3>Devilled Fish</h3>
+      <p>Rs. 1850</p>
+    </div>
+    <div class="menu-item bites">
+      <img src="2.jpg" alt="Devilled Pork">
+      <h3>Devilled Pork</h3>
+      <p>Rs. 1725</p>
+    </div>
+    <div class="menu-item bites">
+      <img src="2.jpg" alt="Devilled Prawns">
+      <h3>Devilled Prawns</h3>
+      <p>Rs. 2000</p>
+    </div>
+    <div class="menu-item bites">
+      <img src="2.jpg" alt="Crispy Chicken">
+      <h3>Crispy Chicken</h3>
+      <p>Rs. 950</p>
+    </div>
+    <!-- Juice -->
+    <div class="menu-item juice">
+      <img src="AvocadoJuice.jpg" alt="Avocado Juice">
+      <h3>Avocado Juice</h3>
+      <p>Rs. 400</p>
+    </div>
+    <div class="menu-item juice">
+      <img src="MixedFruitJuice.jpg" alt="Mixed Fruit Juice">
+      <h3>Mixed Fruit Juice</h3>
+      <p>Rs. 500</p>
+    </div>
+    <div class="menu-item juice">
+      <img src="Woodapple.jpg" alt="Wood Apple Juice">
+      <h3>Wood Apple Juice</h3>
+      <p>Rs. 400</p>
+    </div>
+    <div class="menu-item juice">
+      <img src="PassionFruit.jpg" alt="Passion Fruit Juice">
+      <h3>Passion Fruit Juice</h3>
+      <p>Rs. 500</p>
+    </div>
+    <div class="menu-item juice">
+      <img src="watermelon.jpg" alt="Watermelon Juice">
+      <h3>Watermelon Juice</h3>
+      <p>Rs. 400</p>
+    </div>
+    <div class="menu-item juice">
+      <img src="Pineapple.jpeg" alt="Pineapple Juice">
+      <h3>Pineapple Juice</h3>
+      <p>Rs. 400</p>
+    </div>
+    <div class="menu-item juice">
+      <img src="Papaya.jpg" alt="Papaya Juice">
+      <h3>Papaya Juice</h3>
+      <p>Rs. 500</p>
+    </div>
+    <div class="menu-item juice">
+      <img src="Mango.jpg" alt="Mango Juice">
+      <h3>Mango Juice</h3>
+      <p>Rs. 400</p>
+    </div>
+
+    <!-- Desserts -->
+    <div class="menu-item desserts">
+      <img src="Fruit Salad.jpeg" alt="Fruit Salad with Ice Cream">
+      <h3>Fruit Salad with Ice Cream</h3>
+      <p>Rs. 475</p>
+    </div>
+    <div class="menu-item desserts">
+      <img src="watalappan.jpg" alt="Watalappan">
+      <h3>Watalappan</h3>
+      <p>Rs. 350</p>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <h5>&copy; 2024 BMS Kingdom of Taste. All Rights Reserved.</h5>
+  </footer>
+
+  <script>
+  function filterMenu(category) {
+    let items = document.querySelectorAll('.menu-item');
+    let buttons = document.querySelectorAll('.filter-buttons button');
+
+    // Remove active class from all buttons
+    buttons.forEach(btn => btn.classList.remove('active'));
+    // Add active class to the clicked button
+    event.target.classList.add('active');
+
+    // Show/hide items
+    items.forEach(item => {
+      if (category === 'all') {
+        item.classList.remove('hidden');
+      } else {
+        item.classList.add('hidden');
+        if (item.classList.contains(category)) {
+          item.classList.remove('hidden');
+        }
+      }
+    });
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,35 @@
+meta {
+  name: Create Reservation
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{baseUrl}}/api/reservations
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  "status": "CONFIRMED",
+  "numberOfPeople": 4,
+  "reservationDateTime": "2023-12-01T18:00:00"
+}
+
+tests {
+  test("status code is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("response has created reservation", function() {
+    expect(res.body).to.have.property('id');
+    expect(res.body.status).to.equal("CONFIRMED");
+    expect(res.body.numberOfPeople).to.equal(4);
+    expect(res.body).to.have.property('reservationDateTime');
+  });
+}
