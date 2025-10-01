@@ -1,0 +1,33 @@
+meta {
+  name: Update Reservation
+  type: http
+  seq: 13
+}
+
+put {
+  url: {{baseUrl}}/api/reservations/1
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  "status": "CONFIRMED",
+  "numberOfPeople": 6,
+  "reservationDateTime": "2023-12-01T19:00:00"
+}
+
+tests {
+  test("status code is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("response has updated reservation", function() {
+    expect(res.body).to.have.property('id');
+    expect(res.body.numberOfPeople).to.equal(6);
+  });
+}

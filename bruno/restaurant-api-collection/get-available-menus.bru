@@ -1,0 +1,33 @@
+meta {
+  name: Get Available Menus
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/menus/available
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+tests {
+  test("status code is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("response is menus array", function() {
+    expect(res.body).to.be.an('array');
+  });
+
+  test("all menus are available", function() {
+    if (res.body && res.body.length > 0) {
+      res.body.forEach(menu => {
+        expect(menu.isAvailable).to.equal(true);
+      });
+    }
+  });
+}

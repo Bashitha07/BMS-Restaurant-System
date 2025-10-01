@@ -1,0 +1,43 @@
+meta {
+  name: Create Menu Item
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/menus
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  "name": "Test Menu Item",
+  "description": "A delicious test item for API testing",
+  "price": 15.99,
+  "category": "Test",
+  "isAvailable": true
+}
+
+tests {
+  test("status code is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("response has created menu", function() {
+    expect(res.body).to.have.property('id');
+    expect(res.body.name).to.equal("Test Menu Item");
+    expect(res.body.price).to.equal(15.99);
+    expect(res.body.category).to.equal("Test");
+    expect(res.body.isAvailable).to.equal(true);
+  });
+
+  test("menu has timestamps", function() {
+    expect(res.body).to.have.property('createdAt');
+    expect(res.body).to.have.property('updatedAt');
+  });
+}

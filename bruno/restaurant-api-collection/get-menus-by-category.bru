@@ -1,0 +1,37 @@
+meta {
+  name: Get Menus by Category
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/menus/category/{{category}}
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+vars {
+  category: Pizza
+}
+
+tests {
+  test("status code is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("response is menus array", function() {
+    expect(res.body).to.be.an('array');
+  });
+
+  test("all menus are in correct category", function() {
+    if (res.body && res.body.length > 0) {
+      res.body.forEach(menu => {
+        expect(menu.category).to.equal('Pizza');
+      });
+    }
+  });
+}
