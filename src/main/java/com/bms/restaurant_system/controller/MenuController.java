@@ -17,26 +17,26 @@ public class MenuController {
     private MenuService menuService;
 
     @GetMapping
-    public ResponseEntity<List<Menu>> getAllMenus() {
-        List<Menu> menus = menuService.getAllMenus();
+    public ResponseEntity<List<MenuDTO>> getAllMenus() {
+        List<MenuDTO> menus = menuService.getAllMenus();
         return ResponseEntity.ok(menus);
     }
 
     @GetMapping("/available")
-    public ResponseEntity<List<Menu>> getAvailableMenus() {
-        List<Menu> menus = menuService.getAvailableMenus();
+    public ResponseEntity<List<MenuDTO>> getAvailableMenus() {
+        List<MenuDTO> menus = menuService.getAvailableMenus();
         return ResponseEntity.ok(menus);
     }
 
     @GetMapping("/category/{category}")
-    public ResponseEntity<List<Menu>> getMenusByCategory(@PathVariable String category) {
-        List<Menu> menus = menuService.getMenusByCategory(category);
+    public ResponseEntity<List<MenuDTO>> getMenusByCategory(@PathVariable String category) {
+        List<MenuDTO> menus = menuService.getMenusByCategory(category);
         return ResponseEntity.ok(menus);
     }
 
     @PostMapping
-    public ResponseEntity<Menu> createMenu(@RequestBody MenuDTO menuDTO) {
-        Menu createdMenu = menuService.createMenu(menuDTO);
+    public ResponseEntity<MenuDTO> createMenu(@RequestBody MenuDTO menuDTO) {
+        MenuDTO createdMenu = menuService.createMenu(menuDTO);
         return ResponseEntity.ok(createdMenu);
     }
 

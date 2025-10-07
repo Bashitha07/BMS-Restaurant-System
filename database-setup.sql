@@ -122,16 +122,16 @@ CREATE INDEX idx_payment_status ON payments(status);
 
 -- Sample data insertion
 INSERT INTO users (username, password, email, role, phone) VALUES
-('admin', 'admin123', 'admin@example.com', 'ADMIN', '123-456-7890'),
-('user', 'user123', 'user@example.com', 'USER', '098-765-4321')
+('admin', '$2a$10$7QJ6vQ6vQ6vQ6vQ6vQ6vQO7QJ6vQ6vQ6vQ6vQ6vQ6vQ6vQ6vQ6vQ6', 'admin@example.com', 'ADMIN', '123-456-7890'),
+('user', '$2a$10$7QJ6vQ6vQ6vQ6vQ6vQ6vQO7QJ6vQ6vQ6vQ6vQ6vQ6vQ6vQ6vQ6vQ6', 'user@example.com', 'USER', '098-765-4321')
 ON DUPLICATE KEY UPDATE username = username;
 
 INSERT INTO menus (name, description, price, category, is_available) VALUES
-('Margherita Pizza', 'Fresh mozzarella, tomatoes, and basil on thin crust', 2750.00, 'Pizza', true),
-('Caesar Salad', 'Crisp romaine lettuce with Caesar dressing and croutons', 950.00, 'Salads', true),
-('Grilled Chicken Burger', 'Juicy grilled chicken breast with lettuce, tomato, and mayo', 1350.00, 'Burgers', true),
-('Chocolate Brownie', 'Rich chocolate brownie served with vanilla ice cream', 450.00, 'Desserts', true),
-('Spaghetti Carbonara', 'Classic Italian pasta with eggs, cheese, pancetta, and black pepper', 1150.00, 'Pasta', true)
+('Margherita Pizza', 'Fresh mozzarella, tomatoes, and basil on thin crust', 27.50, 'Pizza', true),
+('Caesar Salad', 'Crisp romaine lettuce with Caesar dressing and croutons', 9.50, 'Salads', true),
+('Grilled Chicken Burger', 'Juicy grilled chicken breast with lettuce, tomato, and mayo', 13.50, 'Burgers', true),
+('Chocolate Brownie', 'Rich chocolate brownie served with vanilla ice cream', 4.50, 'Desserts', true),
+('Spaghetti Carbonara', 'Classic Italian pasta with eggs, cheese, pancetta, and black pepper', 11.50, 'Pasta', true)
 ON DUPLICATE KEY UPDATE name = name;
 
 -- Sample order data

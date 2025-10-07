@@ -3,12 +3,14 @@ package com.bms.restaurant_system.service;
 import com.bms.restaurant_system.dto.PaymentDTO;
 import com.bms.restaurant_system.entity.Order;
 import com.bms.restaurant_system.entity.Payment;
+import com.bms.restaurant_system.entity.PaymentMethod;
 import com.bms.restaurant_system.exception.ResourceNotFoundException;
 import com.bms.restaurant_system.repository.OrderRepository;
 import com.bms.restaurant_system.repository.PaymentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,10 +35,17 @@ public class PaymentService {
     }
 
     public PaymentDTO createPayment(PaymentDTO paymentDTO) {
-        Payment payment = convertToEntity(paymentDTO);
         Order order = orderRepository.findById(paymentDTO.orderId())
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + paymentDTO.orderId()));
+        
+        Payment payment = new Payment();
         payment.setOrder(order);
+        payment.setAmount(paymentDTO.amount());
+        payment.setPaymentMethod(PaymentMethod.valueOf(paymentDTO.paymentMethod()));
+        payment.setSlipImage(paymentDTO.slipImage());
+        payment.setStatus(Payment.PaymentStatus.PENDING);
+        payment.setSubmittedDate(LocalDateTime.now());
+        
         payment = paymentRepository.save(payment);
         return convertToDTO(payment);
     }
@@ -46,7 +55,7 @@ public class PaymentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Payment not found with id: " + id));
         existingPayment.setAmount(paymentDTO.amount());
         existingPayment.setSlipImage(paymentDTO.slipImage());
-        existingPayment.setStatus(paymentDTO.status());
+        existingPayment.setStatus(Payment.PaymentStatus.valueOf(paymentDTO.status()));
         existingPayment.setSubmittedDate(paymentDTO.submittedDate());
         existingPayment.setApprovedDate(paymentDTO.approvedDate());
         existingPayment = paymentRepository.save(existingPayment);
@@ -62,8 +71,17 @@ public class PaymentService {
     public PaymentDTO approvePayment(Long id) {
         Payment payment = paymentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Payment not found with id: " + id));
-        payment.setStatus("APPROVED");
-        payment.setApprovedDate(java.time.LocalDateTime.now());
+        payment.setStatus(Payment.PaymentStatus.COMPLETED);
+        payment.setApprovedDate(LocalDateTime.now());
+        payment = paymentRepository.save(payment);
+        return convertToDTO(payment);
+    }
+
+    public PaymentDTO rejectPayment(Long id, String reason) {
+        Payment payment = paymentRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Payment not found with id: " + id));
+        payment.setStatus(Payment.PaymentStatus.FAILED);
+        payment.setFailureReason(reason);
         payment = paymentRepository.save(payment);
         return convertToDTO(payment);
     }
@@ -71,22 +89,22 @@ public class PaymentService {
     private PaymentDTO convertToDTO(Payment payment) {
         return new PaymentDTO(
                 payment.getId(),
-                payment.getOrder() != null ? payment.getOrder().getId() : null,
+                payment.getOrder().getId(),
                 payment.getAmount(),
+                payment.getPaymentMethod().name(),
+                payment.getStatus().name(),
+                payment.getTransactionId(),
                 payment.getSlipImage(),
-                payment.getStatus(),
+                payment.getPaymentGateway(),
+                payment.getGatewayTransactionId(),
                 payment.getSubmittedDate(),
-                payment.getApprovedDate()
+                payment.getProcessedDate(),
+                payment.getApprovedDate(),
+                payment.getFailureReason(),
+                payment.getRefundAmount(),
+                payment.getRefundedDate(),
+                payment.getCreatedAt(),
+                payment.getUpdatedAt()
         );
-    }
-
-    private Payment convertToEntity(PaymentDTO paymentDTO) {
-        Payment payment = new Payment();
-        payment.setAmount(paymentDTO.amount());
-        payment.setSlipImage(paymentDTO.slipImage());
-        payment.setStatus(paymentDTO.status());
-        payment.setSubmittedDate(paymentDTO.submittedDate());
-        payment.setApprovedDate(paymentDTO.approvedDate());
-        return payment;
     }
 }

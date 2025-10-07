@@ -4,28 +4,21 @@ import com.bms.restaurant_system.dto.OrderDTO;
 import com.bms.restaurant_system.dto.OrderCreateDTO;
 import com.bms.restaurant_system.dto.OrderItemDTO;
 import com.bms.restaurant_system.dto.DeliveryDTO;
-import com.bms.restaurant_system.entity.Delivery;
-import com.bms.restaurant_system.entity.Menu;
-import com.bms.restaurant_system.entity.Order;
-import com.bms.restaurant_system.entity.OrderItem;
-import com.bms.restaurant_system.entity.User;
-import com.bms.restaurant_system.entity.PaymentMethod;
+import com.bms.restaurant_system.dto.PaymentDTO;
+import com.bms.restaurant_system.entity.*;
 import com.bms.restaurant_system.exception.ResourceNotFoundException;
-import com.bms.restaurant_system.repository.DeliveryRepository;
-import com.bms.restaurant_system.repository.MenuRepository;
-import com.bms.restaurant_system.repository.OrderItemRepository;
-import com.bms.restaurant_system.repository.OrderRepository;
-import com.bms.restaurant_system.repository.UserRepository;
+import com.bms.restaurant_system.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class OrderService {
     @Autowired
     private OrderRepository orderRepository;
@@ -42,6 +35,7 @@ public class OrderService {
     @Autowired
     private DeliveryRepository deliveryRepository;
 
+    // Basic CRUD Operations
     public List<OrderDTO> getAllOrders() {
         return orderRepository.findAll().stream()
                 .map(this::convertToDTO)
@@ -54,6 +48,18 @@ public class OrderService {
         return convertToDTO(order);
     }
 
+    public List<OrderDTO> getOrdersByUserId(Long userId) {
+        return orderRepository.findByUserIdOrderByCreatedAtDesc(userId).stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<OrderDTO> getOrdersByStatus(Order.OrderStatus status) {
+        return orderRepository.findByStatusOrderByCreatedAtDesc(status).stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
     public OrderDTO createOrder(OrderCreateDTO orderCreateDTO) {
         // Get current user from security context
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -63,66 +69,113 @@ public class OrderService {
         Order order = new Order();
         order.setUser(user);
         order.setOrderDate(LocalDateTime.now());
-        order.setStatus("PENDING");
+        order.setStatus(Order.OrderStatus.PENDING);
         order.setPaymentMethod(orderCreateDTO.paymentMethod());
+        order.setDeliveryAddress(orderCreateDTO.deliveryAddress());
+        order.setDeliveryPhone(orderCreateDTO.deliveryPhone());
+        order.setSpecialInstructions(orderCreateDTO.specialInstructions());
+        order.setOrderType(orderCreateDTO.orderType() != null ? orderCreateDTO.orderType() : Order.OrderType.DELIVERY);
+
+        // Save order first to get ID
+        order = orderRepository.save(order);
 
         // Create order items
         final Order finalOrder = order;
         List<OrderItem> orderItems = orderCreateDTO.items().stream().map(itemDTO -> {
             Menu menu = menuRepository.findById(itemDTO.menuId())
                     .orElseThrow(() -> new ResourceNotFoundException("Menu not found with id: " + itemDTO.menuId()));
+            
             OrderItem orderItem = new OrderItem();
             orderItem.setOrder(finalOrder);
             orderItem.setMenu(menu);
             orderItem.setQuantity(itemDTO.quantity());
+            orderItem.setUnitPrice(menu.getEffectivePrice());
+            orderItem.setSpecialInstructions(itemDTO.specialInstructions());
             return orderItem;
         }).collect(Collectors.toList());
 
+        orderItemRepository.saveAll(orderItems);
         order.setItems(orderItems);
 
-        // Calculate total amount
-        double totalAmount = orderItems.stream()
-                .mapToDouble(item -> item.getMenu().getPrice().doubleValue() * item.getQuantity())
-                .sum();
-        order.setTotalAmount(totalAmount);
+        // Calculate totals
+        order.calculateTotals();
 
-        // Save order
+        // Create delivery if it's a delivery order
+        if (order.isDeliveryOrder()) {
+            Delivery delivery = new Delivery();
+            delivery.setOrder(order);
+            delivery.setDeliveryAddress(orderCreateDTO.deliveryAddress());
+            delivery.setDeliveryPhone(orderCreateDTO.deliveryPhone());
+            delivery.setDeliveryInstructions(orderCreateDTO.specialInstructions());
+            delivery.setStatus(Delivery.DeliveryStatus.PENDING);
+            delivery.setDeliveryFee(order.getDeliveryFee());
+            delivery = deliveryRepository.save(delivery);
+            order.setDelivery(delivery);
+        }
+
+        // Save final order
         order = orderRepository.save(order);
-        orderItemRepository.saveAll(orderItems);
+        return convertToDTO(order);
+    }
 
-        // Create delivery
-        Delivery delivery = new Delivery();
-        delivery.setOrder(order);
-        delivery.setDeliveryAddress(orderCreateDTO.deliveryAddress());
-        delivery.setStatus("PENDING");
-        delivery.setAssignedDate(LocalDateTime.now());
-        delivery = deliveryRepository.save(delivery);
-        order.setDelivery(delivery);
-
+    public OrderDTO updateOrderStatus(Long id, Order.OrderStatus status) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
+        
+        order.setStatus(status);
+        
+        // Update delivery status if applicable
+        if (order.getDelivery() != null) {
+            switch (status) {
+                case PENDING -> order.getDelivery().setStatus(Delivery.DeliveryStatus.PENDING);
+                case CONFIRMED -> order.getDelivery().setStatus(Delivery.DeliveryStatus.PENDING);
+                case PREPARING -> order.getDelivery().setStatus(Delivery.DeliveryStatus.ASSIGNED);
+                case READY_FOR_PICKUP -> order.getDelivery().setStatus(Delivery.DeliveryStatus.PICKED_UP);
+                case OUT_FOR_DELIVERY -> order.getDelivery().setStatus(Delivery.DeliveryStatus.IN_TRANSIT);
+                case DELIVERED -> {
+                    order.getDelivery().setStatus(Delivery.DeliveryStatus.DELIVERED);
+                    order.setActualDeliveryTime(LocalDateTime.now());
+                }
+                case CANCELLED -> order.getDelivery().setStatus(Delivery.DeliveryStatus.CANCELLED);
+                case REFUNDED -> { /* No delivery status change needed */ }
+            }
+            deliveryRepository.save(order.getDelivery());
+        }
+        
         order = orderRepository.save(order);
+        return convertToDTO(order);
+    }
 
+    public OrderDTO cancelOrder(Long id, String reason) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
+        
+        if (!order.canBeCancelled()) {
+            throw new IllegalStateException("Order cannot be cancelled in current status: " + order.getStatus());
+        }
+        
+        order.setStatus(Order.OrderStatus.CANCELLED);
+        
+        // Cancel delivery if exists
+        if (order.getDelivery() != null) {
+            order.getDelivery().setStatus(Delivery.DeliveryStatus.CANCELLED);
+            order.getDelivery().setDeliveryNotes("Order cancelled: " + reason);
+            deliveryRepository.save(order.getDelivery());
+        }
+        
+        order = orderRepository.save(order);
         return convertToDTO(order);
     }
 
     public OrderDTO updateOrder(Long id, OrderDTO orderDTO) {
         Order existingOrder = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
-        existingOrder.setStatus(orderDTO.status());
-        existingOrder.setTotalAmount(orderDTO.totalAmount());
-        existingOrder.setPaymentMethod(PaymentMethod.valueOf(orderDTO.paymentMethod()));
-
-        // Update delivery if provided
-        if (orderDTO.delivery() != null) {
-            Delivery delivery = existingOrder.getDelivery();
-            if (delivery == null) {
-                delivery = new Delivery();
-                delivery.setOrder(existingOrder);
-            }
-            delivery.setDeliveryAddress(orderDTO.deliveryAddress());
-            delivery = deliveryRepository.save(delivery);
-            existingOrder.setDelivery(delivery);
-        }
-
+        
+        existingOrder.setStatus(Order.OrderStatus.valueOf(orderDTO.status()));
+        existingOrder.setDeliveryAddress(orderDTO.deliveryAddress());
+        existingOrder.setDeliveryPhone(orderDTO.deliveryPhone());
+        existingOrder.setSpecialInstructions(orderDTO.specialInstructions());
+        
         existingOrder = orderRepository.save(existingOrder);
         return convertToDTO(existingOrder);
     }
@@ -133,53 +186,183 @@ public class OrderService {
         orderRepository.delete(order);
     }
 
-    private OrderDTO convertToDTO(Order order) {
-        List<OrderItemDTO> items = order.getItems().stream()
-                .map(item -> new OrderItemDTO(item.getMenu().getId(), item.getQuantity()))
+    // Business Logic Methods
+    public List<OrderDTO> getTodaysOrders() {
+        LocalDateTime startOfDay = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0);
+        LocalDateTime endOfDay = LocalDateTime.now().withHour(23).withMinute(59).withSecond(59);
+        return orderRepository.findByOrderDateBetween(startOfDay, endOfDay).stream()
+                .map(this::convertToDTO)
                 .collect(Collectors.toList());
+    }
 
-        DeliveryDTO deliveryDTO = order.getDelivery() != null ?
-                new DeliveryDTO(order.getDelivery().getId(), order.getId(), order.getDelivery().getDeliveryAddress(),
-                        order.getDelivery().getDriverName(), order.getDelivery().getDriverPhone(),
-                        order.getDelivery().getDriverVehicle(), order.getDelivery().getStatus(),
-                        order.getDelivery().getAssignedDate(), order.getDelivery().getDeliveredDate()) :
-                null;
+    public List<OrderDTO> getPendingOrders() {
+        return getOrdersByStatus(Order.OrderStatus.PENDING);
+    }
 
-        return new OrderDTO(
-                order.getId(),
-                order.getStatus(),
-                order.getTotalAmount(),
-                order.getOrderDate(),
-                order.getPaymentMethod().name(),
-                order.getDeliveryAddress(),
-                items,
-                deliveryDTO
+    public List<OrderDTO> getActiveOrders() {
+        List<Order.OrderStatus> activeStatuses = List.of(
+            Order.OrderStatus.CONFIRMED,
+            Order.OrderStatus.PREPARING,
+            Order.OrderStatus.READY_FOR_PICKUP,
+            Order.OrderStatus.OUT_FOR_DELIVERY
+        );
+        return orderRepository.findByStatusInOrderByCreatedAtDesc(activeStatuses).stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    public Map<String, Object> getOrderStatistics() {
+        return Map.of(
+            "totalOrders", orderRepository.count(),
+            "todayOrders", getTodaysOrders().size(),
+            "pendingOrders", orderRepository.countByStatus(Order.OrderStatus.PENDING),
+            "completedOrders", orderRepository.countByStatus(Order.OrderStatus.DELIVERED),
+            "totalRevenue", orderRepository.getTotalRevenue(),
+            "averageOrderValue", orderRepository.getAverageOrderValue()
         );
     }
 
+    // Helper Methods
+    private OrderDTO convertToDTO(Order order) {
+        List<OrderItemDTO> items = order.getItems() != null ? order.getItems().stream()
+                .map(this::convertOrderItemToDTO)
+                .collect(Collectors.toList()) : List.of();
 
+        DeliveryDTO deliveryDTO = order.getDelivery() != null ? convertDeliveryToDTO(order.getDelivery()) : null;
+        
+        List<PaymentDTO> payments = order.getPayments() != null ? order.getPayments().stream()
+                .map(this::convertPaymentToDTO)
+                .collect(Collectors.toList()) : List.of();
+
+        return new OrderDTO(
+                order.getId(),
+                order.getOrderDate(),
+                order.getStatus().name(),
+                order.getTotalAmount(),
+                order.getSubtotal(),
+                order.getTaxAmount(),
+                order.getDeliveryFee(),
+                order.getPaymentMethod() != null ? order.getPaymentMethod().name() : null,
+                order.getDeliveryAddress(),
+                order.getDeliveryPhone(),
+                order.getSpecialInstructions(),
+                order.getOrderType().name(),
+                order.getEstimatedDeliveryTime(),
+                order.getActualDeliveryTime(),
+                order.getCreatedAt(),
+                order.getUpdatedAt(),
+                order.getUser().getId(),
+                order.getUser().getUsername(),
+                order.getUser().getEmail(),
+                items,
+                deliveryDTO,
+                payments
+        );
+    }
+
+    private OrderItemDTO convertOrderItemToDTO(OrderItem item) {
+        return new OrderItemDTO(
+                item.getId(),
+                item.getMenu().getId(),
+                item.getMenu().getName(),
+                item.getMenu().getDescription(),
+                item.getMenu().getCategory(),
+                item.getMenu().getImageUrl(),
+                item.getQuantity(),
+                item.getUnitPrice(),
+                item.getTotalPrice(),
+                item.getSpecialInstructions()
+        );
+    }
+
+    private DeliveryDTO convertDeliveryToDTO(Delivery delivery) {
+        return new DeliveryDTO(
+                delivery.getId(),
+                delivery.getOrder().getId(),
+                delivery.getDriver() != null ? delivery.getDriver().getId() : null,
+                delivery.getDriverName(),
+                delivery.getDriverPhone(),
+                delivery.getDriverVehicle(),
+                delivery.getDeliveryAddress(),
+                delivery.getDeliveryPhone(),
+                delivery.getDeliveryInstructions(),
+                delivery.getStatus().name(),
+                delivery.getDeliveryFee(),
+                delivery.getEstimatedDeliveryTime(),
+                delivery.getActualDeliveryTime(),
+                delivery.getPickupTime(),
+                delivery.getAssignedDate(),
+                delivery.getDeliveredDate(),
+                delivery.getCurrentLatitude(),
+                delivery.getCurrentLongitude(),
+                delivery.getDeliveryLatitude(),
+                delivery.getDeliveryLongitude(),
+                delivery.getDistanceKm(),
+                delivery.getCustomerRating(),
+                delivery.getCustomerFeedback(),
+                delivery.getDeliveryNotes(),
+                delivery.getProofOfDelivery(),
+                delivery.getCreatedAt(),
+                delivery.getUpdatedAt()
+        );
+    }
+
+    private PaymentDTO convertPaymentToDTO(Payment payment) {
+        return new PaymentDTO(
+                payment.getId(),
+                payment.getOrder().getId(),
+                payment.getAmount(),
+                payment.getPaymentMethod().name(),
+                payment.getStatus().name(),
+                payment.getTransactionId(),
+                payment.getSlipImage(),
+                payment.getPaymentGateway(),
+                payment.getGatewayTransactionId(),
+                payment.getSubmittedDate(),
+                payment.getProcessedDate(),
+                payment.getApprovedDate(),
+                payment.getFailureReason(),
+                payment.getRefundAmount(),
+                payment.getRefundedDate(),
+                payment.getCreatedAt(),
+                payment.getUpdatedAt()
+        );
+    }
 
     public Map<String, Object> generateInvoice(Long id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
 
-        Map<String, Object> invoice = Map.of(
-                "orderId", order.getId(),
-                "orderDate", order.getOrderDate(),
-                "status", order.getStatus(),
-                "paymentMethod", order.getPaymentMethod().name(),
-                "deliveryAddress", order.getDelivery() != null ? order.getDelivery().getDeliveryAddress() : null,
-                "items", order.getItems().stream()
-                        .map(item -> Map.of(
-                                "menuName", item.getMenu().getName(),
-                                "quantity", item.getQuantity(),
-                                "price", item.getMenu().getPrice(),
-                                "subtotal", item.getMenu().getPrice().doubleValue() * item.getQuantity()
-                        ))
-                        .collect(Collectors.toList()),
-                "totalAmount", order.getTotalAmount()
-        );
-
+        Map<String, Object> invoice = new HashMap<>();
+        invoice.put("orderId", order.getId());
+        invoice.put("orderDate", order.getOrderDate());
+        invoice.put("status", order.getStatus().name());
+        invoice.put("paymentMethod", order.getPaymentMethod() != null ? order.getPaymentMethod().name() : "");
+        invoice.put("deliveryAddress", order.getDeliveryAddress() != null ? order.getDeliveryAddress() : "");
+        
+        Map<String, String> customer = new HashMap<>();
+        customer.put("name", order.getUser().getUsername());
+        customer.put("email", order.getUser().getEmail());
+        customer.put("phone", order.getDeliveryPhone() != null ? order.getDeliveryPhone() : "");
+        invoice.put("customer", customer);
+        
+        List<Map<String, Object>> items = order.getItems().stream()
+                .map(item -> {
+                    Map<String, Object> itemMap = new HashMap<>();
+                    itemMap.put("menuName", item.getMenu().getName());
+                    itemMap.put("quantity", item.getQuantity());
+                    itemMap.put("unitPrice", item.getUnitPrice());
+                    itemMap.put("totalPrice", item.getTotalPrice());
+                    return itemMap;
+                })
+                .collect(Collectors.toList());
+        invoice.put("items", items);
+        
+        invoice.put("subtotal", order.getSubtotal());
+        invoice.put("taxAmount", order.getTaxAmount());
+        invoice.put("deliveryFee", order.getDeliveryFee());
+        invoice.put("totalAmount", order.getTotalAmount());
+        
         return invoice;
     }
 }

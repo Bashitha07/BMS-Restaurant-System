@@ -221,7 +221,7 @@ public class DatabaseRetrievalService {
     public BigDecimal getTotalRevenue() {
         return orderRepository.findAll().stream()
                 .filter(order -> order.getTotalAmount() != null)
-                .map(order -> BigDecimal.valueOf(order.getTotalAmount()))
+                .map(Order::getTotalAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 

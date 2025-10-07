@@ -1,23 +1,33 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { Bell, Users, Menu, ShoppingBag, CreditCard, Calendar, Truck, BarChart3 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 const AdminLayout = ({ children }) => {
   const { user, logout } = useAuth();
   const { unreadCount } = useNotifications();
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    const confirmed = window.confirm('Are you sure you want to logout?');
+    if (confirmed) {
+      logout();
+      toast.success('Admin session ended. Logged out successfully.');
+      navigate('/', { replace: true });
+    }
+  };
 
   const navItems = [
     { path: '/admin/dashboard', icon: BarChart3, label: 'Dashboard' },
     { path: '/admin/users', icon: Users, label: 'Users' },
-    { path: '/admin/menu', icon: Menu, label: 'Menu' },
+    { path: '/admin/menus', icon: Menu, label: 'Menu Management' },
     { path: '/admin/orders', icon: ShoppingBag, label: 'Orders' },
-    { path: '/admin/payments', icon: CreditCard, label: 'Payments' },
+    { path: '/admin/payment-slips', icon: CreditCard, label: 'Payment Slips' },
     { path: '/admin/reservations', icon: Calendar, label: 'Reservations' },
-    { path: '/admin/deliveries', icon: Truck, label: 'Deliveries' },
-    { path: '/admin/delivery-drivers', icon: Users, label: 'Delivery Drivers' },
+    { path: '/admin/delivery', icon: Truck, label: 'Deliveries' },
   ];
 
   return (
@@ -40,7 +50,7 @@ const AdminLayout = ({ children }) => {
               </button>
               <span className="text-sm text-gray-700">Welcome, {user?.username}</span>
               <button
-                onClick={logout}
+                onClick={handleLogout}
                 className="text-sm text-gray-700 hover:text-gray-900"
               >
                 Logout

@@ -177,13 +177,13 @@
       <p>Rs. xxx</p>
     </div>
     <div class="menu-item rice">
-      <img src="Lumprais.jpg" alt="Lamprais">
+      <img src="Lamprais.jpg" alt="Lamprais">
       <h3>Lamprais</h3>
       <p>Rs. xxx</p>
     </div>
     <!-- Noodles -->
      <div class="menu-item noodles">
-      <img src="noodles.jpeg" alt="Fried Noodles">
+      <img src="Fried Noodles.jpg" alt="Fried Noodles">
       <h3>Fried Noodles</h3>
       <p>Rs. xxx</p>
     </div>
@@ -205,49 +205,49 @@
     </div>
     <!-- Submarines -->
     <div class="menu-item submarines">
-      <img src="Crispy Submarine.jpeg" alt="Crispy Chicken Submarine">
+      <img src="Crispy Chicken Submarine.jpg" alt="Crispy Chicken Submarine">
       <h3>Crispy Chicken Submarine</h3>
       <p>Rs. 1220</p>
     </div>
     <div class="menu-item submarines">
-      <img src="CheeseChicken Sub.jpg" alt="Chicken & Cheese Submarine">
+      <img src="Cheese Chicken Submarine.jpg" alt="Chicken & Cheese Submarine">
       <h3>Cheese & Chicken Submarine</h3>
       <p>Rs. 1360</p>
     </div>
 
     <!-- Bites-->
     <div class="menu-item bites">
-      <img src="2.jpg" alt="Roast Chicken">
+      <img src="Roast Chicken.jpg" alt="Roast Chicken">
       <h3>Roast Chicken</h3>
       <p>Rs. xxx</p>
     </div>
     <div class="menu-item bites">
-      <img src="2.jpg" alt="Chicken Drumsticks">
+      <img src="Chicken Drumsticks.jpg" alt="Chicken Drumsticks">
       <h3>Chicken Drumsticks</h3>
       <p>Rs. xxx</p>
     </div>
     <div class="menu-item bites">
-      <img src="2.jpg" alt="Hot Butter Mushroom">
+      <img src="Hot Butter Mushroom.jpg" alt="Hot Butter Mushroom">
       <h3>Hot Butter Mushroom</h3>
       <p>Rs. 930</p>
     </div>
     <div class="menu-item bites">
-      <img src="2.jpg" alt="French Fries">
+      <img src="French Fries.jpg" alt="French Fries">
       <h3>French Fries</h3>
       <p>Rs. 1250</p>
     </div>
     <div class="menu-item bites">
-      <img src="2.jpg" alt="Egg (Bulls eye)">
+      <img src="Egg (Bulls eye).jpg" alt="Egg (Bulls eye)">
       <h3>Egg (Bulls Eye)</h3>
       <p>Rs. 200</p>
     </div>
     <div class="menu-item bites">
-      <img src="2.jpg" alt="Egg Omlette">
+      <img src="Egg Omelette.jpg" alt="Egg Omelette">
       <h3>Egg Omelette)</h3>
       <p>Rs. 800</p>
     </div>
     <div class="menu-item bites">
-      <img src="2.jpg" alt="Devilled Chicken">
+      <img src="Devilled Chicken.jpg" alt="Devilled Chicken">
       <h3>Devilled Chicken</h3>
       <p>Rs. 1400</p>
     </div>
@@ -355,5 +355,75 @@
   }
 </script>
 
+  <!-- Forms Section -->
+  <div id="forms-section" class="section">
+    <!-- Login Form -->
+    <form id="loginForm" class="auth-form">
+      <h2>Login</h2>
+      <input type="text" name="username" placeholder="Username" required>
+      <input type="password" name="password" placeholder="Password" required>
+      <button type="submit">Login</button>
+    </form>
+
+    <!-- Register Form -->
+    <form id="registerForm" class="auth-form">
+      <h2>Register</h2>
+      <input type="text" name="username" placeholder="Username" required>
+      <input type="password" name="password" placeholder="Password" required>
+      <input type="email" name="email" placeholder="Email" required>
+      <button type="submit">Register</button>
+    </form>
+
+    <!-- Add Menu Form -->
+    <form id="addMenuForm" class="admin-form">
+      <h2>Add Menu Item</h2>
+      <input type="text" name="name" placeholder="Menu Item Name" required>
+      <input type="number" name="price" placeholder="Price" required>
+      <select name="category" required>
+        <option value="">Select Category</option>
+        <option value="KOTTU">Kottu</option>
+        <option value="RICE">Rice</option>
+        <option value="NOODLES">Noodles</option>
+        <option value="BURGER">Burger</option>
+        <option value="SUBMARINE">Submarine</option>
+        <option value="SNACKS">Snacks</option>
+      </select>
+      <button type="submit">Add Menu Item</button>
+    </form>
+
+    <!-- Checkout Form -->
+    <form id="checkoutForm" class="order-form">
+      <h2>Checkout</h2>
+      <div id="orderSummary"></div>
+      <input type="text" name="customerName" placeholder="Your Name" required>
+      <input type="text" name="address" placeholder="Delivery Address" required>
+      <input type="tel" name="phone" placeholder="Phone Number" required>
+      <div class="payment-method">
+        <label>
+          <input type="radio" name="paymentMethod" value="cash" checked> Cash on Delivery
+        </label>
+        <label>
+          <input type="radio" name="paymentMethod" value="bank"> Bank Transfer
+        </label>
+      </div>
+      <div id="bankDetails" style="display: none;">
+        <input type="file" name="depositSlip" accept="image/*">
+      </div>
+      <button type="submit">Place Order</button>
+    </form>
+
+    <!-- New Reservation Form -->
+    <form id="newReservationForm" class="reservation-form">
+      <h2>Make a Reservation</h2>
+      <input type="date" name="date" required>
+      <input type="time" name="time" required>
+      <input type="number" name="guests" placeholder="Number of Guests" required min="1">
+      <input type="text" name="customerName" placeholder="Your Name" required>
+      <input type="tel" name="phone" placeholder="Phone Number" required>
+      <button type="submit">Book Reservation</button>
+    </form>
+  </div>
+
+  <script src="app.js"></script>
 </body>
 </html>

@@ -1,0 +1,190 @@
+package com.bms.restaurant_system.controller;
+
+import com.bms.restaurant_system.dto.DeliveryDTO;
+import com.bms.restaurant_system.entity.Delivery;
+import com.bms.restaurant_system.entity.DeliveryDriver;
+import com.bms.restaurant_system.service.DeliveryDriverService;
+import com.bms.restaurant_system.service.DeliveryService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/driver")
+@CrossOrigin(origins = "*")
+public class DriverOrderController {
+    private static final Logger logger = LoggerFactory.getLogger(DriverOrderController.class);
+
+    @Autowired
+    private DeliveryService deliveryService;
+    
+    @Autowired
+    private DeliveryDriverService deliveryDriverService;
+
+    // Get available deliveries for assignment
+    @GetMapping("/{driverId}/available-deliveries")
+    public ResponseEntity<?> getAvailableDeliveries(@PathVariable Long driverId) {
+        logger.info("Fetching available deliveries for driver: {}", driverId);
+        
+        try {
+            List<DeliveryDTO> availableDeliveries = deliveryService.getAvailableDeliveries();
+            return ResponseEntity.ok(availableDeliveries);
+        } catch (Exception e) {
+            logger.error("Error fetching available deliveries for driver {}: {}", driverId, e.getMessage());
+            return ResponseEntity.status(500).body("Failed to fetch available deliveries");
+        }
+    }
+
+    // Get driver's assigned deliveries
+    @GetMapping("/{driverId}/my-deliveries")
+    public ResponseEntity<?> getMyDeliveries(@PathVariable Long driverId) {
+        logger.info("Fetching deliveries for driver: {}", driverId);
+        
+        try {
+            List<DeliveryDTO> myDeliveries = deliveryService.getDeliveriesByDriverId(driverId);
+            return ResponseEntity.ok(myDeliveries);
+        } catch (Exception e) {
+            logger.error("Error fetching deliveries for driver {}: {}", driverId, e.getMessage());
+            return ResponseEntity.status(500).body("Failed to fetch deliveries");
+        }
+    }
+
+    // Accept a delivery order
+    @PostMapping("/{driverId}/accept-delivery/{deliveryId}")
+    public ResponseEntity<?> acceptDelivery(@PathVariable Long driverId, @PathVariable Long deliveryId) {
+        logger.info("Driver {} accepting delivery {}", driverId, deliveryId);
+        
+        try {
+            DeliveryDTO delivery = deliveryService.assignDriverToDelivery(deliveryId, driverId);
+            
+            // Update driver status to busy
+            deliveryDriverService.updateDriverStatus(driverId, DeliveryDriver.DriverStatus.ON_DELIVERY);
+            
+            logger.info("Delivery {} accepted by driver {}", deliveryId, driverId);
+            return ResponseEntity.ok(delivery);
+        } catch (Exception e) {
+            logger.error("Error accepting delivery {} for driver {}: {}", deliveryId, driverId, e.getMessage());
+            return ResponseEntity.status(400).body("Failed to accept delivery: " + e.getMessage());
+        }
+    }
+
+    // Update delivery status
+    @PutMapping("/{driverId}/delivery/{deliveryId}/status")
+    public ResponseEntity<?> updateDeliveryStatus(
+            @PathVariable Long driverId,
+            @PathVariable Long deliveryId,
+            @RequestBody Map<String, String> statusUpdate) {
+        
+        String newStatus = statusUpdate.get("status");
+        logger.info("Driver {} updating delivery {} status to {}", driverId, deliveryId, newStatus);
+        
+        try {
+            Delivery.DeliveryStatus status = Delivery.DeliveryStatus.valueOf(newStatus.toUpperCase());
+            DeliveryDTO delivery = deliveryService.updateDeliveryStatus(deliveryId, status);
+            
+            // Update driver status based on delivery status
+            updateDriverStatusBasedOnDelivery(driverId, status);
+            
+            logger.info("Delivery {} status updated to {} by driver {}", deliveryId, newStatus, driverId);
+            return ResponseEntity.ok(delivery);
+        } catch (IllegalArgumentException e) {
+            logger.error("Invalid status '{}' for delivery {}", newStatus, deliveryId);
+            return ResponseEntity.status(400).body("Invalid delivery status");
+        } catch (Exception e) {
+            logger.error("Error updating delivery {} status: {}", deliveryId, e.getMessage());
+            return ResponseEntity.status(500).body("Failed to update delivery status");
+        }
+    }
+
+    // Update driver location
+    @PutMapping("/{driverId}/location")
+    public ResponseEntity<?> updateLocation(
+            @PathVariable Long driverId,
+            @RequestBody Map<String, BigDecimal> location) {
+        
+        BigDecimal latitude = location.get("latitude");
+        BigDecimal longitude = location.get("longitude");
+        
+        logger.info("Driver {} updating location to ({}, {})", driverId, latitude, longitude);
+        
+        try {
+            deliveryDriverService.updateDriverLocation(driverId, latitude, longitude);
+            return ResponseEntity.ok("Location updated successfully");
+        } catch (Exception e) {
+            logger.error("Error updating location for driver {}: {}", driverId, e.getMessage());
+            return ResponseEntity.status(500).body("Failed to update location");
+        }
+    }
+
+    // Mark delivery as completed
+    @PostMapping("/{driverId}/delivery/{deliveryId}/complete")
+    public ResponseEntity<?> completeDelivery(
+            @PathVariable Long driverId,
+            @PathVariable Long deliveryId,
+            @RequestBody(required = false) Map<String, String> completionData) {
+        
+        logger.info("Driver {} completing delivery {}", driverId, deliveryId);
+        
+        try {
+            String notes = completionData != null ? completionData.get("notes") : null;
+            String proofOfDelivery = completionData != null ? completionData.get("proofOfDelivery") : null;
+            
+            DeliveryDTO delivery = deliveryService.completeDelivery(deliveryId, notes, proofOfDelivery);
+            
+            // Update driver status back to available
+            deliveryDriverService.updateDriverStatus(driverId, DeliveryDriver.DriverStatus.AVAILABLE);
+            
+            logger.info("Delivery {} completed by driver {}", deliveryId, driverId);
+            return ResponseEntity.ok(delivery);
+        } catch (Exception e) {
+            logger.error("Error completing delivery {} for driver {}: {}", deliveryId, driverId, e.getMessage());
+            return ResponseEntity.status(500).body("Failed to complete delivery");
+        }
+    }
+
+    // Update driver availability status
+    @PutMapping("/{driverId}/status")
+    public ResponseEntity<?> updateDriverStatus(
+            @PathVariable Long driverId,
+            @RequestBody Map<String, String> statusUpdate) {
+        
+        String newStatus = statusUpdate.get("status");
+        logger.info("Driver {} updating status to {}", driverId, newStatus);
+        
+        try {
+            DeliveryDriver.DriverStatus status = DeliveryDriver.DriverStatus.valueOf(newStatus.toUpperCase());
+            deliveryDriverService.updateDriverStatus(driverId, status);
+            
+            logger.info("Driver {} status updated to {}", driverId, newStatus);
+            return ResponseEntity.ok("Status updated successfully");
+        } catch (IllegalArgumentException e) {
+            logger.error("Invalid status '{}' for driver {}", newStatus, driverId);
+            return ResponseEntity.status(400).body("Invalid driver status");
+        } catch (Exception e) {
+            logger.error("Error updating status for driver {}: {}", driverId, e.getMessage());
+            return ResponseEntity.status(500).body("Failed to update status");
+        }
+    }
+
+    private void updateDriverStatusBasedOnDelivery(Long driverId, Delivery.DeliveryStatus deliveryStatus) {
+        try {
+            switch (deliveryStatus) {
+                case PICKED_UP -> deliveryDriverService.updateDriverStatus(driverId, DeliveryDriver.DriverStatus.ON_DELIVERY);
+                case IN_TRANSIT -> deliveryDriverService.updateDriverStatus(driverId, DeliveryDriver.DriverStatus.ON_DELIVERY);
+                case DELIVERED -> deliveryDriverService.updateDriverStatus(driverId, DeliveryDriver.DriverStatus.AVAILABLE);
+                case FAILED, CANCELLED -> deliveryDriverService.updateDriverStatus(driverId, DeliveryDriver.DriverStatus.AVAILABLE);
+                default -> {
+                    // No status change needed for other delivery statuses
+                }
+            }
+        } catch (Exception e) {
+            logger.warn("Failed to update driver status for driver {}: {}", driverId, e.getMessage());
+        }
+    }
+}
