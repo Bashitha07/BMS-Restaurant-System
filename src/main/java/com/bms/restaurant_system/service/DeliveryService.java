@@ -2,16 +2,18 @@ package com.bms.restaurant_system.service;
 
 import com.bms.restaurant_system.dto.DeliveryDTO;
 import com.bms.restaurant_system.entity.Delivery;
+import com.bms.restaurant_system.entity.DeliveryDriver;
 import com.bms.restaurant_system.entity.Order;
 import com.bms.restaurant_system.exception.ResourceNotFoundException;
 import com.bms.restaurant_system.repository.DeliveryRepository;
+import com.bms.restaurant_system.repository.DeliveryDriverRepository;
 import com.bms.restaurant_system.repository.OrderRepository;
+import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,8 +24,11 @@ public class DeliveryService {
 
     @Autowired
     private OrderRepository orderRepository;
+    
+    @Autowired
+    private DeliveryDriverRepository deliveryDriverRepository;
 
-    @PersistenceContext
+    @Autowired
     private EntityManager em;
 
     public List<DeliveryDTO> getAllDeliveries() {
@@ -39,11 +44,14 @@ public class DeliveryService {
     }
 
     public DeliveryDTO createDelivery(DeliveryDTO deliveryDTO) {
-        Delivery delivery = convertToEntity(deliveryDTO);
         Order order = orderRepository.findById(deliveryDTO.orderId())
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + deliveryDTO.orderId()));
+        
+        Delivery delivery = convertToEntity(deliveryDTO);
         delivery.setOrder(order);
-        order.setDelivery(delivery);
+        delivery.setStatus(Delivery.DeliveryStatus.PENDING);
+        delivery.setAssignedDate(LocalDateTime.now());
+        
         delivery = deliveryRepository.save(delivery);
         return convertToDTO(delivery);
     }
@@ -51,13 +59,13 @@ public class DeliveryService {
     public DeliveryDTO updateDelivery(Long id, DeliveryDTO deliveryDTO) {
         Delivery existingDelivery = deliveryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Delivery not found with id: " + id));
+        
         existingDelivery.setDeliveryAddress(deliveryDTO.deliveryAddress());
         existingDelivery.setDriverName(deliveryDTO.driverName());
         existingDelivery.setDriverPhone(deliveryDTO.driverPhone());
         existingDelivery.setDriverVehicle(deliveryDTO.driverVehicle());
-        existingDelivery.setStatus(deliveryDTO.status());
-        existingDelivery.setAssignedDate(deliveryDTO.assignedDate());
-        existingDelivery.setDeliveredDate(deliveryDTO.deliveredDate());
+        existingDelivery.setStatus(Delivery.DeliveryStatus.valueOf(deliveryDTO.status()));
+        
         existingDelivery = deliveryRepository.save(existingDelivery);
         return convertToDTO(existingDelivery);
     }
@@ -66,6 +74,7 @@ public class DeliveryService {
     public void deleteDelivery(Long id) {
         Delivery delivery = deliveryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Delivery not found with id: " + id));
+        
         Order order = delivery.getOrder();
         if (order != null) {
             order.setDelivery(null);
@@ -78,14 +87,32 @@ public class DeliveryService {
     private DeliveryDTO convertToDTO(Delivery delivery) {
         return new DeliveryDTO(
                 delivery.getId(),
-                delivery.getOrder() != null ? delivery.getOrder().getId() : null,
-                delivery.getDeliveryAddress(),
+                delivery.getOrder().getId(),
+                delivery.getDriver() != null ? delivery.getDriver().getId() : null,
                 delivery.getDriverName(),
                 delivery.getDriverPhone(),
                 delivery.getDriverVehicle(),
-                delivery.getStatus(),
+                delivery.getDeliveryAddress(),
+                delivery.getDeliveryPhone(),
+                delivery.getDeliveryInstructions(),
+                delivery.getStatus().name(),
+                delivery.getDeliveryFee(),
+                delivery.getEstimatedDeliveryTime(),
+                delivery.getActualDeliveryTime(),
+                delivery.getPickupTime(),
                 delivery.getAssignedDate(),
-                delivery.getDeliveredDate()
+                delivery.getDeliveredDate(),
+                delivery.getCurrentLatitude(),
+                delivery.getCurrentLongitude(),
+                delivery.getDeliveryLatitude(),
+                delivery.getDeliveryLongitude(),
+                delivery.getDistanceKm(),
+                delivery.getCustomerRating(),
+                delivery.getCustomerFeedback(),
+                delivery.getDeliveryNotes(),
+                delivery.getProofOfDelivery(),
+                delivery.getCreatedAt(),
+                delivery.getUpdatedAt()
         );
     }
 
@@ -95,9 +122,91 @@ public class DeliveryService {
         delivery.setDriverName(deliveryDTO.driverName());
         delivery.setDriverPhone(deliveryDTO.driverPhone());
         delivery.setDriverVehicle(deliveryDTO.driverVehicle());
-        delivery.setStatus(deliveryDTO.status());
-        delivery.setAssignedDate(deliveryDTO.assignedDate());
-        delivery.setDeliveredDate(deliveryDTO.deliveredDate());
+        delivery.setDeliveryPhone(deliveryDTO.deliveryPhone());
+        delivery.setDeliveryInstructions(deliveryDTO.deliveryInstructions());
+        delivery.setDeliveryFee(deliveryDTO.deliveryFee());
+        delivery.setEstimatedDeliveryTime(deliveryDTO.estimatedDeliveryTime());
         return delivery;
+    }
+    
+    // Driver-specific delivery methods
+    public List<DeliveryDTO> getAvailableDeliveries() {
+        return deliveryRepository.findAll().stream()
+                .filter(delivery -> delivery.getStatus() == Delivery.DeliveryStatus.PENDING)
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+    
+    public List<DeliveryDTO> getDeliveriesByDriverId(Long driverId) {
+        return deliveryRepository.findAll().stream()
+                .filter(delivery -> delivery.getDriver() != null && delivery.getDriver().getId().equals(driverId))
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+    
+    public DeliveryDTO assignDriverToDelivery(Long deliveryId, Long driverId) {
+        Delivery delivery = deliveryRepository.findById(deliveryId)
+                .orElseThrow(() -> new ResourceNotFoundException("Delivery not found with id: " + deliveryId));
+                
+        DeliveryDriver driver = deliveryDriverRepository.findById(driverId)
+                .orElseThrow(() -> new ResourceNotFoundException("Driver not found with id: " + driverId));
+        
+        if (!driver.isAvailableForDelivery()) {
+            throw new IllegalStateException("Driver is not available for delivery");
+        }
+        
+        delivery.assignDriver(driver);
+        delivery = deliveryRepository.save(delivery);
+        return convertToDTO(delivery);
+    }
+    
+    public DeliveryDTO updateDeliveryStatus(Long deliveryId, Delivery.DeliveryStatus status) {
+        Delivery delivery = deliveryRepository.findById(deliveryId)
+                .orElseThrow(() -> new ResourceNotFoundException("Delivery not found with id: " + deliveryId));
+        
+        delivery.setStatus(status);
+        
+        // Update timestamps based on status
+        switch (status) {
+            case PENDING -> { /* No special action needed */ }
+            case ASSIGNED -> { /* Driver assigned, no timestamp change */ }
+            case PICKED_UP -> delivery.markAsPickedUp();
+            case IN_TRANSIT -> delivery.markInTransit();
+            case ARRIVED -> delivery.markAsArrived();
+            case DELIVERED -> delivery.markAsDelivered();
+            case CANCELLED -> { /* Handle cancellation */ }
+            case FAILED -> { /* Handle failed delivery */ }
+            case RETURNED -> { /* Handle return */ }
+        }
+        
+        delivery = deliveryRepository.save(delivery);
+        return convertToDTO(delivery);
+    }
+    
+    public DeliveryDTO completeDelivery(Long deliveryId, String notes, String proofOfDelivery) {
+        Delivery delivery = deliveryRepository.findById(deliveryId)
+                .orElseThrow(() -> new ResourceNotFoundException("Delivery not found with id: " + deliveryId));
+        
+        delivery.markAsDelivered();
+        if (notes != null) {
+            delivery.setDeliveryNotes(notes);
+        }
+        if (proofOfDelivery != null) {
+            delivery.setProofOfDelivery(proofOfDelivery);
+        }
+        
+        delivery = deliveryRepository.save(delivery);
+        
+        // Update driver's delivery count and earnings
+        if (delivery.getDriver() != null) {
+            DeliveryDriver driver = delivery.getDriver();
+            driver.incrementDeliveries();
+            if (delivery.getDeliveryFee() != null) {
+                driver.addEarnings(delivery.getDeliveryFee());
+            }
+            deliveryDriverRepository.save(driver);
+        }
+        
+        return convertToDTO(delivery);
     }
 }

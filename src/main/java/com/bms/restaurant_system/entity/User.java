@@ -29,6 +29,9 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role = Role.USER;  // Default to USER
 
+    @Column(columnDefinition = "boolean default true")
+    private boolean enabled = true;  // Default to enabled
+
     // Constructors
     public User() {}
     public User(String username, String email, String phone, String password, Role role) {
@@ -52,4 +55,6 @@ public class User {
     public void setPassword(String password) { this.password = password; }
     public Role getRole() { return role; }
     public void setRole(Role role) { this.role = role; }
+    public boolean isEnabled() { return enabled; }
+    public void setEnabled(boolean enabled) { this.enabled = enabled; }
 }

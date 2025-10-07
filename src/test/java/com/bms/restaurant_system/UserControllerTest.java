@@ -30,7 +30,7 @@ class UserControllerTest {
     void registerUser() throws Exception {
         // Mock the service response
         RegisterUserDTO userDTO = new RegisterUserDTO("testuser", "test@example.com", "1234567890", "USER", "password123");
-        UserResponseDTO mockUser = new UserResponseDTO(1L, "testuser", "test@example.com", "1234567890", Role.USER);
+        UserResponseDTO mockUser = new UserResponseDTO(1L, "testuser", "test@example.com", "1234567890", Role.USER, true);
         when(userService.registerUser(userDTO)).thenReturn(mockUser);
 
         mockMvc.perform(post("/api/users/register")

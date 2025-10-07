@@ -1,8 +1,9 @@
-import React from 'react'
-import { useCart } from '../../contexts/CartContext'
+import React from 'react';
+import { useCart } from '../../contexts/CartContext';
 
-export default function Cart() {
-  const { items, removeItem, updateQuantity, subtotal, tax, total } = useCart()
+const Cart = () => {
+  const { items, removeItem, updateQuantity, subtotal, tax, total } = useCart();
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6">Shopping Cart</h1>
@@ -33,5 +34,7 @@ export default function Cart() {
         </div>
       )}
     </div>
-  )
-}
+  );
+};
+
+export default Cart;

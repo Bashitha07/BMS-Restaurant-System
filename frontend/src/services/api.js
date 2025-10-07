@@ -1,265 +1,214 @@
-// API service for restaurant system
-const API_BASE_URL = 'http://localhost:8083/api';
+import axios from '../utils/axios';
+import { handleAPIError } from '../utils/errorUtils';
 
-// Helper function to get auth token
-const getAuthToken = () => localStorage.getItem('auth_token');
-
-// Helper function to get admin auth token
-const getAdminAuthToken = () => localStorage.getItem('admin_auth_token');
-
-// Generic API call function
-const apiCall = async (endpoint, options = {}) => {
-  const url = `${API_BASE_URL}${endpoint}`;
-  const config = {
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-    ...options,
-  };
-
-  // Add authorization header if token exists
-  const token = getAuthToken();
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-
-  const response = await fetch(url, config);
-
-  if (!response.ok) {
-    throw new Error(`API call failed: ${response.status} ${response.statusText}`);
-  }
-
-  return response.json();
-};
-
-// Admin API call function
-const adminApiCall = async (endpoint, options = {}) => {
-  const url = `${API_BASE_URL}${endpoint}`;
-  const config = {
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-    ...options,
-  };
-
-  // Add admin authorization header
-  const adminToken = getAdminAuthToken();
-  if (adminToken) {
-    config.headers.Authorization = `Bearer ${adminToken}`;
-  }
-
-  const response = await fetch(url, config);
-
-  if (!response.ok) {
-    throw new Error(`Admin API call failed: ${response.status} ${response.statusText}`);
-  }
-
-  return response.json();
-};
-
-// Orders API
-export const ordersApi = {
-  getAll: () => apiCall('/orders'),
-  getById: (id) => apiCall(`/orders/${id}`),
-  create: (orderData) => apiCall('/orders', {
-    method: 'POST',
-    body: JSON.stringify(orderData),
-  }),
-  update: (id, orderData) => apiCall(`/orders/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(orderData),
-  }),
-  delete: (id) => apiCall(`/orders/${id}`, {
-    method: 'DELETE',
-  }),
-  downloadInvoice: (id) => apiCall(`/orders/${id}/invoice`),
-};
-
-// Admin Orders API
-export const adminOrdersApi = {
-  getAll: () => adminApiCall('/admin/orders'),
-  update: (id, orderData) => adminApiCall(`/admin/orders/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(orderData),
-  }),
-  delete: (id) => adminApiCall(`/admin/orders/${id}`, {
-    method: 'DELETE',
-  }),
-};
-
-// Payments API
-export const paymentsApi = {
-  getAll: () => apiCall('/payments'),
-  getById: (id) => apiCall(`/payments/${id}`),
-  create: (paymentData) => apiCall('/payments', {
-    method: 'POST',
-    body: JSON.stringify(paymentData),
-  }),
-  update: (id, paymentData) => apiCall(`/payments/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(paymentData),
-  }),
-  delete: (id) => apiCall(`/payments/${id}`, {
-    method: 'DELETE',
-  }),
-  approve: (id) => apiCall(`/payments/${id}/approve`, {
-    method: 'PUT',
-  }),
-};
-
-// Admin Payments API
-export const adminPaymentsApi = {
-  getAll: () => adminApiCall('/admin/payments'),
-  update: (id, paymentData) => adminApiCall(`/admin/payments/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(paymentData),
-  }),
-  delete: (id) => adminApiCall(`/admin/payments/${id}`, {
-    method: 'DELETE',
-  }),
-};
-
-// Reservations API
-export const reservationsApi = {
-  getAll: () => apiCall('/reservations'),
-  getAvailableSlots: (date) => apiCall(`/reservations/available-slots?date=${date}`),
-  create: (reservationData) => apiCall('/reservations', {
-    method: 'POST',
-    body: JSON.stringify(reservationData),
-  }),
-  update: (id, reservationData) => apiCall(`/reservations/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(reservationData),
-  }),
-  delete: (id) => apiCall(`/reservations/${id}`, {
-    method: 'DELETE',
-  }),
-};
-
-// Admin Reservations API
-export const adminReservationsApi = {
-  getAll: () => adminApiCall('/admin/reservations'),
-  update: (id, reservationData) => adminApiCall(`/admin/reservations/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(reservationData),
-  }),
-  delete: (id) => adminApiCall(`/admin/reservations/${id}`, {
-    method: 'DELETE',
-  }),
-};
-
-// Menus API
-export const menusApi = {
-  getAll: () => apiCall('/menus'),
-  getById: (id) => apiCall(`/menus/${id}`),
-};
-
-// Admin Menus API
-export const adminMenusApi = {
-  getAll: () => adminApiCall('/admin/menus'),
-  create: (menuData) => adminApiCall('/admin/menus', {
-    method: 'POST',
-    body: JSON.stringify(menuData),
-  }),
-  update: (id, menuData) => adminApiCall(`/admin/menus/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(menuData),
-  }),
-  delete: (id) => adminApiCall(`/admin/menus/${id}`, {
-    method: 'DELETE',
-  }),
-};
-
-// Delivery Drivers API (Admin only)
-export const deliveryDriversApi = {
-  getAll: () => adminApiCall('/admin/delivery-drivers'),
-  create: (driverData) => adminApiCall('/admin/delivery-drivers', {
-    method: 'POST',
-    body: JSON.stringify(driverData),
-  }),
-  update: (id, driverData) => adminApiCall(`/admin/delivery-drivers/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(driverData),
-  }),
-  delete: (id) => adminApiCall(`/admin/delivery-drivers/${id}`, {
-    method: 'DELETE',
-  }),
-};
-
-// Deliveries API (Admin only)
-export const deliveriesApi = {
-  getAll: () => adminApiCall('/admin/deliveries'),
-  create: (deliveryData) => adminApiCall('/admin/deliveries', {
-    method: 'POST',
-    body: JSON.stringify(deliveryData),
-  }),
-  update: (id, deliveryData) => adminApiCall(`/admin/deliveries/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(deliveryData),
-  }),
-  delete: (id) => adminApiCall(`/admin/deliveries/${id}`, {
-    method: 'DELETE',
-  }),
-};
-
-// Users API (Admin only)
-export const adminUsersApi = {
-  getAll: () => adminApiCall('/admin/users'),
-  getById: (id) => adminApiCall(`/admin/users/${id}`),
-  create: (userData) => adminApiCall('/admin/users', {
-    method: 'POST',
-    body: JSON.stringify(userData),
-  }),
-  update: (id, userData) => adminApiCall(`/admin/users/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(userData),
-  }),
-  updateRole: (id, roleData) => adminApiCall(`/admin/users/${id}/role`, {
-    method: 'PUT',
-    body: JSON.stringify(roleData),
-  }),
-  delete: (id) => adminApiCall(`/admin/users/${id}`, {
-    method: 'DELETE',
-  }),
-};
-
-// Auth API
-export const authApi = {
-  login: (credentials) => fetch(`${API_BASE_URL}/auth/login`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(credentials),
-  }).then(response => {
-    if (!response.ok) {
-      throw new Error('Login failed');
+// Menu Service
+export const menuService = {
+  getAllMenus: async () => {
+    try {
+      const response = await axios.get('/api/menus');
+      return response.data;
+    } catch (error) {
+      throw handleAPIError(error);
     }
-    return response.json();
-  }),
-
-  register: (userData) => fetch(`${API_BASE_URL}/users/register`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(userData),
-  }).then(response => {
-    if (!response.ok) {
-      throw new Error('Registration failed');
+  },
+  getMenusByCategory: async (category) => {
+    try {
+      const response = await axios.get(`/api/menus/category/${category}`);
+      return response.data;
+    } catch (error) {
+      throw handleAPIError(error);
     }
-    return response.json();
-  }),
+  }
 };
 
-// Default API object for backward compatibility
-const api = {
-  get: (endpoint) => apiCall(endpoint),
-  post: (endpoint, data) => apiCall(endpoint, { method: 'POST', body: JSON.stringify(data) }),
-  put: (endpoint, data) => apiCall(endpoint, { method: 'PUT', body: JSON.stringify(data) }),
-  delete: (endpoint) => apiCall(endpoint, { method: 'DELETE' }),
+// Order Service
+export const orderService = {
+  createOrder: async (orderData) => {
+    try {
+      const response = await axios.post('/api/orders', orderData);
+      return response.data;
+    } catch (error) {
+      throw handleAPIError(error);
+    }
+  },
+  getMyOrders: async () => {
+    try {
+      const response = await axios.get('/api/orders/my-orders');
+      return response.data;
+    } catch (error) {
+      throw handleAPIError(error);
+    }
+  }
 };
 
-export default api;
+// Reservation Service
+export const reservationService = {
+  createReservation: async (reservationData) => {
+    try {
+      const response = await axios.post('/api/reservations', reservationData);
+      return response.data;
+    } catch (error) {
+      throw handleAPIError(error);
+    }
+  },
+  getMyReservations: async () => {
+    try {
+      const response = await axios.get('/api/reservations/my-reservations');
+      return response.data;
+    } catch (error) {
+      throw handleAPIError(error);
+    }
+  }
+};
+
+// Delivery Service
+export const deliveryService = {
+  getAllDeliveries: async () => {
+    try {
+      const response = await axios.get('/api/deliveries');
+      return response.data;
+    } catch (error) {
+      throw handleAPIError(error);
+    }
+  },
+  updateDeliveryStatus: async (deliveryId, status) => {
+    try {
+      const response = await axios.patch(`/api/deliveries/${deliveryId}/status`, { status });
+      return response.data;
+    } catch (error) {
+      throw handleAPIError(error);
+    }
+  }
+};
+
+// Admin Service
+export const adminService = {
+  getDashboard: async () => {
+    try {
+      const response = await axios.get('/api/admin/dashboard');
+      return response.data;
+    } catch (error) {
+      throw handleAPIError(error);
+    }
+  },
+  getUsers: async () => {
+    try {
+      const response = await axios.get('/api/admin/users');
+      return response.data;
+    } catch (error) {
+      throw handleAPIError(error);
+    }
+  },
+  updateUserRole: async (userId, role) => {
+    try {
+      const response = await axios.patch(`/api/admin/users/${userId}/role`, { role });
+      return response.data;
+    } catch (error) {
+      throw handleAPIError(error);
+    }
+  },
+  getOrders: async () => {
+    try {
+      const response = await axios.get('/api/admin/orders');
+      return response.data;
+    } catch (error) {
+      throw handleAPIError(error);
+    }
+  },
+  updateOrder: async (orderId, orderData) => {
+    try {
+      const response = await axios.put(`/api/admin/orders/${orderId}`, orderData);
+      return response.data;
+    } catch (error) {
+      throw handleAPIError(error);
+    }
+  },
+  removeOrder: async (orderId) => {
+    try {
+      const response = await axios.delete(`/api/admin/orders/${orderId}`);
+      return response.data;
+    } catch (error) {
+      throw handleAPIError(error);
+    }
+  }
+};
+
+// Payments Service
+export const paymentService = {
+  getAllPayments: async () => {
+    try {
+      const response = await axios.get('/api/payments');
+      return response.data;
+    } catch (error) {
+      throw handleAPIError(error);
+    }
+  },
+  getPaymentById: async (id) => {
+    try {
+      const response = await axios.get(`/api/payments/${id}`);
+      return response.data;
+    } catch (error) {
+      throw handleAPIError(error);
+    }
+  },
+  createPayment: async (paymentData) => {
+    try {
+      const response = await axios.post('/api/payments', paymentData);
+      return response.data;
+    } catch (error) {
+      throw handleAPIError(error);
+    }
+  },
+  updatePayment: async (id, paymentData) => {
+    try {
+      const response = await axios.put(`/api/payments/${id}`, paymentData);
+      return response.data;
+    } catch (error) {
+      throw handleAPIError(error);
+    }
+  }
+};
+
+// User Service
+export const userService = {
+  login: async (credentials) => {
+    try {
+      const response = await axios.post('/api/auth/login', credentials);
+      return response.data;
+    } catch (error) {
+      throw handleAPIError(error);
+    }
+  },
+  register: async (userData) => {
+    try {
+      const response = await axios.post('/api/users/register', userData);
+      return response.data;
+    } catch (error) {
+      throw handleAPIError(error);
+    }
+  },
+  updateProfile: async (userId, userData) => {
+    try {
+      const response = await axios.put(`/api/users/${userId}`, userData);
+      return response.data;
+    } catch (error) {
+      throw handleAPIError(error);
+    }
+  },
+  getCurrentUser: async () => {
+    try {
+      const response = await axios.get('/api/users/current');
+      return response.data;
+    } catch (error) {
+      throw handleAPIError(error);
+    }
+  }
+};
+
+// Default export for ESM compatibility
+export default {
+  menuService,
+  orderService,
+  reservationService,
+  userService
+};

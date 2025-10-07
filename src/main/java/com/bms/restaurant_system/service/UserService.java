@@ -2,6 +2,8 @@ package com.bms.restaurant_system.service;
 
 import com.bms.restaurant_system.dto.UserDTO;
 import com.bms.restaurant_system.dto.RegisterUserDTO;
+import com.bms.restaurant_system.dto.ForgotPasswordRequestDTO;
+import com.bms.restaurant_system.dto.ForgotPasswordResponseDTO;
 import com.bms.restaurant_system.entity.User;
 import com.bms.restaurant_system.entity.Role;
 import com.bms.restaurant_system.exception.ResourceNotFoundException;
@@ -14,6 +16,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -34,8 +38,18 @@ public class UserService {
      * @return List of UserResponseDTOs
      */
     public List<UserResponseDTO> getAllUsers() {
-        logger.info("Fetching all users");
-        return userRepository.findAll().stream()
+        logger.info("🔍 [DB] Executing SELECT query to fetch all users from database");
+        
+        List<User> users = userRepository.findAll();
+        
+        logger.info("✅ [DB] Database query completed - Retrieved {} users: {}", 
+            users.size(),
+            users.stream()
+                .map(u -> String.format("User[id=%d, username=%s, role=%s, enabled=%s]", 
+                    u.getId(), u.getUsername(), u.getRole(), u.isEnabled()))
+                .collect(Collectors.toList()));
+        
+        return users.stream()
                 .map(this::convertToResponseDTO)
                 .collect(Collectors.toList());
     }
@@ -158,12 +172,26 @@ public class UserService {
      * @throws ResourceNotFoundException if user is not found
      */
     public UserResponseDTO updateUserRole(Long id, String role) {
-        logger.info("Updating role for user with id: {}", id);
+        logger.info("🔍 [DB] Initiating database query to update user role - User ID: {}, New Role: {}", id, role);
+        
         User existingUser = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+                .orElseThrow(() -> {
+                    logger.error("❌ [DB] User not found in database - ID: {}", id);
+                    return new ResourceNotFoundException("User not found with id: " + id);
+                });
+        
+        String oldRole = existingUser.getRole().toString();
+        logger.info("📊 [DB] Current user state retrieved from database: User[id={}, username={}, currentRole={}]", 
+            id, existingUser.getUsername(), oldRole);
+        
         existingUser.setRole(Role.valueOf(role.toUpperCase()));
+        
+        logger.info("💾 [DB] Executing database UPDATE for user role...");
         existingUser = userRepository.save(existingUser);
-        logger.info("Role updated for user with id: {}", id);
+        
+        logger.info("✅ [DB] Database UPDATE completed successfully: User[id={}, username={}, oldRole={}, newRole={}]", 
+            id, existingUser.getUsername(), oldRole, existingUser.getRole().toString());
+        
         return convertToResponseDTO(existingUser);
     }
 
@@ -173,7 +201,7 @@ public class UserService {
      * @return UserResponseDTO
      */
     private UserResponseDTO convertToResponseDTO(User user) {
-        return new UserResponseDTO(user.getId(), user.getUsername(), user.getEmail(), user.getPhone(), user.getRole());
+        return new UserResponseDTO(user.getId(), user.getUsername(), user.getEmail(), user.getPhone(), user.getRole(), user.isEnabled());
     }
 
     /**
@@ -189,6 +217,121 @@ public class UserService {
         user.setRole(Role.valueOf(userDTO.role().toUpperCase()));
         user.setPassword(userDTO.password());
         return user;
+    }
+
+    /**
+     * Updates user account status (admin only).
+     * @param id The user ID
+     * @param enabled Whether the account should be enabled
+     * @return UserResponseDTO of the updated user
+     * @throws ResourceNotFoundException if user is not found
+     */
+    public UserResponseDTO updateUserStatus(Long id, boolean enabled) {
+        logger.info("🔍 [DB] Initiating database query to update user status - User ID: {}, New Status: {}", 
+            id, enabled ? "ENABLED" : "DISABLED");
+        
+        User existingUser = userRepository.findById(id)
+                .orElseThrow(() -> {
+                    logger.error("❌ [DB] User not found in database - ID: {}", id);
+                    return new ResourceNotFoundException("User not found with id: " + id);
+                });
+        
+        boolean oldStatus = existingUser.isEnabled();
+        logger.info("📊 [DB] Current user state retrieved from database: User[id={}, username={}, currentStatus={}]", 
+            id, existingUser.getUsername(), oldStatus ? "ENABLED" : "DISABLED");
+        
+        existingUser.setEnabled(enabled);
+        
+        logger.info("💾 [DB] Executing database UPDATE for user status...");
+        existingUser = userRepository.save(existingUser);
+        
+        logger.info("✅ [DB] Database UPDATE completed successfully: User[id={}, username={}, oldStatus={}, newStatus={}]", 
+            id, existingUser.getUsername(), 
+            oldStatus ? "ENABLED" : "DISABLED", 
+            existingUser.isEnabled() ? "ENABLED" : "DISABLED");
+        
+        return convertToResponseDTO(existingUser);
+    }
+
+    /**
+     * Gets users by role.
+     * @param role The role to filter by
+     * @return List of UserResponseDTOs
+     */
+    public List<UserResponseDTO> getUsersByRole(String role) {
+        logger.info("Fetching users with role: {}", role);
+        return userRepository.findByRole(Role.valueOf(role.toUpperCase())).stream()
+                .map(this::convertToResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Gets user statistics.
+     * @return Map containing user statistics
+     */
+    public Map<String, Object> getUserStatistics() {
+        logger.info("Fetching user statistics");
+        Map<String, Object> stats = new HashMap<>();
+        
+        long totalUsers = userRepository.count();
+        long adminUsers = userRepository.countByRole(Role.ADMIN);
+        long customerUsers = userRepository.countByRole(Role.USER);
+        long enabledUsers = userRepository.countByEnabled(true);
+        long disabledUsers = userRepository.countByEnabled(false);
+        
+        stats.put("totalUsers", totalUsers);
+        stats.put("adminUsers", adminUsers);
+        stats.put("customerUsers", customerUsers);
+        stats.put("enabledUsers", enabledUsers);
+        stats.put("disabledUsers", disabledUsers);
+        
+        return stats;
+    }
+
+    /**
+     * Handles forgot password request - returns last 3 characters of password.
+     * @param request The forgot password request containing username or email
+     * @return ForgotPasswordResponseDTO with last 3 characters
+     * @throws ResourceNotFoundException if user is not found
+     */
+    public ForgotPasswordResponseDTO forgotPassword(ForgotPasswordRequestDTO request) {
+        logger.info("Processing forgot password request for username: {} or email: {}", 
+                   request.username(), request.email());
+        
+        User user = null;
+        
+        // Try to find user by username first, then by email
+        if (request.username() != null && !request.username().trim().isEmpty()) {
+            user = userRepository.findByUsername(request.username())
+                    .orElse(null);
+        }
+        
+        if (user == null && request.email() != null && !request.email().trim().isEmpty()) {
+            user = userRepository.findByEmail(request.email())
+                    .orElse(null);
+        }
+        
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found with provided username or email");
+        }
+        
+        // Get last 3 characters of the password (assuming it's stored as plaintext for this demo)
+        // In real applications, you would have a different recovery mechanism
+        String password = user.getPassword();
+        String lastThreeChars;
+        
+        if (password.length() >= 3) {
+            lastThreeChars = password.substring(password.length() - 3);
+        } else {
+            lastThreeChars = password; // If password is shorter than 3 characters
+        }
+        
+        logger.info("Forgot password processed for user: {}", user.getUsername());
+        
+        return new ForgotPasswordResponseDTO(
+            "Last 3 characters of your password have been retrieved", 
+            lastThreeChars
+        );
     }
 
 
