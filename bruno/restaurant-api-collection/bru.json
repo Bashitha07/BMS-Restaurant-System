@@ -1,9 +1,0 @@
-{
-  "name": "Restaurant System API",
-  "uid": "restaurant-api-collection",
-  "version": "1",
-  "schema": {
-    "location": "schema.json",
-    "version": "1.0.0"
-  }
-}
