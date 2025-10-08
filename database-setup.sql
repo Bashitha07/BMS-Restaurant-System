@@ -56,17 +56,35 @@ CREATE TABLE IF NOT EXISTS reservations (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+-- Create drivers table
+CREATE TABLE IF NOT EXISTS drivers (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    phone VARCHAR(20) NOT NULL UNIQUE,
+    email VARCHAR(100) UNIQUE,
+    vehicle_type VARCHAR(50),
+    vehicle_number VARCHAR(20),
+    license_number VARCHAR(50),
+    status ENUM('AVAILABLE', 'BUSY', 'OFFLINE') DEFAULT 'AVAILABLE',
+    rating DECIMAL(3, 2) DEFAULT 0.00,
+    total_deliveries INT DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
 -- Create deliveries table
 CREATE TABLE IF NOT EXISTS deliveries (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     order_id BIGINT NOT NULL,
-    driver_name VARCHAR(100),
-    driver_phone VARCHAR(20),
-    driver_vehicle VARCHAR(100),
+    driver_id BIGINT,
     status VARCHAR(50) NOT NULL,
     assigned_date DATETIME,
+    picked_up_date DATETIME,
     delivered_date DATETIME,
-    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
+    delivery_address TEXT,
+    delivery_notes TEXT,
+    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+    FOREIGN KEY (driver_id) REFERENCES drivers(id) ON DELETE SET NULL
 );
 
 -- Create payments table
@@ -81,13 +99,28 @@ CREATE TABLE IF NOT EXISTS payments (
     FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
 );
 
+-- Create reviews table
+CREATE TABLE IF NOT EXISTS reviews (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    menu_id BIGINT NOT NULL,
+    rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    comment TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (menu_id) REFERENCES menus(id) ON DELETE CASCADE
+);
+
 SELECT * FROM users;
 SELECT * FROM menus;
 SELECT * FROM orders;
 SELECT * FROM order_items;
 SELECT * FROM reservations;
+SELECT * FROM drivers;
 SELECT * FROM deliveries;
 SELECT * FROM payments;
+SELECT * FROM reviews;
 
 -- Corrected Index Creation for MySQL (Remove IF NOT EXISTS)
 
@@ -112,13 +145,27 @@ CREATE INDEX idx_order_item_order_id ON order_items(order_id);
 -- Reservations Table Indexes
 CREATE INDEX idx_reservation_user_id ON reservations(user_id);
 
+-- Drivers Table Indexes
+CREATE INDEX idx_driver_phone ON drivers(phone);
+CREATE INDEX idx_driver_email ON drivers(email);
+CREATE INDEX idx_driver_status ON drivers(status);
+CREATE INDEX idx_driver_rating ON drivers(rating);
+
 -- Deliveries Table Indexes
 CREATE INDEX idx_delivery_order_id ON deliveries(order_id);
+CREATE INDEX idx_delivery_driver_id ON deliveries(driver_id);
 CREATE INDEX idx_delivery_status ON deliveries(status);
+CREATE INDEX idx_delivery_assigned_date ON deliveries(assigned_date);
 
 -- Payments Table Indexes
 CREATE INDEX idx_payment_order_id ON payments(order_id);
 CREATE INDEX idx_payment_status ON payments(status);
+
+-- Reviews Table Indexes
+CREATE INDEX idx_review_user_id ON reviews(user_id);
+CREATE INDEX idx_review_menu_id ON reviews(menu_id);
+CREATE INDEX idx_review_rating ON reviews(rating);
+CREATE INDEX idx_review_created_at ON reviews(created_at);
 
 -- Sample data insertion
 INSERT INTO users (username, password, email, role, phone) VALUES
@@ -148,7 +195,20 @@ INSERT INTO reservations (reservation_date_time, number_of_people, status, user_
 (NOW(), 4, 'CONFIRMED', 2)
 ON DUPLICATE KEY UPDATE reservation_date_time = reservation_date_time;
 
+-- Sample driver data
+INSERT INTO drivers (name, phone, email, vehicle_type, vehicle_number, license_number, status, rating, total_deliveries) VALUES
+('John Doe', '071-123-4567', 'john.doe@delivery.com', 'Motorcycle', 'ABC-1234', 'DL123456789', 'AVAILABLE', 4.5, 150),
+('Jane Smith', '071-987-6543', 'jane.smith@delivery.com', 'Car', 'XYZ-5678', 'DL987654321', 'AVAILABLE', 4.8, 200),
+('Mike Johnson', '071-555-0123', 'mike.j@delivery.com', 'Bicycle', 'BIKE-001', 'DL456789123', 'BUSY', 4.2, 75)
+ON DUPLICATE KEY UPDATE name = name;
+
 -- Sample delivery data
-INSERT INTO deliveries (order_id, driver_name, driver_phone, driver_vehicle, status, assigned_date) VALUES
-(1, 'John Doe', '071-123-4567', 'Honda CBR 150', 'ASSIGNED', NOW())
+INSERT INTO deliveries (order_id, driver_id, status, assigned_date, delivery_address) VALUES
+(1, 1, 'ASSIGNED', NOW(), '123 Main Street, City Center')
 ON DUPLICATE KEY UPDATE order_id = order_id;
+
+-- Sample review data
+INSERT INTO reviews (user_id, menu_id, rating, comment) VALUES
+(2, 1, 5, 'Amazing pizza! Best I have ever tasted.'),
+(2, 2, 4, 'Fresh and delicious salad, great portion size.')
+ON DUPLICATE KEY UPDATE user_id = user_id;

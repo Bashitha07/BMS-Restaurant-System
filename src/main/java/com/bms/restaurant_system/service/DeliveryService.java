@@ -2,11 +2,11 @@ package com.bms.restaurant_system.service;
 
 import com.bms.restaurant_system.dto.DeliveryDTO;
 import com.bms.restaurant_system.entity.Delivery;
-import com.bms.restaurant_system.entity.DeliveryDriver;
+import com.bms.restaurant_system.entity.Driver;
 import com.bms.restaurant_system.entity.Order;
 import com.bms.restaurant_system.exception.ResourceNotFoundException;
 import com.bms.restaurant_system.repository.DeliveryRepository;
-import com.bms.restaurant_system.repository.DeliveryDriverRepository;
+import com.bms.restaurant_system.repository.DriverRepository;
 import com.bms.restaurant_system.repository.OrderRepository;
 import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +26,7 @@ public class DeliveryService {
     private OrderRepository orderRepository;
     
     @Autowired
-    private DeliveryDriverRepository deliveryDriverRepository;
+    private DriverRepository driverRepository;
 
     @Autowired
     private EntityManager em;
@@ -64,7 +64,7 @@ public class DeliveryService {
         existingDelivery.setDriverName(deliveryDTO.driverName());
         existingDelivery.setDriverPhone(deliveryDTO.driverPhone());
         existingDelivery.setDriverVehicle(deliveryDTO.driverVehicle());
-        existingDelivery.setStatus(Delivery.DeliveryStatus.valueOf(deliveryDTO.status()));
+        existingDelivery.setStatus(Delivery.DeliveryStatus.valueOf(deliveryDTO.status().toUpperCase()));
         
         existingDelivery = deliveryRepository.save(existingDelivery);
         return convertToDTO(existingDelivery);
@@ -148,10 +148,10 @@ public class DeliveryService {
         Delivery delivery = deliveryRepository.findById(deliveryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Delivery not found with id: " + deliveryId));
                 
-        DeliveryDriver driver = deliveryDriverRepository.findById(driverId)
+        Driver driver = driverRepository.findById(driverId)
                 .orElseThrow(() -> new ResourceNotFoundException("Driver not found with id: " + driverId));
         
-        if (!driver.isAvailableForDelivery()) {
+        if (driver.getStatus() != Driver.DriverStatus.AVAILABLE) {
             throw new IllegalStateException("Driver is not available for delivery");
         }
         
@@ -197,14 +197,12 @@ public class DeliveryService {
         
         delivery = deliveryRepository.save(delivery);
         
-        // Update driver's delivery count and earnings
+        // Update driver's delivery count
         if (delivery.getDriver() != null) {
-            DeliveryDriver driver = delivery.getDriver();
-            driver.incrementDeliveries();
-            if (delivery.getDeliveryFee() != null) {
-                driver.addEarnings(delivery.getDeliveryFee());
-            }
-            deliveryDriverRepository.save(driver);
+            Driver driver = delivery.getDriver();
+            driver.setTotalDeliveries(driver.getTotalDeliveries() + 1);
+            driver.setStatus(Driver.DriverStatus.AVAILABLE); // Set back to available after delivery
+            driverRepository.save(driver);
         }
         
         return convertToDTO(delivery);

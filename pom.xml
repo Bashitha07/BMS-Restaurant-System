@@ -83,11 +83,12 @@
 			<version>5.14.1</version>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
+		<!-- H2 database dependency removed - now using MySQL -->
+		<!-- <dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
 			<scope>runtime</scope>
-		</dependency>
+		</dependency> -->
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-api</artifactId>

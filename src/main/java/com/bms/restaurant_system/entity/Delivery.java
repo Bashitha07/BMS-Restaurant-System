@@ -22,9 +22,9 @@ public class Delivery {
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "driver_id")
-    private DeliveryDriver driver;
+    private Driver driver;
 
     @Column(name = "delivery_address", nullable = false)
     private String deliveryAddress;
@@ -57,6 +57,9 @@ public class Delivery {
     @Column(name = "delivered_date")
     private LocalDateTime deliveredDate;
 
+    @Column(name = "delivery_notes", columnDefinition = "TEXT")
+    private String deliveryNotes;
+
     @Column(name = "current_latitude", precision = 10, scale = 8)
     private BigDecimal currentLatitude;
 
@@ -77,9 +80,6 @@ public class Delivery {
 
     @Column(name = "customer_feedback", columnDefinition = "TEXT")
     private String customerFeedback;
-
-    @Column(name = "delivery_notes", columnDefinition = "TEXT")
-    private String deliveryNotes;
 
     @Column(name = "proof_of_delivery")
     private String proofOfDelivery; // Image URL or signature
@@ -131,7 +131,7 @@ public class Delivery {
     }
 
     // Helper methods
-    public void assignDriver(DeliveryDriver driver) {
+    public void assignDriver(Driver driver) {
         this.driver = driver;
         this.driverName = driver.getName();
         this.driverPhone = driver.getPhone();
