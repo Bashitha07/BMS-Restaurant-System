@@ -3,12 +3,12 @@ import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'react-hot-toast';
 import { formatPrice } from '../../utils/currency';
 import adminService from '../../services/adminService';
-import { 
-  Clock, 
-  Package, 
-  CheckCircle, 
-  XCircle, 
-  Eye, 
+import {
+  Clock,
+  Package,
+  CheckCircle,
+  XCircle,
+  Eye,
   Search,
   Filter,
   Calendar,
@@ -22,7 +22,8 @@ import {
   TrendingUp,
   ChevronDown,
   ChevronUp,
-  RefreshCw
+  RefreshCw,
+  ClipboardList
 } from 'lucide-react';
 
 const OrderManagement = () => {
@@ -70,9 +71,30 @@ const OrderManagement = () => {
     try {
       // Try to fetch real orders from backend first
       const backendOrders = await adminService.getAllOrders();
-      setOrders(backendOrders);
-      console.log('✅ [ADMIN] Successfully loaded orders from backend:', { count: backendOrders.length });
-      toast.success(`Loaded ${backendOrders.length} orders from database`);
+      const transformedOrders = backendOrders.map(order => ({
+        id: order.id,
+        orderNumber: `ORD-${String(order.id).padStart(4, '0')}`,
+        customer: {
+          name: order.userName,
+          email: order.userEmail,
+          phone: order.deliveryPhone,
+          address: order.deliveryAddress
+        },
+        items: order.items.map(item => ({
+          name: item.menuName,
+          quantity: item.quantity,
+          price: item.unitPrice
+        })),
+        status: order.status.toLowerCase(),
+        total: order.totalAmount,
+        orderDate: new Date(order.orderDate),
+        estimatedDelivery: new Date(order.estimatedDeliveryTime),
+        paymentMethod: order.paymentMethod,
+        deliveryType: order.orderType.toLowerCase() === 'delivery' ? 'delivery' : 'pickup'
+      }));
+      setOrders(transformedOrders);
+      console.log('✅ [ADMIN] Successfully loaded orders from backend:', { count: transformedOrders.length });
+      toast.success(`Loaded ${transformedOrders.length} orders from database`);
     } catch (error) {
       console.warn('⚠️ [ADMIN] Backend API failed, using mock data:', error);
       // Fallback to mock data for demonstration

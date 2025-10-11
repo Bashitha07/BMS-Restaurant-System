@@ -15,7 +15,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin/payment-slips")
-@CrossOrigin(origins = "*")
 public class AdminPaymentSlipController {
     private static final Logger logger = LoggerFactory.getLogger(AdminPaymentSlipController.class);
 

@@ -13,4 +13,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findByRole(Role role);
     long countByRole(Role role);
     long countByEnabled(boolean enabled);
+
+    // Find user by promo code
+    Optional<User> findByPromoCode(String promoCode);
 }

@@ -1,13 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import AdminMenu from '../components/AdminMenu';
 import AdminOrders from '../components/AdminOrders';
 import AdminReservations from '../components/AdminReservations';
 import AdminDeliveryDrivers from '../components/AdminDeliveryDrivers';
+import adminService from '../services/adminService';
 
 export default function Admin() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('menu');
+  const [pendingDriversCount, setPendingDriversCount] = useState(0);
 
   const tabs = [
     { id: 'menu', name: 'Menu Management', href: '/admin/menu' },
@@ -15,6 +17,19 @@ export default function Admin() {
     { id: 'reservations', name: 'Reservation Management', href: '/admin/reservations' },
     { id: 'drivers', name: 'Delivery Drivers', href: '/admin/drivers' },
   ];
+
+  useEffect(() => {
+    fetchPendingDriversCount();
+  }, []);
+
+  const fetchPendingDriversCount = async () => {
+    try {
+      const drivers = await adminService.getPendingDrivers();
+      setPendingDriversCount(drivers.length);
+    } catch (error) {
+      console.error('Failed to fetch pending drivers count:', error);
+    }
+  };
 
   const handleTabClick = (tab) => {
     setActiveTab(tab.id);
@@ -33,13 +48,18 @@ export default function Admin() {
               key={tab.id}
               onClick={() => handleTabClick(tab)}
               className={`
-                whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm
+                whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm flex items-center
                 ${activeTab === tab.id
                   ? 'border-primary-500 text-primary-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}
               `}
             >
               {tab.name}
+              {tab.id === 'drivers' && pendingDriversCount > 0 && (
+                <span className="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                  {pendingDriversCount}
+                </span>
+              )}
             </button>
           ))}
         </nav>
@@ -52,7 +72,7 @@ export default function Admin() {
           <Route path="menu" element={<AdminMenu />} />
           <Route path="orders" element={<AdminOrders />} />
           <Route path="reservations" element={<AdminReservations />} />
-          <Route path="drivers" element={<AdminDeliveryDrivers />} />
+          <Route path="drivers" element={<AdminDeliveryDrivers onUpdate={fetchPendingDriversCount} />} />
         </Routes>
       </div>
     </div>

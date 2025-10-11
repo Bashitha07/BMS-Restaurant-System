@@ -387,20 +387,53 @@ public class DeliveryDriverService {
     
     public Map<String, Object> getDriverStatistics() {
         List<DeliveryDriver> allDrivers = deliveryDriverRepository.findAll();
-        
+
         Map<String, Object> stats = new HashMap<>();
         stats.put("totalDrivers", allDrivers.size());
         stats.put("activeDrivers", allDrivers.stream().filter(DeliveryDriver::getIsActive).count());
         stats.put("availableDrivers", deliveryDriverRepository.countByStatus(DriverStatus.AVAILABLE));
         stats.put("busyDrivers", deliveryDriverRepository.countByStatus(DriverStatus.ON_DELIVERY));
         stats.put("offlineDrivers", deliveryDriverRepository.countByStatus(DriverStatus.OFFLINE));
-        
+
         BigDecimal avgRating = deliveryDriverRepository.getAverageRating();
         stats.put("averageRating", avgRating != null ? avgRating : BigDecimal.ZERO);
-        
+
         Long totalDeliveries = deliveryDriverRepository.getTotalDeliveriesAllDrivers();
         stats.put("totalDeliveries", totalDeliveries != null ? totalDeliveries : 0L);
-        
+
         return stats;
+    }
+
+    // Admin approval methods
+    public List<DeliveryDriverDTO> getPendingDrivers() {
+        return deliveryDriverRepository.findByStatus(DriverStatus.PENDING).stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    public DeliveryDriverDTO approveDriver(Long driverId) {
+        DeliveryDriver driver = deliveryDriverRepository.findById(driverId)
+                .orElseThrow(() -> new ResourceNotFoundException("Driver not found with id: " + driverId));
+
+        if (driver.getStatus() != DriverStatus.PENDING) {
+            throw new IllegalStateException("Driver is not in pending status");
+        }
+
+        driver.setStatus(DriverStatus.APPROVED);
+        driver = deliveryDriverRepository.save(driver);
+        return convertToDTO(driver);
+    }
+
+    public DeliveryDriverDTO rejectDriver(Long driverId) {
+        DeliveryDriver driver = deliveryDriverRepository.findById(driverId)
+                .orElseThrow(() -> new ResourceNotFoundException("Driver not found with id: " + driverId));
+
+        if (driver.getStatus() != DriverStatus.PENDING) {
+            throw new IllegalStateException("Driver is not in pending status");
+        }
+
+        driver.setStatus(DriverStatus.REJECTED);
+        driver = deliveryDriverRepository.save(driver);
+        return convertToDTO(driver);
     }
 }

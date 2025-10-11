@@ -32,6 +32,19 @@ public class User {
     @Column(columnDefinition = "boolean default true")
     private boolean enabled = true;  // Default to enabled
 
+    // Promotion fields
+    @Column(name = "promo_code")
+    private String promoCode;
+
+    @Column(name = "discount_percent", precision = 5, scale = 2)
+    private java.math.BigDecimal discountPercent = java.math.BigDecimal.ZERO;
+
+    @Column(name = "promo_expires")
+    private java.time.LocalDateTime promoExpires;
+
+    @Column(name = "promo_active")
+    private Boolean promoActive = Boolean.FALSE;
+
     // Constructors
     public User() {}
     public User(String username, String email, String phone, String password, Role role) {
@@ -41,6 +54,19 @@ public class User {
         this.password = password;
         this.role = role;
     }
+
+    // Promotion getters/setters
+    public String getPromoCode() { return promoCode; }
+    public void setPromoCode(String promoCode) { this.promoCode = promoCode; }
+
+    public java.math.BigDecimal getDiscountPercent() { return discountPercent; }
+    public void setDiscountPercent(java.math.BigDecimal discountPercent) { this.discountPercent = discountPercent; }
+
+    public java.time.LocalDateTime getPromoExpires() { return promoExpires; }
+    public void setPromoExpires(java.time.LocalDateTime promoExpires) { this.promoExpires = promoExpires; }
+
+    public Boolean getPromoActive() { return promoActive; }
+    public void setPromoActive(Boolean promoActive) { this.promoActive = promoActive; }
 
     // Getters and setters
     public Long getId() { return id; }

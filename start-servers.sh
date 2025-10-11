@@ -19,7 +19,7 @@ sleep 10
 
 echo
 echo "Starting Frontend Server (React)..."
-echo "Frontend will be available at: http://localhost:3000"
+echo "Frontend will be available at: http://localhost:5173"
 echo
 
 # Start frontend in background
@@ -33,8 +33,7 @@ echo "Both servers are running!"
 echo "========================================"
 echo
 echo "Backend: http://localhost:8084 (PID: $BACKEND_PID)"
-echo "Frontend: http://localhost:3000 (PID: $FRONTEND_PID)"
-echo "H2 Console: http://localhost:8084/h2-console"
+echo "Frontend: http://localhost:5173 (PID: $FRONTEND_PID)"
 echo
 echo "Logs:"
 echo "Backend: backend.log"

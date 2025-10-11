@@ -15,7 +15,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin/menu")
-@CrossOrigin(origins = "*")
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminMenuController {
     private static final Logger logger = LoggerFactory.getLogger(AdminMenuController.class);

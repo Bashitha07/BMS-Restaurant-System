@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -94,6 +95,13 @@ public class AdminController {
     public ResponseEntity<Void> deleteDelivery(@PathVariable Long id) {
         deliveryService.deleteDelivery(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/orders/{id}/status")
+    public ResponseEntity<OrderDTO> updateOrderStatus(@PathVariable Long id, @RequestBody Map<String, String> request) {
+        String statusStr = request.get("status");
+        Order.OrderStatus status = Order.OrderStatus.valueOf(statusStr.toUpperCase());
+        return ResponseEntity.ok(orderService.updateOrderStatus(id, status));
     }
 
     // Additional admin functions

@@ -52,7 +52,7 @@ public class Driver {
     
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private DriverStatus status = DriverStatus.AVAILABLE;
+    private DriverStatus status = DriverStatus.PENDING;
     
     @DecimalMin(value = "0.0", message = "Rating must be at least 0.0")
     @DecimalMax(value = "5.0", message = "Rating must not exceed 5.0")
@@ -76,6 +76,9 @@ public class Driver {
     private List<Delivery> deliveries;
     
     public enum DriverStatus {
+        PENDING,
+        APPROVED,
+        REJECTED,
         AVAILABLE,
         BUSY,
         OFFLINE

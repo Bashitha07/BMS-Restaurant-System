@@ -1,0 +1,18 @@
+@startuml
+left to right direction
+actor Customer
+actor Guest
+rectangle "Menu Catalog" {
+  Customer -- (Browse Menu)
+  Guest -- (Browse Menu)
+  (Browse Menu) -- (Filter by Category)
+  (Browse Menu) -- (Search Items)
+  (Browse Menu) -- (View Item Details)
+  Customer -- (Add to Favorites)
+  Customer -- (Rate/Review Item)
+}
+note right of (Browse Menu)
+  Preconditions: Menu items are available in DB
+  Postconditions: customer can add items to cart or favorites
+end note
+@enduml

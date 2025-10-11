@@ -1,0 +1,21 @@
+@startuml
+left to right direction
+actor Customer
+actor Guest
+actor Admin
+rectangle "Authentication System" {
+  Customer -- (Login)
+  Customer -- (Logout)
+  Guest -- (Register)
+  Guest -- (Reset Password)
+  Guest -- (Verify Email)
+  Customer -- (Two-Factor Authentication)
+  Admin -- (Admin Login)
+  (Login) .> (Two-Factor Authentication) : <<include>>
+  (Register) .> (Verify Email) : <<include>>
+}
+note right of (Login)
+  Preconditions: user provides valid credentials
+  Postconditions: authenticated session token, user context loaded
+end note
+@enduml
