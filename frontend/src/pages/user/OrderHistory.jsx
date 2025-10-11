@@ -5,14 +5,15 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import Invoice from '../../components/Invoice';
 import { formatPrice } from '../../utils/currency';
-import { 
-  Clock, 
-  Package, 
-  CheckCircle, 
-  XCircle, 
-  Eye, 
-  RotateCcw, 
-  Download, 
+import { orderService } from '../../services/api';
+import {
+  Clock,
+  Package,
+  CheckCircle,
+  XCircle,
+  Eye,
+  RotateCcw,
+  Download,
   Search,
   Filter,
   Calendar,
@@ -52,35 +53,62 @@ export default function OrderHistory() {
     filterOrders();
   }, [orders, searchTerm, statusFilter]);
 
-  const loadOrders = () => {
+  const loadOrders = async () => {
     setLoading(true);
     try {
-      // Load orders from localStorage (demo data)
-      const storedOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-      
-      // Add some demo tracking statuses and calculate totals
-      const ordersWithTracking = storedOrders.map(order => {
-        // Calculate order totals if not present
-        const subtotal = order.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const tax = subtotal * 0.06; // 6% tax
+      // Fetch orders from the backend API
+      const response = await orderService.getMyOrders();
+      const ordersData = response.data || [];
+
+      // Process orders to add tracking updates and ensure all fields are present
+      const processedOrders = ordersData.map(order => {
+        // Calculate totals if not present
+        const subtotal = order.subtotal || order.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const tax = order.tax || subtotal * 0.06; // 6% tax
         const deliveryFee = order.deliveryFee || 0;
-        const total = subtotal + tax + deliveryFee;
-        
+        const total = order.total || (subtotal + tax + deliveryFee);
+
         return {
           ...order,
-          status: order.status || getRandomStatus(),
-          subtotal: order.subtotal || subtotal,
-          tax: order.tax || tax,
-          deliveryFee: deliveryFee,
-          total: order.total || total,
-          trackingUpdates: generateTrackingUpdates(order.orderDate, order.status || getRandomStatus()),
+          subtotal,
+          tax,
+          deliveryFee,
+          total,
+          trackingUpdates: generateTrackingUpdates(order.orderDate, order.status),
           estimatedDelivery: order.estimatedDelivery || new Date(Date.now() + 45 * 60 * 1000).toISOString()
         };
       });
 
-      setOrders(ordersWithTracking);
+      setOrders(processedOrders);
     } catch (error) {
-      toast.error('Failed to load order history');
+      console.error('Failed to load orders from database:', error);
+      toast.error('Failed to load order history from database');
+
+      // Fallback to localStorage if API fails
+      try {
+        const storedOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+        const ordersWithTracking = storedOrders.map(order => {
+          const subtotal = order.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+          const tax = subtotal * 0.06;
+          const deliveryFee = order.deliveryFee || 0;
+          const total = subtotal + tax + deliveryFee;
+
+          return {
+            ...order,
+            status: order.status || getRandomStatus(),
+            subtotal: order.subtotal || subtotal,
+            tax: order.tax || tax,
+            deliveryFee: deliveryFee,
+            total: order.total || total,
+            trackingUpdates: generateTrackingUpdates(order.orderDate, order.status || getRandomStatus()),
+            estimatedDelivery: order.estimatedDelivery || new Date(Date.now() + 45 * 60 * 1000).toISOString()
+          };
+        });
+        setOrders(ordersWithTracking);
+        toast.success('Showing orders from local storage');
+      } catch (fallbackError) {
+        console.error('Fallback to localStorage also failed:', fallbackError);
+      }
     } finally {
       setLoading(false);
     }

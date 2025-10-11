@@ -18,7 +18,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin/drivers")
-@CrossOrigin(origins = "*")
 public class AdminDriverController {
     private static final Logger logger = LoggerFactory.getLogger(AdminDriverController.class);
 

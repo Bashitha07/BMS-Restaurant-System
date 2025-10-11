@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { Bell, Users, Menu, ShoppingBag, CreditCard, Calendar, Truck, BarChart3 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import NotificationDropdown from '../ui/NotificationDropdown';
 
 const AdminLayout = ({ children }) => {
   const { user, logout } = useAuth();
@@ -40,14 +41,7 @@ const AdminLayout = ({ children }) => {
               <h1 className="text-2xl font-bold text-gray-900">BMS Kingdom of Taste - Admin Panel</h1>
             </div>
             <div className="flex items-center space-x-4">
-              <button className="relative">
-                <Bell className="h-6 w-6" />
-                {unreadCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                    {unreadCount}
-                  </span>
-                )}
-              </button>
+              <NotificationDropdown />
               <span className="text-sm text-gray-700">Welcome, {user?.username}</span>
               <button
                 onClick={handleLogout}

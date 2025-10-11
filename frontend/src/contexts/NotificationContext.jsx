@@ -46,7 +46,7 @@ export const NotificationProvider = ({ children }) => {
     if (!user) return;
 
     const newNotification = {
-      id: Date.now().toString(),
+      id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       userId: user.id, // Associate notification with current user
       message,
       type,
@@ -95,7 +95,7 @@ export const NotificationProvider = ({ children }) => {
     
     const adminNotification = {
       ...notification,
-      id: `admin_${notification.id}`,
+      id: `admin_${notification.id}_${Math.random().toString(36).substr(2, 5)}`,
       isAdminCopy: true,
       adminMessage: `User notification from ${user.username || user.email}: ${notification.message}`,
       originalUser: {

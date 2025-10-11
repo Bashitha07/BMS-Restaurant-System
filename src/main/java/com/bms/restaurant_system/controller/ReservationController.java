@@ -70,4 +70,14 @@ public class ReservationController {
         logger.info("Available slots fetched for date: {}", date);
         return ResponseEntity.ok(availableSlots);
     }
+
+    @GetMapping("/available-tables")
+    public ResponseEntity<List<Integer>> getAvailableTablesForSlot(
+            @RequestParam String date, 
+            @RequestParam String timeSlot) {
+        logger.info("Fetching available tables for date: {} and time slot: {}", date, timeSlot);
+        List<Integer> availableTables = reservationService.getAvailableTablesForSlot(date, timeSlot);
+        logger.info("Available tables fetched for date: {} and time slot: {}", date, timeSlot);
+        return ResponseEntity.ok(availableTables);
+    }
 }

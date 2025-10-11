@@ -17,7 +17,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin/reservations")
-@CrossOrigin(origins = "*")
 public class AdminReservationController {
     private static final Logger logger = LoggerFactory.getLogger(AdminReservationController.class);
 

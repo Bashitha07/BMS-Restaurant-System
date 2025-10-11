@@ -113,6 +113,34 @@ public class ReservationService {
         reservation.setNumberOfPeople(reservationDTO.numberOfPeople());
         reservation.setReservationDateTime(reservationDTO.reservationDateTime());
         reservation.setTimeSlot(reservationDTO.timeSlot());
+        
+        // Set separate date and time fields (required by entity)
+        if (reservationDTO.reservationDateTime() != null) {
+            reservation.setReservationDate(reservationDTO.reservationDateTime().toLocalDate());
+            reservation.setReservationTime(reservationDTO.reservationDateTime().toLocalTime());
+        }
+        
+        // Set customer details
+        reservation.setCustomerName(reservationDTO.customerName());
+        reservation.setCustomerEmail(reservationDTO.customerEmail());
+        reservation.setCustomerPhone(reservationDTO.customerPhone());
+        reservation.setSpecialRequests(reservationDTO.specialRequests());
+
+        // Assign table number if provided, otherwise assign first available table
+        if (reservationDTO.tableNumber() != null) {
+            reservation.setTableNumber(reservationDTO.tableNumber());
+        } else {
+            // Auto-assign first available table for this date and time
+            String date = reservationDTO.reservationDateTime().toLocalDate().toString();
+            String timeSlot = reservationDTO.reservationDateTime().toLocalTime().toString().substring(0, 5);
+            List<Integer> availableTables = getAvailableTablesForSlot(date, timeSlot);
+            
+            if (!availableTables.isEmpty()) {
+                reservation.setTableNumber(availableTables.get(0)); // Assign first available table
+            } else {
+                throw new RuntimeException("No tables available for the selected time slot");
+            }
+        }
 
         // Set the current authenticated user
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -128,13 +156,46 @@ public class ReservationService {
         // Assume date is in YYYY-MM-DD format
         java.time.LocalDate localDate = java.time.LocalDate.parse(date);
         List<String> allSlots = List.of("10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00");
-        List<Reservation> reservations = reservationRepository.findAll();
-        List<String> bookedSlots = reservations.stream()
+        
+        // Get reservations for the specific date
+        List<Reservation> reservations = reservationRepository.findAll().stream()
                 .filter(r -> r.getReservationDateTime().toLocalDate().equals(localDate))
-                .map(r -> r.getReservationDateTime().toLocalTime().toString().substring(0, 5))
+                .filter(r -> r.getStatus() == Reservation.ReservationStatus.CONFIRMED || 
+                           r.getStatus() == Reservation.ReservationStatus.PENDING)
                 .collect(Collectors.toList());
+        
+        // For each time slot, check if we have available tables
         return allSlots.stream()
-                .filter(slot -> !bookedSlots.contains(slot))
+                .filter(slot -> {
+                    List<Integer> bookedTables = reservations.stream()
+                            .filter(r -> r.getReservationDateTime().toLocalTime().toString().substring(0, 5).equals(slot))
+                            .map(r -> r.getTableNumber())
+                            .filter(tableNum -> tableNum != null)
+                            .collect(Collectors.toList());
+                    
+                    // Assume we have tables 1-20 available
+                    List<Integer> allTables = List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20);
+                    return bookedTables.size() < allTables.size(); // Return true if any tables are available
+                })
+                .collect(Collectors.toList());
+    }
+    
+    public List<Integer> getAvailableTablesForSlot(String date, String timeSlot) {
+        java.time.LocalDate localDate = java.time.LocalDate.parse(date);
+        List<Integer> allTables = List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20);
+        
+        // Get booked tables for this specific date and time slot
+        List<Integer> bookedTables = reservationRepository.findAll().stream()
+                .filter(r -> r.getReservationDateTime().toLocalDate().equals(localDate))
+                .filter(r -> r.getReservationDateTime().toLocalTime().toString().substring(0, 5).equals(timeSlot))
+                .filter(r -> r.getStatus() == Reservation.ReservationStatus.CONFIRMED || 
+                           r.getStatus() == Reservation.ReservationStatus.PENDING)
+                .map(r -> r.getTableNumber())
+                .filter(tableNum -> tableNum != null)
+                .collect(Collectors.toList());
+        
+        return allTables.stream()
+                .filter(table -> !bookedTables.contains(table))
                 .collect(Collectors.toList());
     }
     

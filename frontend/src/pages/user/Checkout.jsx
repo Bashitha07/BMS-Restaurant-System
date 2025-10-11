@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { useNotifications } from '../../contexts/NotificationContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { downloadInvoice } from '../../utils/invoiceGenerator';
+import { orderService } from '../../services/api';
 import Invoice from '../../components/Invoice';
 import AuthModal from '../../components/AuthModal';
 import { formatPrice } from '../../utils/currency';
@@ -28,6 +30,7 @@ import {
 const Checkout = () => {
   const { items, subtotal, tax, total, clearCart, getTotalItems } = useCart();
   const { user, logout } = useAuth();
+  const { addNotification } = useNotifications();
   const navigate = useNavigate();
 
   // Logout function
@@ -156,112 +159,58 @@ const Checkout = () => {
   const submitOrder = async () => {
     setLoading(true);
     try {
-      // Convert deposit slip to base64 if it exists
-      let depositSlipData = null;
-      if (depositSlip) {
-        const reader = new FileReader();
-        depositSlipData = await new Promise((resolve, reject) => {
-          reader.onload = () => resolve(reader.result);
-          reader.onerror = () => reject(reader.error);
-          reader.readAsDataURL(depositSlip);
-        });
+      // Check if user is logged in for backend order creation
+      if (!user) {
+        toast.error('Please log in to place an order');
+        setShowAuthModal(true);
+        setLoading(false);
+        return;
       }
-      
+
+      // Convert items to order items format expected by backend
+      const orderItems = items.map(item => ({
+        menuId: item.id,
+        quantity: item.quantity,
+        specialInstructions: item.notes || ''
+      }));
+
       const orderData = {
-        items,
-        deliveryInfo,
-        paymentMethod,
-        subtotal,
-        tax,
-        total,
-        depositSlip: depositSlipData,
-        depositSlipName: depositSlip ? depositSlip.name : null,
-        orderDate: new Date().toISOString(),
-        status: paymentMethod === 'cash' ? 'pending' : 'awaiting_payment',
-        paymentStatus: paymentMethod === 'cash' ? 'pending' : 'awaiting_verification'
+        userId: user.id,
+        items: orderItems,
+        paymentMethod: paymentMethod === 'cash' ? 'CASH_ON_DELIVERY' : 'DEPOSIT_SLIP',
+        deliveryAddress: `${deliveryInfo.address}, ${deliveryInfo.city}, ${deliveryInfo.postalCode}`,
+        deliveryPhone: deliveryInfo.phone,
+        specialInstructions: deliveryInfo.instructions || '',
+        orderType: 'DELIVERY'
       };
 
-      // Store order in localStorage for demo (replace with API call)
-      const existingOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-      const newOrder = {
-        ...orderData,
-        id: Date.now().toString(),
-        estimatedDelivery: new Date(Date.now() + 45 * 60 * 1000).toISOString(), // 45 minutes
-        trackingUpdates: [
-          {
-            status: 'order_placed',
-            title: 'Order Placed',
-            description: paymentMethod === 'cash' 
-              ? 'Your order has been placed successfully' 
-              : 'Your order is pending payment verification',
-            timestamp: new Date().toISOString(),
-            completed: true
-          },
-          {
-            status: 'payment_status',
-            title: 'Payment Status',
-            description: paymentMethod === 'cash' 
-              ? 'Payment will be collected upon delivery' 
-              : 'Awaiting bank deposit verification',
-            timestamp: new Date().toISOString(),
-            completed: paymentMethod === 'cash'
-          }
-        ]
-      };
-      existingOrders.push(newOrder);
-      localStorage.setItem('orders', JSON.stringify(existingOrders));
+      console.log('Creating order with data:', orderData);
 
-      setCompletedOrder(newOrder);
+      // Create order via API
+      const createdOrder = await orderService.createOrder(orderData);
+      console.log('Order created successfully:', createdOrder);
+
+      // Send notification to admin about new order
+      addNotification(
+        `New order #${createdOrder.id} placed by ${user.username || user.email} - Total: $${total.toFixed(2)}`,
+        'success',
+        {
+          title: 'New Order Received',
+          orderId: createdOrder.id,
+          orderTotal: total,
+          customerName: deliveryInfo.fullName,
+          isAdminCopy: false,
+          showToast: false // Don't show toast for user
+        }
+      );
+
+      setCompletedOrder(createdOrder);
       clearCart();
       
       if (paymentMethod === 'deposit') {
-        toast.success('Order placed! Verifying payment...');
+        toast.success('Order placed! Payment verification required.');
         setShowInvoice(false);
         setPaymentVerificationStatus('pending');
-        
-        // Start payment verification process
-        try {
-          const isVerified = await checkPaymentStatus(newOrder.id);
-          if (isVerified) {
-            // Update order status in localStorage
-            newOrder.status = 'confirmed';
-            newOrder.paymentStatus = 'verified';
-            newOrder.trackingUpdates.push({
-              status: 'payment_verified',
-              title: 'Payment Verified',
-              description: 'Your bank deposit has been verified',
-              timestamp: new Date().toISOString(),
-              completed: true
-            });
-            
-            const updatedOrders = existingOrders.map(order => 
-              order.id === newOrder.id ? newOrder : order
-            );
-            localStorage.setItem('orders', JSON.stringify(updatedOrders));
-            
-            toast.success('Payment verified! Your order is confirmed.');
-          } else {
-            newOrder.status = 'payment_failed';
-            newOrder.paymentStatus = 'failed';
-            newOrder.trackingUpdates.push({
-              status: 'payment_failed',
-              title: 'Payment Verification Failed',
-              description: 'Please upload a new deposit slip or choose a different payment method',
-              timestamp: new Date().toISOString(),
-              completed: true
-            });
-            
-            const updatedOrders = existingOrders.map(order => 
-              order.id === newOrder.id ? newOrder : order
-            );
-            localStorage.setItem('orders', JSON.stringify(updatedOrders));
-            
-            toast.error('Payment verification failed. Please try again.');
-          }
-        } catch (error) {
-          console.error('Payment verification error:', error);
-          toast.error('Error verifying payment. Please contact support.');
-        }
       } else {
         toast.success('Order placed successfully!');
         // Show invoice option
@@ -270,7 +219,8 @@ const Checkout = () => {
         }, 1000);
       }
     } catch (error) {
-      toast.error('Failed to place order. Please try again.');
+      console.error('Error creating order:', error);
+      toast.error(`Failed to place order: ${error.message || 'Please try again.'}`);
     } finally {
       setLoading(false);
     }

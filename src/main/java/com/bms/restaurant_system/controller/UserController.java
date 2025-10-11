@@ -1,9 +1,7 @@
 package com.bms.restaurant_system.controller;
 
-import com.bms.restaurant_system.dto.RegisterUserDTO;
 import com.bms.restaurant_system.dto.UserResponseDTO;
 import com.bms.restaurant_system.service.UserService;
-import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,14 +20,18 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterUserDTO registerUserDTO) {
-        logger.info("Registering user: {}", registerUserDTO.username());
+    public ResponseEntity<?> registerUser(@RequestBody com.bms.restaurant_system.dto.UserDTO userDTO) {
+        // Accept UserDTO in request (tests send this shape) and convert to RegisterUserDTO
+        logger.info("Registering user: {}", userDTO.username());
         try {
+            com.bms.restaurant_system.dto.RegisterUserDTO registerUserDTO = new com.bms.restaurant_system.dto.RegisterUserDTO(
+                    userDTO.username(), userDTO.email(), userDTO.phone(), userDTO.role(), userDTO.password()
+            );
             UserResponseDTO createdUser = userService.registerUser(registerUserDTO);
             logger.info("User registered successfully: {}", createdUser.username());
             return ResponseEntity.ok(createdUser);
         } catch (Exception e) {
-            logger.error("Registration failed for user: {}", registerUserDTO.username(), e);
+            logger.error("Registration failed for user: {}", userDTO.username(), e);
             return ResponseEntity.badRequest().body("Registration failed: " + e.getMessage());
         }
     }

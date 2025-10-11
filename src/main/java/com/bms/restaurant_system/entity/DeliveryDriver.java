@@ -49,7 +49,7 @@ public class DeliveryDriver {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private DriverStatus status = DriverStatus.OFFLINE;
+    private DriverStatus status = DriverStatus.PENDING;
 
     @Column(name = "hire_date", nullable = false)
     private LocalDateTime hireDate;
@@ -107,6 +107,9 @@ public class DeliveryDriver {
 
     // Enum for driver status
     public enum DriverStatus {
+        PENDING,
+        APPROVED,
+        REJECTED,
         AVAILABLE,
         BUSY,
         ON_DELIVERY,

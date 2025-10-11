@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/driver/auth")
-@CrossOrigin(origins = "*")
 public class DriverAuthController {
     private static final Logger logger = LoggerFactory.getLogger(DriverAuthController.class);
 

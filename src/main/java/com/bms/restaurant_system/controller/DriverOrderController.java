@@ -17,7 +17,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/driver")
-@CrossOrigin(origins = "*")
 public class DriverOrderController {
     private static final Logger logger = LoggerFactory.getLogger(DriverOrderController.class);
 

@@ -1,4 +1,4 @@
-import api from './api';
+import axios from '../utils/axios';
 
 const ADMIN_ENDPOINTS = {
   // User Management
@@ -10,12 +10,12 @@ const ADMIN_ENDPOINTS = {
   USER_STATISTICS: '/admin/users/statistics',
 
   // Order Management
-  ORDERS: '/admin/orders',
-  ORDER_BY_ID: (id) => `/admin/orders/${id}`,
-  UPDATE_ORDER_STATUS: (id) => `/admin/orders/${id}/status`,
-  ORDERS_BY_STATUS: (status) => `/admin/orders/status/${status}`,
-  ORDERS_BY_DATE: '/admin/orders/by-date',
-  ORDER_STATISTICS: '/admin/orders/statistics',
+  ORDERS: '/orders',
+  ORDER_BY_ID: (id) => `/orders/${id}`,
+  UPDATE_ORDER_STATUS: (id) => `/orders/${id}/status`,
+  ORDERS_BY_STATUS: (status) => `/orders/status/${status}`,
+  ORDERS_BY_DATE: '/orders/by-date',
+  ORDER_STATISTICS: '/orders/statistics',
 
   // Menu Management
   MENU: '/admin/menu',
@@ -38,7 +38,13 @@ const ADMIN_ENDPOINTS = {
   PAYMENT_SLIP_BY_ID: (id) => `/admin/payment-slips/${id}`,
   CONFIRM_PAYMENT: (id) => `/admin/payment-slips/${id}/confirm`,
   REJECT_PAYMENT: (id) => `/admin/payment-slips/${id}/reject`,
-  PAYMENT_STATISTICS: '/admin/payment-slips/statistics'
+  PAYMENT_STATISTICS: '/admin/payment-slips/statistics',
+
+  // Delivery Driver Management
+  DELIVERY_DRIVERS: '/admin/drivers',
+  PENDING_DRIVERS: '/delivery-drivers/pending',
+  APPROVE_DRIVER: (id) => `/delivery-drivers/${id}/approve`,
+  REJECT_DRIVER: (id) => `/delivery-drivers/${id}/reject`
 };
 
 export const adminService = {
@@ -440,6 +446,34 @@ export const adminService = {
       return response.data;
     } catch (error) {
       throw error.response?.data || 'Failed to fetch payment statistics';
+    }
+  },
+
+  // Delivery Driver Management
+  getPendingDrivers: async () => {
+    try {
+      const response = await api.get(ADMIN_ENDPOINTS.PENDING_DRIVERS);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || 'Failed to fetch pending drivers';
+    }
+  },
+
+  approveDriver: async (id) => {
+    try {
+      const response = await api.post(ADMIN_ENDPOINTS.APPROVE_DRIVER(id));
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || 'Failed to approve driver';
+    }
+  },
+
+  rejectDriver: async (id) => {
+    try {
+      const response = await api.post(ADMIN_ENDPOINTS.REJECT_DRIVER(id));
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || 'Failed to reject driver';
     }
   }
 };

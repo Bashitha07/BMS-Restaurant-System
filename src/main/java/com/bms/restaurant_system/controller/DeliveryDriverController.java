@@ -62,4 +62,42 @@ public class DeliveryDriverController {
         logger.info("Delivery driver deleted with id: {}", id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/pending")
+    public ResponseEntity<List<DeliveryDriverDTO>> getPendingDrivers() {
+        logger.info("Fetching pending delivery drivers");
+        return ResponseEntity.ok(deliveryDriverService.getPendingDrivers());
+    }
+
+    @PostMapping("/{id}/approve")
+    public ResponseEntity<DeliveryDriverDTO> approveDriver(@PathVariable Long id) {
+        logger.info("Approving delivery driver with id: {}", id);
+        try {
+            DeliveryDriverDTO approvedDriver = deliveryDriverService.approveDriver(id);
+            logger.info("Delivery driver approved with id: {}", id);
+            return ResponseEntity.ok(approvedDriver);
+        } catch (ResourceNotFoundException e) {
+            logger.warn("Delivery driver not found with id: {}", id);
+            return ResponseEntity.notFound().build();
+        } catch (IllegalStateException e) {
+            logger.warn("Cannot approve driver with id: {} - {}", id, e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PostMapping("/{id}/reject")
+    public ResponseEntity<DeliveryDriverDTO> rejectDriver(@PathVariable Long id) {
+        logger.info("Rejecting delivery driver with id: {}", id);
+        try {
+            DeliveryDriverDTO rejectedDriver = deliveryDriverService.rejectDriver(id);
+            logger.info("Delivery driver rejected with id: {}", id);
+            return ResponseEntity.ok(rejectedDriver);
+        } catch (ResourceNotFoundException e) {
+            logger.warn("Delivery driver not found with id: {}", id);
+            return ResponseEntity.notFound().build();
+        } catch (IllegalStateException e) {
+            logger.warn("Cannot reject driver with id: {} - {}", id, e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
 }

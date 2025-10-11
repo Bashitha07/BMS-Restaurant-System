@@ -1,0 +1,123 @@
+@startuml EER Diagram for Restaurant System Database
+
+' Entities
+
+entity "users" as users {
+  *id : BIGINT
+  --
+  username : VARCHAR(50)
+  password : VARCHAR(255)
+  email : VARCHAR(100)
+  phone : VARCHAR(20)
+  role : ENUM('USER', 'ADMIN')
+  promo_code : VARCHAR(50)
+  discount_percent : DECIMAL(5,2)
+  promo_expires : DATETIME
+  promo_active : BOOLEAN
+}
+
+entity "menus" as menus {
+  *id : BIGINT
+  --
+  name : VARCHAR(100)
+  description : TEXT
+  price : DECIMAL(10,2)
+  category : VARCHAR(50)
+  is_available : BOOLEAN
+}
+
+entity "orders" as orders {
+  *id : BIGINT
+  --
+  order_date : DATETIME
+  status : VARCHAR(50)
+  total_amount : DOUBLE
+  user_id : BIGINT
+  payment_method : VARCHAR(50)
+}
+
+entity "order_items" as order_items {
+  *id : BIGINT
+  --
+  quantity : INT
+  price : DECIMAL(10,2)
+  order_id : BIGINT
+  menu_id : BIGINT
+}
+
+entity "reservations" as reservations {
+  *id : BIGINT
+  --
+  reservation_date_time : DATETIME
+  number_of_people : INT
+  status : VARCHAR(50)
+  user_id : BIGINT
+}
+
+entity "drivers" as drivers {
+  *id : BIGINT
+  --
+  name : VARCHAR(100)
+  phone : VARCHAR(20)
+  email : VARCHAR(100)
+  vehicle_type : VARCHAR(50)
+  vehicle_number : VARCHAR(20)
+  license_number : VARCHAR(50)
+  status : ENUM('AVAILABLE', 'BUSY', 'OFFLINE')
+  rating : DECIMAL(3,2)
+  total_deliveries : INT
+  created_at : DATETIME
+  updated_at : DATETIME
+}
+
+entity "deliveries" as deliveries {
+  *id : BIGINT
+  --
+  order_id : BIGINT
+  driver_id : BIGINT
+  status : VARCHAR(50)
+  assigned_date : DATETIME
+  picked_up_date : DATETIME
+  delivered_date : DATETIME
+  delivery_address : TEXT
+  delivery_notes : TEXT
+}
+
+entity "payments" as payments {
+  *id : BIGINT
+  --
+  order_id : BIGINT
+  amount : DOUBLE
+  slip_image : TEXT
+  status : VARCHAR(50)
+  submitted_date : DATETIME
+  approved_date : DATETIME
+}
+
+entity "reviews" as reviews {
+  *id : BIGINT
+  --
+  user_id : BIGINT
+  menu_id : BIGINT
+  rating : INT
+  comment : TEXT
+  created_at : DATETIME
+  updated_at : DATETIME
+}
+
+' Relationships
+
+users ||--o{ orders : places
+users ||--o{ reservations : makes
+users ||--o{ reviews : writes
+
+menus ||--o{ order_items : included in
+menus ||--o{ reviews : reviewed by
+
+orders ||--o{ order_items : contains
+orders ||--o{ deliveries : delivered by
+orders ||--o{ payments : paid by
+
+drivers ||--o{ deliveries : assigned to
+
+@enduml

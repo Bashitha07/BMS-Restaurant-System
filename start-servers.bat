@@ -26,8 +26,7 @@ echo Both servers are starting up!
 echo ========================================
 echo.
 echo Backend: http://localhost:8084
-echo Frontend: http://localhost:3000
-echo H2 Console: http://localhost:8084/h2-console
+echo Frontend: http://localhost:5173
 echo.
 echo Press any key to exit this window...
 pause > nul
