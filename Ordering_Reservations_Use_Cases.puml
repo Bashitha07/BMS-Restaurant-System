@@ -1,0 +1,185 @@
+@startuml Ordering_Reservations_Use_Cases
+!theme plain
+left to right direction
+title Restaurant System - Ordering & Reservations Use Cases
+
+' Left side actors
+actor "Customer" as customer
+actor "Admin" as admin
+actor "Kitchen Staff" as kitchen
+actor "Driver" as driver
+
+' System boundary
+rectangle "Ordering & Reservation System" {
+    
+    ' Order Management
+    usecase "Add Items to Cart" as UC1
+    usecase "Remove Items from Cart" as UC2
+    usecase "Update Item Quantity" as UC3
+    usecase "Save Cart for Later" as UC4
+    usecase "Place Order" as UC5
+    usecase "Select Order Type" as UC6
+    usecase "Enter Delivery Details" as UC7
+    usecase "Add Special Instructions" as UC8
+    usecase "Calculate Order Total" as UC9
+    
+    ' Order Tracking
+    usecase "Track Order Status" as UC10
+    usecase "View Order History" as UC11
+    usecase "Reorder Previous Items" as UC12
+    usecase "Cancel Order" as UC13
+    usecase "Modify Order" as UC14
+    usecase "Rate Order" as UC15
+    usecase "Download Invoice" as UC16
+    
+    ' Admin Order Management
+    usecase "View All Orders" as UC17
+    usecase "Update Order Status" as UC18
+    usecase "Assign Delivery Driver" as UC19
+    usecase "Process Refunds" as UC20
+    usecase "Generate Order Reports" as UC21
+    usecase "Handle Customer Complaints" as UC22
+    
+    ' Kitchen Order Processing
+    usecase "Receive Order Notifications" as UC23
+    usecase "View Order Queue" as UC24
+    usecase "Start Food Preparation" as UC25
+    usecase "Mark Order Ready" as UC26
+    usecase "Check Ingredient Availability" as UC27
+    usecase "Suggest Substitutions" as UC28
+    
+    ' Delivery Management
+    usecase "View Assigned Deliveries" as UC29
+    usecase "Accept Delivery Assignment" as UC30
+    usecase "Update Delivery Status" as UC31
+    usecase "Navigate to Customer" as UC32
+    usecase "Mark Delivery Complete" as UC33
+    usecase "Collect Cash Payment" as UC34
+    
+    ' Reservation Management
+    usecase "Make Table Reservation" as UC35
+    usecase "Select Date and Time" as UC36
+    usecase "Choose Party Size" as UC37
+    usecase "Add Special Requests" as UC38
+    usecase "Check Table Availability" as UC39
+    usecase "Confirm Reservation" as UC40
+    usecase "Cancel Reservation" as UC41
+    usecase "Modify Reservation" as UC42
+    usecase "Send Reservation Reminders" as UC43
+    
+    ' Admin Reservation Management
+    usecase "View All Reservations" as UC44
+    usecase "Manage Table Assignment" as UC45
+    usecase "Handle Walk-in Customers" as UC46
+    usecase "Mark Customer Seated" as UC47
+    usecase "Mark No-Show" as UC48
+    usecase "Complete Reservation" as UC49
+}
+
+' Right side external systems
+actor "SMS Service" as sms
+actor "GPS Navigation" as gps
+actor "Table Management" as tables
+
+' Customer Order Operations
+customer --> UC1
+customer --> UC2
+customer --> UC3
+customer --> UC4
+customer --> UC5
+customer --> UC6
+customer --> UC7
+customer --> UC8
+
+' Customer Order Tracking
+UC10 <-- customer
+UC11 <-- customer
+UC12 <-- customer
+UC13 <-- customer
+UC14 <-- customer
+UC15 <-- customer
+UC16 <-- customer
+
+' Admin Order Management
+UC17 <-- admin
+UC18 <-- admin
+UC19 <-- admin
+UC20 <-- admin
+UC21 <-- admin
+UC22 <-- admin
+
+' Kitchen Operations
+UC23 <-- kitchen
+UC24 <-- kitchen
+UC25 <-- kitchen
+UC26 <-- kitchen
+UC27 <-- kitchen
+UC28 <-- kitchen
+
+' Driver Operations
+UC29 <-- driver
+UC30 <-- driver
+UC31 <-- driver
+UC32 <-- driver
+UC33 <-- driver
+UC34 <-- driver
+
+' Customer Reservation Operations
+customer --> UC35
+customer --> UC36
+customer --> UC37
+customer --> UC38
+customer --> UC41
+customer --> UC42
+
+' Admin Reservation Management
+UC44 <-- admin
+UC45 <-- admin
+UC46 <-- admin
+UC47 <-- admin
+UC48 <-- admin
+UC49 <-- admin
+
+' Include Relationships
+UC5 ..> UC9 : <<include>>
+UC5 ..> UC6 : <<include>>
+UC35 ..> UC39 : <<include>>
+UC35 ..> UC36 : <<include>>
+UC35 ..> UC37 : <<include>>
+UC25 ..> UC27 : <<include>>
+
+' Extend Relationships
+UC6 ..> UC7 : <<extend>>
+UC5 ..> UC8 : <<extend>>
+UC35 ..> UC38 : <<extend>>
+UC27 ..> UC28 : <<extend>>
+UC33 ..> UC34 : <<extend>>
+
+' External System Relationships
+UC10 --> sms
+UC43 --> sms
+UC32 --> gps
+UC39 --> tables
+UC45 --> tables
+
+note top of UC5
+  Order placement includes
+  cart validation, address
+  verification, and total
+  calculation
+end note
+
+note right of UC35
+  Reservation system supports
+  date/time selection with
+  real-time availability
+  checking
+end note
+
+note bottom of UC25
+  Kitchen workflow includes
+  preparation tracking and
+  quality control
+end note
+
+@enduml

@@ -2,8 +2,7 @@ import api from './api';
 
 const AUTH_ENDPOINTS = {
   LOGIN: '/auth/login',
-  REGISTER: '/auth/register',
-  FORGOT_PASSWORD: '/auth/forgot-password'
+  REGISTER: '/auth/register'
 };
 
 export const authService = {
@@ -31,16 +30,6 @@ export const authService = {
       return response.data;
     } catch (error) {
       throw error.response?.data || 'Registration failed';
-    }
-  },
-
-  // Forgot password
-  forgotPassword: async (requestData) => {
-    try {
-      const response = await api.post(AUTH_ENDPOINTS.FORGOT_PASSWORD, requestData);
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || 'Password recovery failed';
     }
   },
 

@@ -2,8 +2,6 @@ package com.bms.restaurant_system.controller;
 
 import com.bms.restaurant_system.dto.LoginRequest;
 import com.bms.restaurant_system.dto.LoginResponse;
-import com.bms.restaurant_system.dto.ForgotPasswordRequestDTO;
-import com.bms.restaurant_system.dto.ForgotPasswordResponseDTO;
 import com.bms.restaurant_system.entity.User;
 import com.bms.restaurant_system.service.UserService;
 import com.bms.restaurant_system.util.JwtUtil;
@@ -54,18 +52,4 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/forgot-password")
-    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequestDTO request) {
-        logger.info("Forgot password request for username: {} or email: {}", 
-                   request.username(), request.email());
-        
-        try {
-            ForgotPasswordResponseDTO response = userService.forgotPassword(request);
-            logger.info("Forgot password processed successfully");
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            logger.error("Error processing forgot password request: {}", e.getMessage());
-            return ResponseEntity.status(404).body("User not found with provided username or email");
-        }
-    }
 }

@@ -1,0 +1,113 @@
+@startuml Login_Register_Use_Cases
+!theme plain
+left to right direction
+title Restaurant System - Login & Registration Use Cases
+
+' Left side actors
+actor "New Customer" as newcustomer
+actor "Existing Customer" as customer
+actor "Driver" as driver
+actor "Admin" as admin
+
+' System boundary
+rectangle "Authentication & Registration System" {
+    
+    ' Registration Use Cases
+    usecase "Register Customer Account" as UC1
+    usecase "Verify Phone Number" as UC3
+    usecase "Set Profile Information" as UC4
+    usecase "Register Driver Account" as UC5
+    usecase "Submit Driver Application" as UC6
+    usecase "Upload Driver Documents" as UC7
+    usecase "Vehicle Registration" as UC8
+    
+    ' Login/Authentication Use Cases
+    usecase "Customer Login" as UC9
+    usecase "Driver Login" as UC10
+    usecase "Admin Login" as UC11
+    usecase "Validate Credentials" as UC12
+    usecase "Generate JWT Token" as UC13
+    
+    ' Session Management
+    usecase "Logout" as UC25
+    usecase "Session Timeout" as UC26
+    usecase "Auto-Login" as UC27
+    usecase "Remember Me" as UC28
+    
+    ' Profile Management
+    usecase "Update Profile" as UC29
+    usecase "View Profile" as UC30
+    usecase "Delete Account" as UC31
+    usecase "Account Verification" as UC32
+    
+    ' Security Features
+    usecase "Encrypt Sensitive Data" as UC33
+    usecase "Audit Password Changes" as UC34
+    usecase "Rate Limit Reset Attempts" as UC35
+    usecase "Secure Token Storage" as UC36
+}
+
+' Right side external systems
+actor "SMS Service" as sms
+actor "Authentication Server" as auth
+actor "Security Service" as security
+
+' New Customer Registration Flow
+newcustomer --> UC1
+newcustomer --> UC3
+newcustomer --> UC4
+
+' Driver Registration Flow
+driver --> UC5
+driver --> UC6
+driver --> UC7
+driver --> UC8
+
+' Login Flow
+customer --> UC9
+driver --> UC10
+admin --> UC11
+
+' Session Management
+UC25 <-- customer
+UC25 <-- driver
+UC25 <-- admin
+
+' Profile Management
+UC29 <-- customer
+UC30 <-- customer
+UC31 <-- customer
+
+' Include Relationships
+UC1 ..> UC12 : <<include>>
+UC9 ..> UC12 : <<include>>
+UC10 ..> UC12 : <<include>>
+UC11 ..> UC12 : <<include>>
+UC12 ..> UC13 : <<include>>
+
+' Extend Relationships
+UC9 ..> UC27 : <<extend>>
+UC9 ..> UC28 : <<extend>>
+
+' External System Relationships
+UC3 --> sms
+UC12 --> auth
+UC13 --> auth
+UC33 --> security
+UC34 --> security
+UC36 --> security
+
+note top of UC1
+    Customer registration includes
+    username, email, phone, password
+end note
+
+note bottom of UC5
+  Driver registration requires
+  additional verification and
+  document submission
+end note
+
+
+
+@enduml

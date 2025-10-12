@@ -1,0 +1,142 @@
+@startuml Menu_Handling_Use_Cases
+!theme plain
+left to right direction
+title Restaurant System - Menu Handling Use Cases
+
+' Left side actors
+actor "Customer" as customer
+actor "Admin" as admin
+actor "Kitchen Staff" as kitchen
+
+' System boundary
+rectangle "Menu Management System" {
+    
+    ' Customer Menu Use Cases
+    usecase "Browse Menu" as UC1
+    usecase "Search Menu Items" as UC2
+    usecase "Filter by Category" as UC3
+    usecase "Filter by Price Range" as UC4
+    usecase "View Item Details" as UC5
+    usecase "Check Item Availability" as UC6
+    usecase "View Nutritional Info" as UC7
+    usecase "View Item Ratings" as UC8
+    usecase "Sort Menu Items" as UC9
+    
+    ' Admin Menu Management
+    usecase "Create Menu Item" as UC10
+    usecase "Update Menu Item" as UC11
+    usecase "Delete Menu Item" as UC12
+    usecase "Manage Categories" as UC13
+    usecase "Set Item Prices" as UC14
+    usecase "Update Availability" as UC15
+    usecase "Upload Item Images" as UC16
+    usecase "Set Preparation Time" as UC17
+    usecase "Manage Discounts" as UC18
+    usecase "Bulk Operations" as UC19
+    
+    ' Inventory Management
+    usecase "Track Stock Levels" as UC20
+    usecase "Set Low Stock Alerts" as UC21
+    usecase "Update Stock Quantity" as UC22
+    usecase "Mark Out of Stock" as UC23
+    
+    ' Menu Analytics
+    usecase "View Popular Items" as UC24
+    usecase "Generate Menu Reports" as UC25
+    usecase "Track Item Performance" as UC26
+    usecase "Revenue by Category" as UC27
+    
+    ' Kitchen Operations
+    usecase "View Menu for Preparation" as UC28
+    usecase "Update Ingredient Status" as UC29
+    usecase "Report Menu Issues" as UC30
+    usecase "Suggest Recipe Changes" as UC31
+}
+
+' Right side external systems
+actor "Image Storage" as storage
+actor "Analytics Service" as analytics
+actor "Inventory System" as inventory
+
+' Customer Menu Interactions
+customer --> UC1
+customer --> UC2
+customer --> UC3
+customer --> UC4
+customer --> UC5
+customer --> UC6
+customer --> UC7
+customer --> UC8
+customer --> UC9
+
+' Admin Menu Management
+admin --> UC10
+admin --> UC11
+admin --> UC12
+admin --> UC13
+admin --> UC14
+admin --> UC15
+admin --> UC16
+admin --> UC17
+admin --> UC18
+admin --> UC19
+
+' Inventory Management
+UC20 <-- admin
+UC21 <-- admin
+UC22 <-- admin
+UC23 <-- admin
+
+' Analytics and Reporting
+UC24 <-- admin
+UC25 <-- admin
+UC26 <-- admin
+UC27 <-- admin
+
+' Kitchen Staff Operations
+UC28 <-- kitchen
+UC29 <-- kitchen
+UC30 <-- kitchen
+UC31 <-- kitchen
+
+' Include Relationships
+UC1 ..> UC6 : <<include>>
+UC5 ..> UC7 : <<include>>
+UC10 ..> UC16 : <<include>>
+UC11 ..> UC15 : <<include>>
+UC25 ..> UC26 : <<include>>
+
+' Extend Relationships
+UC2 ..> UC3 : <<extend>>
+UC2 ..> UC4 : <<extend>>
+UC15 ..> UC23 : <<extend>>
+UC19 ..> UC15 : <<extend>>
+UC19 ..> UC14 : <<extend>>
+
+' External System Relationships
+UC16 --> storage
+UC25 --> analytics
+UC26 --> analytics
+UC20 --> inventory
+UC22 --> inventory
+
+note top of UC1
+  Menu browsing includes
+  categories: Pasta, Salads,
+  Burgers, Rice, Beverages, etc.
+end note
+
+note right of UC19
+  Bulk operations include
+  updating availability,
+  prices, and categories
+  for multiple items
+end note
+
+note bottom of UC20
+  Real-time stock tracking
+  with automatic alerts when
+  items run low
+end note
+
+@enduml

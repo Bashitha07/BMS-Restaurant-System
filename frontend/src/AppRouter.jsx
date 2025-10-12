@@ -28,7 +28,6 @@ const AppRouter = () => {
 
   const isAuthRoute = location.pathname.toLowerCase() === '/login' || 
                      location.pathname.toLowerCase() === '/register' ||
-                     location.pathname.toLowerCase() === '/forgot-password' ||
                      location.pathname.toLowerCase() === '/driver/login' ||
                      location.pathname.toLowerCase() === '/driver/register';
 
@@ -43,7 +42,6 @@ const AppRouter = () => {
               element={
                 route.path.toLowerCase() === '/login' || 
                 route.path.toLowerCase() === '/register' || 
-                route.path.toLowerCase() === '/forgot-password' ||
                 route.path.toLowerCase() === '/driver/login' ||
                 route.path.toLowerCase() === '/driver/register' ? (
                   renderRoute(route)

@@ -1,0 +1,167 @@
+@startuml Payment_Portal_Use_Cases
+!theme plain
+left to right direction
+title Restaurant System - Payment Portal Use Cases
+
+' Left side actors
+actor "Customer" as customer
+actor "Admin" as admin
+actor "Bank Staff" as bank
+actor "Finance Manager" as finance
+
+' System boundary
+rectangle "Payment Processing System" {
+    
+    ' Payment Method Selection
+    usecase "Select Payment Method" as UC1
+    usecase "Choose Cash on Delivery" as UC2
+    usecase "Choose Bank Deposit" as UC3
+    usecase "Choose Card Payment" as UC4
+    usecase "Choose Digital Wallet" as UC5
+    
+    ' Bank Deposit Processing
+    usecase "Upload Deposit Slip" as UC6
+    usecase "Validate Slip Image" as UC7
+    usecase "Enter Bank Details" as UC8
+    usecase "Verify Payment Amount" as UC9
+    usecase "Submit for Verification" as UC10
+    usecase "Track Verification Status" as UC11
+    
+    ' Card Payment Processing
+    usecase "Enter Card Details" as UC12
+    usecase "Validate Card Information" as UC13
+    usecase "Process Card Payment" as UC14
+    usecase "Handle Payment Failures" as UC15
+    usecase "Send Payment Confirmation" as UC16
+    
+    ' Cash Payment Processing
+    usecase "Mark Cash on Delivery" as UC17
+    usecase "Collect Cash Payment" as UC18
+    usecase "Provide Cash Receipt" as UC19
+    usecase "Update Payment Status" as UC20
+    
+    ' Payment Verification (Admin)
+    usecase "View Payment Submissions" as UC21
+    usecase "Verify Deposit Slips" as UC22
+    usecase "Approve Payments" as UC23
+    usecase "Reject Invalid Payments" as UC24
+    usecase "Process Refunds" as UC25
+    usecase "Generate Payment Reports" as UC26
+    
+    ' Payment History & Records
+    usecase "View Payment History" as UC27
+    usecase "Download Payment Receipt" as UC28
+    usecase "Export Payment Data" as UC29
+    usecase "Search Payment Records" as UC30
+    usecase "Filter by Payment Method" as UC31
+    usecase "Filter by Date Range" as UC32
+    
+    ' Financial Management
+    usecase "Calculate Daily Revenue" as UC33
+    usecase "Generate Financial Reports" as UC34
+    usecase "Track Payment Trends" as UC35
+    usecase "Monitor Failed Payments" as UC36
+    usecase "Reconcile Bank Deposits" as UC37
+    usecase "Manage Payment Analytics" as UC38
+    
+    ' Security & Compliance
+    usecase "Encrypt Payment Data" as UC39
+    usecase "Audit Payment Logs" as UC40
+    usecase "Validate Transaction Integrity" as UC41
+    usecase "Handle Dispute Resolution" as UC42
+}
+
+' Right side external systems
+actor "Payment Gateway" as gateway
+actor "Bank API" as bankapi
+actor "SMS Service" as sms
+actor "Security Service" as security
+
+' Customer Payment Operations
+customer --> UC1
+customer --> UC2
+customer --> UC3
+customer --> UC4
+customer --> UC5
+customer --> UC6
+customer --> UC8
+customer --> UC12
+
+' Customer Payment Tracking
+UC11 <-- customer
+UC27 <-- customer
+UC28 <-- customer
+UC30 <-- customer
+
+' Admin Payment Management
+UC21 <-- admin
+UC22 <-- admin
+UC23 <-- admin
+UC24 <-- admin
+UC25 <-- admin
+UC26 <-- admin
+
+' Finance Management
+UC33 <-- finance
+UC34 <-- finance
+UC35 <-- finance
+UC36 <-- finance
+UC37 <-- finance
+UC38 <-- finance
+
+' Bank Staff Operations
+UC37 <-- bank
+UC42 <-- bank
+
+' Include Relationships
+UC3 ..> UC6 : <<include>>
+UC3 ..> UC8 : <<include>>
+UC6 ..> UC7 : <<include>>
+UC10 ..> UC9 : <<include>>
+UC4 ..> UC12 : <<include>>
+UC12 ..> UC13 : <<include>>
+UC13 ..> UC14 : <<include>>
+UC23 ..> UC20 : <<include>>
+
+' Extend Relationships
+UC7 ..> UC24 : <<extend>>
+UC13 ..> UC15 : <<extend>>
+UC14 ..> UC16 : <<extend>>
+UC2 ..> UC18 : <<extend>>
+UC18 ..> UC19 : <<extend>>
+
+' External System Relationships
+UC14 --> gateway
+UC16 --> sms
+UC37 --> bankapi
+UC9 --> bankapi
+UC39 --> security
+UC40 --> security
+UC41 --> security
+
+note top of UC6
+  Deposit slip upload supports
+  PNG, JPG formats up to 5MB
+  with image validation
+end note
+
+note right of UC22
+  Admin verification includes
+  amount checking, bank
+  detail validation, and
+  approval workflow
+end note
+
+note bottom of UC14
+  Card payment processing
+  with real-time validation
+  and fraud detection
+end note
+
+note left of UC37
+  Bank reconciliation matches
+  deposit slips with actual
+  bank transaction records
+end note
+
+@enduml
