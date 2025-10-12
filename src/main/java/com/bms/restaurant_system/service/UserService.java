@@ -2,8 +2,6 @@ package com.bms.restaurant_system.service;
 
 import com.bms.restaurant_system.dto.UserDTO;
 import com.bms.restaurant_system.dto.RegisterUserDTO;
-import com.bms.restaurant_system.dto.ForgotPasswordRequestDTO;
-import com.bms.restaurant_system.dto.ForgotPasswordResponseDTO;
 import com.bms.restaurant_system.entity.User;
 import com.bms.restaurant_system.entity.Role;
 import com.bms.restaurant_system.exception.ResourceNotFoundException;
@@ -287,52 +285,5 @@ public class UserService {
         
         return stats;
     }
-
-    /**
-     * Handles forgot password request - returns last 3 characters of password.
-     * @param request The forgot password request containing username or email
-     * @return ForgotPasswordResponseDTO with last 3 characters
-     * @throws ResourceNotFoundException if user is not found
-     */
-    public ForgotPasswordResponseDTO forgotPassword(ForgotPasswordRequestDTO request) {
-        logger.info("Processing forgot password request for username: {} or email: {}", 
-                   request.username(), request.email());
-        
-        User user = null;
-        
-        // Try to find user by username first, then by email
-        if (request.username() != null && !request.username().trim().isEmpty()) {
-            user = userRepository.findByUsername(request.username())
-                    .orElse(null);
-        }
-        
-        if (user == null && request.email() != null && !request.email().trim().isEmpty()) {
-            user = userRepository.findByEmail(request.email())
-                    .orElse(null);
-        }
-        
-        if (user == null) {
-            throw new ResourceNotFoundException("User not found with provided username or email");
-        }
-        
-        // Get last 3 characters of the password (assuming it's stored as plaintext for this demo)
-        // In real applications, you would have a different recovery mechanism
-        String password = user.getPassword();
-        String lastThreeChars;
-        
-        if (password.length() >= 3) {
-            lastThreeChars = password.substring(password.length() - 3);
-        } else {
-            lastThreeChars = password; // If password is shorter than 3 characters
-        }
-        
-        logger.info("Forgot password processed for user: {}", user.getUsername());
-        
-        return new ForgotPasswordResponseDTO(
-            "Last 3 characters of your password have been retrieved", 
-            lastThreeChars
-        );
-    }
-
 
 }

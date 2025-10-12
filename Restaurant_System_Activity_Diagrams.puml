@@ -1,0 +1,178 @@
+@startuml Restaurant_Order_Flow_Activity
+!theme plain
+title Restaurant System - Main Order Flow Activity Diagram
+
+start
+
+:Customer accesses system;
+
+if (New customer?) then (yes)
+    :Register account;
+else (no)
+    :Login;
+endif
+
+:Browse menu;
+:Add items to cart;
+
+if (Ready to order?) then (no)
+    :Save cart;
+    stop
+else (yes)
+endif
+
+if (Order type?) then (delivery)
+    :Enter delivery address;
+else (dine-in)
+    :Make reservation;
+endif
+
+:Proceed to checkout;
+
+if (Payment method?) then (online)
+    :Process card payment;
+    if (Payment successful?) then (no)
+        :Show error;
+        stop
+    else (yes)
+    endif
+else (cash)
+    :Mark as cash payment;
+endif
+
+:Submit order;
+:Generate order ID;
+:Send confirmation;
+
+split
+    :Notify kitchen;
+split again
+    :Update order status;
+split again
+    if (Delivery order?) then (yes)
+        :Assign driver;
+    else (no)
+    endif
+end split
+
+:Kitchen prepares order;
+:Mark order ready;
+
+if (Delivery?) then (yes)
+    :Driver picks up;
+    :Deliver to customer;
+else (no)
+    :Customer picks up;
+endif
+
+:Complete order;
+:Generate receipt;
+
+stop
+
+stop
+
+@enduml
+
+@startuml Restaurant_Delivery_Activity
+!theme plain
+title Restaurant System - Delivery Process Activity Diagram
+
+start
+
+:Order marked as ready;
+:System assigns driver;
+
+if (Driver available?) then (no)
+    :Add to queue;
+    :Wait for driver;
+else (yes)
+endif
+
+:Driver accepts delivery;
+:Driver goes to restaurant;
+:Pick up order;
+:Navigate to customer;
+
+if (Address found?) then (no)
+    :Contact customer;
+else (yes)
+endif
+
+:Deliver order;
+
+if (Cash payment?) then (yes)
+    :Collect payment;
+else (no)
+endif
+
+:Mark delivery complete;
+:Update driver status;
+
+stop
+
+@enduml
+
+@startuml Restaurant_Kitchen_Activity
+!theme plain
+title Restaurant System - Kitchen Process Activity Diagram
+
+start
+
+:Receive order notification;
+:Review order details;
+
+if (Ingredients available?) then (no)
+    :Contact customer;
+    :Get substitution approval;
+else (yes)
+endif
+
+:Start preparation;
+:Update status to preparing;
+:Cook items;
+:Quality check;
+:Mark order ready;
+
+if (Delivery order?) then (yes)
+    :Notify driver;
+else (no)
+    :Notify customer for pickup;
+endif
+
+stop
+
+@enduml
+
+@startuml Restaurant_Admin_Activity
+!theme plain
+title Restaurant System - Admin Management Activity Diagram
+
+start
+
+:Admin logs in;
+:Access dashboard;
+
+repeat
+    switch (Task?)
+    case (Menu)
+        :Manage menu items;
+        :Update prices;
+    case (Orders)
+        :View all orders;
+        :Update status;
+    case (Reports)
+        :Generate reports;
+        :Export data;
+    case (Users)
+        :Manage users;
+        :Update permissions;
+    endswitch
+repeat while (More tasks?)
+
+:Save changes;
+:Log out;
+
+stop
+
+@enduml

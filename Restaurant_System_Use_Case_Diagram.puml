@@ -1,0 +1,138 @@
+@startuml BMS Restaurant-System_Use_Case_Diagram
+!theme plain
+left to right direction
+title BMS Restaurant-System - Use Case Diagram
+
+' Left side actors
+actor "Customer" as customer
+actor "Admin" as admin
+actor "Manager" as manager
+
+' System boundary
+rectangle "Restaurant Management System" {
+    
+    ' Customer Use Cases
+    usecase "Browse Menu" as UC1
+    usecase "Add Items to Cart" as UC2
+    usecase "Place Order" as UC3
+    usecase "Make Payment" as UC4
+    usecase "Track Order" as UC5
+    usecase "Make Reservation" as UC6
+    usecase "Cancel Reservation" as UC7
+    usecase "View Order History" as UC8
+    usecase "Register Account" as UC9
+    usecase "Login/Logout" as UC10
+    
+    ' Admin Use Cases
+    usecase "Manage Menu Items" as UC11
+    usecase "Manage Categories" as UC12
+    usecase "View All Orders" as UC13
+    usecase "Update Order Status" as UC14
+    usecase "Manage Reservations" as UC15
+    usecase "Manage Users" as UC16
+    usecase "Generate Reports" as UC17
+    usecase "Manage Drivers" as UC18
+    usecase "Process Payments" as UC19
+    
+    ' Driver Use Cases
+    usecase "View Assigned Deliveries" as UC20
+    usecase "Update Delivery Status" as UC21
+    usecase "Mark Delivery Complete" as UC22
+    usecase "View Delivery History" as UC23
+    
+    ' Kitchen Use Cases
+    usecase "View Pending Orders" as UC24
+    usecase "Update Preparation Status" as UC25
+    usecase "Mark Order Ready" as UC26
+    
+    ' Manager Use Cases
+    usecase "View Analytics" as UC27
+    usecase "Manage Restaurant Settings" as UC28
+    usecase "Approve Refunds" as UC29
+    usecase "Manage Staff" as UC30
+}
+
+' Right side actors
+actor "Delivery Driver" as driver
+actor "Kitchen Staff" as kitchen
+
+' External Systems (far right)
+actor "Payment Gateway" as payment_gateway
+actor "SMS Service" as sms_service
+
+' Customer Relationships (left to center)
+customer --> UC1
+customer --> UC2
+customer --> UC3
+customer --> UC4
+customer --> UC5
+customer --> UC6
+customer --> UC7
+customer --> UC8
+customer --> UC9
+customer --> UC10
+
+' Admin Relationships (left to center)
+admin --> UC11
+admin --> UC12
+admin --> UC13
+admin --> UC14
+admin --> UC15
+admin --> UC16
+admin --> UC17
+admin --> UC18
+admin --> UC19
+
+' Driver Relationships (center to right)
+UC20 <-- driver
+UC21 <-- driver
+UC22 <-- driver
+UC23 <-- driver
+UC10 <-- driver
+
+' Kitchen Relationships (center to right)
+UC24 <-- kitchen
+UC25 <-- kitchen
+UC26 <-- kitchen
+UC10 <-- kitchen
+
+' Manager Relationships (left to center)
+manager --> UC27
+manager --> UC28
+manager --> UC29
+manager --> UC30
+manager --> UC17
+
+' Include Relationships
+UC3 ..> UC4 : <<include>>
+UC4 ..> UC19 : <<include>>
+UC6 ..> UC10 : <<include>>
+UC3 ..> UC10 : <<include>>
+UC8 ..> UC10 : <<include>>
+
+' Extend Relationships
+UC5 ..> UC21 : <<extend>>
+UC14 ..> UC25 : <<extend>>
+UC22 ..> UC5 : <<extend>>
+
+' External System Relationships (center to far right)
+UC4 --> payment_gateway
+UC5 --> sms_service
+UC22 --> sms_service
+
+' Inheritance
+admin --|> manager
+kitchen --|> admin
+
+note right of UC4
+  Payment processing involves
+  external payment gateway
+  integration
+end note
+
+note bottom of UC5
+  Real-time order tracking
+  with SMS notifications
+end note
+
+@enduml

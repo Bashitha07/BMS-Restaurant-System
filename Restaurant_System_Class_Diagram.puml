@@ -1,0 +1,304 @@
+@startuml Restaurant_System_Class_Diagram
+!theme plain
+title Restaurant Management System - Complete Class Diagram
+
+' Abstract Base Class
+abstract class BaseEntity {
+    -id: int
+    -created: LocalDateTime
+    -updated: LocalDateTime
+    +getId(): int
+    +setId(id: int): void
+    +getCreated(): LocalDateTime
+    +getUpdated(): LocalDateTime
+}
+
+' Interfaces
+interface Trackable {
+    +getStatus(): String
+    +updateStatus(status: String): void
+}
+
+interface Payable {
+    +getAmount(): double
+    +processPayment(): boolean
+}
+
+' User Entity
+class User extends BaseEntity {
+    -name: String
+    -email: String
+    -phone: String
+    -password: String
+    -address: String
+    -role: UserRole
+    -active: boolean
+    +getName(): String
+    +setName(name: String): void
+    +getEmail(): String
+    +setEmail(email: String): void
+    +getPhone(): String
+    +setPhone(phone: String): void
+    +getAddress(): String
+    +setAddress(address: String): void
+    +getRole(): UserRole
+    +setRole(role: UserRole): void
+    +isActive(): boolean
+    +setActive(active: boolean): void
+}
+
+' Menu Entity
+class Menu extends BaseEntity {
+    -name: String
+    -description: String
+    -price: double
+    -category: String
+    -image: String
+    -available: boolean
+    -discount: double
+    +getName(): String
+    +setName(name: String): void
+    +getDescription(): String
+    +setDescription(description: String): void
+    +getPrice(): double
+    +setPrice(price: double): void
+    +getCategory(): String
+    +setCategory(category: String): void
+    +getImage(): String
+    +setImage(image: String): void
+    +isAvailable(): boolean
+    +setAvailable(available: boolean): void
+    +getDiscount(): double
+    +setDiscount(discount: double): void
+}
+
+' Order Entity
+class Order extends BaseEntity implements Trackable, Payable {
+    -total: double
+    -status: OrderStatus
+    -type: String
+    -notes: String
+    -address: String
+    +getTotal(): double
+    +setTotal(total: double): void
+    +getStatus(): OrderStatus
+    +setStatus(status: OrderStatus): void
+    +getType(): String
+    +setType(type: String): void
+    +getNotes(): String
+    +setNotes(notes: String): void
+    +getAddress(): String
+    +setAddress(address: String): void
+    +calculateTotal(): double
+    +updateStatus(status: String): void
+    +getAmount(): double
+    +processPayment(): boolean
+}
+
+' OrderItem Entity
+class OrderItem extends BaseEntity {
+    -quantity: int
+    -price: double
+    -subtotal: double
+    +getQuantity(): int
+    +setQuantity(quantity: int): void
+    +getPrice(): double
+    +setPrice(price: double): void
+    +getSubtotal(): double
+    +setSubtotal(subtotal: double): void
+    +calculateSubtotal(): double
+}
+
+' Payment Entity
+class Payment extends BaseEntity implements Payable {
+    -amount: double
+    -method: PaymentMethod
+    -status: PaymentStatus
+    -reference: String
+    -timestamp: LocalDateTime
+    +getAmount(): double
+    +setAmount(amount: double): void
+    +getMethod(): PaymentMethod
+    +setMethod(method: PaymentMethod): void
+    +getStatus(): PaymentStatus
+    +setStatus(status: PaymentStatus): void
+    +getReference(): String
+    +setReference(reference: String): void
+    +getTimestamp(): LocalDateTime
+    +setTimestamp(timestamp: LocalDateTime): void
+    +processPayment(): boolean
+}
+
+' Reservation Entity
+class Reservation extends BaseEntity {
+    -date: LocalDate
+    -time: LocalTime
+    -size: int
+    -status: ReservationStatus
+    -notes: String
+    -contact: String
+    +getDate(): LocalDate
+    +setDate(date: LocalDate): void
+    +getTime(): LocalTime
+    +setTime(time: LocalTime): void
+    +getSize(): int
+    +setSize(size: int): void
+    +getStatus(): ReservationStatus
+    +setStatus(status: ReservationStatus): void
+    +getNotes(): String
+    +setNotes(notes: String): void
+    +getContact(): String
+    +setContact(contact: String): void
+}
+
+' Driver Entity
+class Driver extends BaseEntity {
+    -name: String
+    -phone: String
+    -vehicle: String
+    -license: String
+    -available: boolean
+    -rating: double
+    +getName(): String
+    +setName(name: String): void
+    +getPhone(): String
+    +setPhone(phone: String): void
+    +getVehicle(): String
+    +setVehicle(vehicle: String): void
+    +getLicense(): String
+    +setLicense(license: String): void
+    +isAvailable(): boolean
+    +setAvailable(available: boolean): void
+    +getRating(): double
+    +setRating(rating: double): void
+}
+
+' Delivery Entity
+class Delivery extends BaseEntity implements Trackable {
+    -address: String
+    -status: DeliveryStatus
+    -startTime: LocalDateTime
+    -endTime: LocalDateTime
+    -notes: String
+    +getAddress(): String
+    +setAddress(address: String): void
+    +getStatus(): DeliveryStatus
+    +setStatus(status: DeliveryStatus): void
+    +getStartTime(): LocalDateTime
+    +setStartTime(startTime: LocalDateTime): void
+    +getEndTime(): LocalDateTime
+    +setEndTime(endTime: LocalDateTime): void
+    +getNotes(): String
+    +setNotes(notes: String): void
+    +updateStatus(status: String): void
+    +calculateDeliveryTime(): Duration
+}
+
+' Enumerations
+enum UserRole {
+    CUSTOMER
+    ADMIN
+    DRIVER
+    KITCHEN_STAFF
+    MANAGER
+}
+
+enum OrderStatus {
+    PENDING
+    CONFIRMED
+    PREPARING
+    READY
+    OUT_FOR_DELIVERY
+    DELIVERED
+    CANCELLED
+}
+
+enum PaymentStatus {
+    PENDING
+    COMPLETED
+    FAILED
+    REFUNDED
+}
+
+enum PaymentMethod {
+    CARD
+    CASH
+    ONLINE
+}
+
+enum ReservationStatus {
+    PENDING
+    CONFIRMED
+    SEATED
+    COMPLETED
+    CANCELLED
+    NO_SHOW
+}
+
+enum DeliveryStatus {
+    ASSIGNED
+    PICKED_UP
+    OUT_FOR_DELIVERY
+    DELIVERED
+    FAILED
+}
+
+' Inheritance Relationships
+BaseEntity <|-- User
+BaseEntity <|-- Menu
+BaseEntity <|-- Order
+BaseEntity <|-- OrderItem
+BaseEntity <|-- Payment
+BaseEntity <|-- Reservation
+BaseEntity <|-- Driver
+BaseEntity <|-- Delivery
+
+' Interface Implementations
+Trackable <|.. Order
+Payable <|.. Order
+Payable <|.. Payment
+Trackable <|.. Delivery
+
+' Composition Relationships (Strong ownership)
+Order *-- OrderItem : contains
+Order *-- Payment : has
+
+' Aggregation Relationships (Weak ownership)
+User o-- Order : places
+User o-- Reservation : makes
+Driver o-- Delivery : handles
+
+' Association Relationships
+Order -- Menu : includes
+Delivery -- Order : delivers
+Reservation -- User : made_by
+
+' Dependency Relationships
+User ..> UserRole : uses
+Order ..> OrderStatus : uses
+Payment ..> PaymentStatus : uses
+Payment ..> PaymentMethod : uses
+Reservation ..> ReservationStatus : uses
+Delivery ..> DeliveryStatus : uses
+
+note top of BaseEntity
+  Abstract base class providing
+  common fields for all entities
+end note
+
+note right of Trackable
+  Interface for entities that
+  need status tracking
+end note
+
+note right of Payable
+  Interface for entities
+  involved in payments
+end note
+
+note bottom of Order
+  Central entity managing
+  the complete order lifecycle
+end note
+
+@enduml

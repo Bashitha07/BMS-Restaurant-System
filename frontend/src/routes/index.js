@@ -3,7 +3,6 @@ import { lazy } from 'react';
 // Auth pages
 const Login = lazy(() => import('../pages/auth/Login'));
 const Register = lazy(() => import('../pages/auth/Register'));
-const ForgotPassword = lazy(() => import('../components/auth/ForgotPassword'));
 
 // Driver pages
 const DriverLogin = lazy(() => import('../components/driver/DriverLogin'));
@@ -14,7 +13,6 @@ const DriverDashboard = lazy(() => import('../components/driver/DriverDashboard'
 const Home = lazy(() => import('../pages/Home'));
 const About = lazy(() => import('../pages/About'));
 const Menu = lazy(() => import('../pages/Menu'));
-const ImageDiagnostic = lazy(() => import('../pages/ImageDiagnostic'));
 const Cart = lazy(() => import('../pages/user/Cart'));
 const Checkout = lazy(() => import('../pages/user/Checkout'));
 const OrderHistory = lazy(() => import('../pages/user/OrderHistory'));
@@ -130,11 +128,6 @@ const authRoutes = [
     Component: Register,
     requireAuth: false,
   },
-  {
-    path: '/forgot-password',
-    Component: ForgotPassword,
-    requireAuth: false,
-  },
 ];
 
 // User routes
@@ -150,10 +143,6 @@ const userRoutes = [
   {
     path: '/menu',
     Component: Menu,
-  },
-  {
-    path: '/diagnostic',
-    Component: ImageDiagnostic,
   },
   {
     path: '/cart',
