@@ -1,0 +1,269 @@
+@startuml Database_ER_Diagram_Simple
+
+' Styling
+skinparam linetype ortho
+skinparam shadowing false
+skinparam class {
+    BackgroundColor #F0F8FF
+    BorderColor #2C3E50
+    ArrowColor #34495E
+    FontSize 11
+}
+
+skinparam note {
+    BackgroundColor #FFFACD
+    BorderColor #F39C12
+}
+
+title Restaurant Management System - Entity Relationship Diagram\nSimplified Database Schema (10 Tables, 93 Fields)
+
+' ============================================
+' CORE ENTITIES
+' ============================================
+
+class users {
+    + **id**: BIGINT (PK)
+    --
+    username: VARCHAR(50) UNIQUE
+    password: VARCHAR(255)
+    email: VARCHAR(100) UNIQUE
+    phone: VARCHAR(20)
+    role: ENUM('USER','ADMIN')
+    enabled: BOOLEAN
+    created_at: DATETIME
+    updated_at: DATETIME
+    --
+    <color:#3498DB>9 fields</color>
+}
+
+class menus {
+    + **id**: BIGINT (PK)
+    --
+    name: VARCHAR(100)
+    description: TEXT
+    category: VARCHAR(50)
+    price: DECIMAL(10,2)
+    is_available: BOOLEAN
+    image_url: VARCHAR(255)
+    preparation_time: INT
+    is_vegetarian: BOOLEAN
+    is_vegan: BOOLEAN
+    is_gluten_free: BOOLEAN
+    is_spicy: BOOLEAN
+    spice_level: INT
+    is_featured: BOOLEAN
+    stock_quantity: INT
+    low_stock_threshold: INT
+    ingredients: TEXT
+    discount_percentage: DECIMAL(5,2)
+    discounted_price: DECIMAL(10,2)
+    created_at: DATETIME
+    updated_at: DATETIME
+    --
+    <color:#27AE60>21 fields</color>
+    <color:#E74C3C>NO calories</color>
+    <color:#E74C3C>NO allergens</color>
+}
+
+class orders {
+    + **id**: BIGINT (PK)
+    --
+    # user_id: BIGINT (FK)
+    order_date: DATETIME
+    status: VARCHAR(50)
+    total_amount: DECIMAL(10,2)
+    delivery_address: TEXT
+    delivery_phone: VARCHAR(20)
+    special_instructions: TEXT
+    created_at: DATETIME
+    updated_at: DATETIME
+    --
+    <color:#3498DB>10 fields</color>
+}
+
+class order_items {
+    + **id**: BIGINT (PK)
+    --
+    # order_id: BIGINT (FK)
+    # menu_id: BIGINT (FK)
+    quantity: INT
+    unit_price: DECIMAL(10,2)
+    total_price: DECIMAL(10,2)
+    --
+    <color:#3498DB>6 fields</color>
+}
+
+class reservations {
+    + **id**: BIGINT (PK)
+    --
+    # user_id: BIGINT (FK)
+    customer_name: VARCHAR(100)
+    customer_phone: VARCHAR(20)
+    customer_email: VARCHAR(100)
+    reservation_date: DATE
+    reservation_time: TIME
+    number_of_people: INT
+    status: VARCHAR(50)
+    special_requests: TEXT
+    created_at: DATETIME
+    updated_at: DATETIME
+    --
+    <color:#3498DB>12 fields</color>
+}
+
+class drivers {
+    + **id**: BIGINT (PK)
+    --
+    name: VARCHAR(100)
+    phone: VARCHAR(20) UNIQUE
+    email: VARCHAR(100) UNIQUE
+    vehicle_number: VARCHAR(20)
+    status: VARCHAR(20)
+    created_at: DATETIME
+    updated_at: DATETIME
+    --
+    <color:#3498DB>7 fields</color>
+}
+
+class deliveries {
+    + **id**: BIGINT (PK)
+    --
+    # order_id: BIGINT (FK)
+    # driver_id: BIGINT (FK)
+    delivery_address: TEXT
+    status: VARCHAR(50)
+    estimated_delivery_time: DATETIME
+    actual_delivery_time: DATETIME
+    created_at: DATETIME
+    updated_at: DATETIME
+    --
+    <color:#3498DB>9 fields</color>
+}
+
+class payments {
+    + **id**: BIGINT (PK)
+    --
+    # order_id: BIGINT (FK)
+    amount: DECIMAL(10,2)
+    payment_method: VARCHAR(50)
+    status: VARCHAR(50)
+    transaction_id: VARCHAR(255)
+    created_at: DATETIME
+    updated_at: DATETIME
+    --
+    <color:#3498DB>8 fields</color>
+}
+
+class payment_slips {
+    + **id**: BIGINT (PK)
+    --
+    # order_id: BIGINT (FK)
+    file_name: VARCHAR(255)
+    file_path: VARCHAR(500)
+    uploaded_at: DATETIME
+    --
+    <color:#3498DB>5 fields</color>
+}
+
+class reviews {
+    + **id**: BIGINT (PK)
+    --
+    # user_id: BIGINT (FK)
+    # menu_id: BIGINT (FK)
+    rating: INT (1-5)
+    comment: TEXT
+    created_at: DATETIME
+    --
+    <color:#3498DB>6 fields</color>
+}
+
+' ============================================
+' RELATIONSHIPS
+' ============================================
+
+' User relationships
+users "1" -- "0..*" orders : places >
+users "1" -- "0..*" reservations : makes >
+users "1" -- "0..*" reviews : writes >
+
+' Order relationships
+orders "1" -- "1..*" order_items : contains >
+orders "1" -- "0..1" deliveries : has >
+orders "1" -- "0..1" payments : requires >
+orders "1" -- "0..*" payment_slips : uploads >
+
+' Menu relationships
+menus "1" -- "0..*" order_items : included in >
+menus "1" -- "0..*" reviews : receives >
+
+' Driver relationships
+drivers "1" -- "0..*" deliveries : handles >
+
+' ============================================
+' NOTES AND ANNOTATIONS
+' ============================================
+
+note right of menus
+  **Simplified Menu Table**
+  ✓ 21 fields only
+  ✗ NO calories attribute
+  ✗ NO allergens attribute
+  ✓ Dietary flags included
+  ✓ Stock tracking
+  ✓ Discount support
+end note
+
+note left of users
+  **User Management**
+  ✓ Simple role system
+  ✓ USER or ADMIN only
+  ✗ NO promotional fields
+  ✗ NO last login tracking
+end note
+
+note bottom of deliveries
+  **Delivery Tracking**
+  ✓ Basic tracking only
+  ✗ NO GPS coordinates
+  ✗ NO real-time location
+  ✓ Driver assignment
+end note
+
+note top of payments
+  **Payment Processing**
+  ✓ Multiple payment methods
+  ✓ Transaction tracking
+  ✗ NO gateway details
+  ✗ NO refund system
+end note
+
+' ============================================
+' LEGEND
+' ============================================
+
+legend bottom right
+  **Legend:**
+  + **field** = Primary Key (PK)
+  # field = Foreign Key (FK)
+  
+  **Cardinality:**
+  "1" -- "0..*" = One-to-Many
+  "1" -- "0..1" = One-to-Zero-or-One
+  "1" -- "1..*" = One-to-Many (mandatory)
+  
+  **Database Summary:**
+  • Total Tables: 10
+  • Total Fields: 93
+  • Field Reduction: 38%
+  • Original Fields: 150
+  
+  **Simplification Highlights:**
+  • Menus: 24 → 21 fields
+  • Users: 14 → 9 fields  
+  • Orders: 17 → 10 fields
+  • Deliveries: 23 → 9 fields
+  
+  **Date:** October 19, 2025
+endlegend
+
+@enduml

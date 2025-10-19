@@ -10,7 +10,7 @@ Write-Host "📋 Checking Prerequisites..." -ForegroundColor Yellow
 
 # Check if backend is running
 try {
-    $backendCheck = Invoke-WebRequest -Uri "http://localhost:8084/api/menu" -UseBasicParsing -Method Options -TimeoutSec 2 -ErrorAction SilentlyContinue
+    $null = Invoke-WebRequest -Uri "http://localhost:8084/api/menu" -UseBasicParsing -Method Options -TimeoutSec 2 -ErrorAction SilentlyContinue
     Write-Host "✅ Backend is running on port 8084" -ForegroundColor Green
 } catch {
     Write-Host "❌ Backend is NOT running!" -ForegroundColor Red
@@ -20,11 +20,11 @@ try {
 
 # Check if frontend is running
 try {
-    $frontendCheck = Invoke-WebRequest -Uri "http://localhost:5176" -UseBasicParsing -TimeoutSec 2 -ErrorAction SilentlyContinue
+    $null = Invoke-WebRequest -Uri "http://localhost:5176" -UseBasicParsing -TimeoutSec 2 -ErrorAction SilentlyContinue
     Write-Host "✅ Frontend is running on port 5176" -ForegroundColor Green
 } catch {
     Write-Host "⚠️  Frontend is NOT running" -ForegroundColor Yellow
-    Write-Host "   Start with: cd frontend && npm run dev" -ForegroundColor Gray
+    Write-Host "   Start with: Set-Location frontend; npm run dev" -ForegroundColor Gray
 }
 
 Write-Host ""
@@ -54,7 +54,7 @@ Write-Host "Running Node.js API integration tests..." -ForegroundColor Yellow
 Write-Host ""
 
 # Run Node.js tests
-cd C:\SpringBoot\restaurant-system\frontend\tests
+Set-Location C:\SpringBoot\restaurant-system\frontend\tests
 node api-integration.test.js
 
 Write-Host ""
