@@ -323,6 +323,98 @@ Located in `bruno-api-tests/` folder:
 
 ---
 
+## 🏗️ Code Organization
+
+### **Backend Structure** (Feature-Based Organization)
+
+The backend follows a **feature-based architecture** for better maintainability:
+
+```
+src/main/java/com/bms/restaurant_system/
+├── controller/
+│   ├── admin/      - Admin management endpoints
+│   ├── auth/       - Authentication endpoints
+│   ├── user/       - User-facing endpoints
+│   ├── driver/     - Driver operations
+│   ├── kitchen/    - Kitchen operations
+│   └── manager/    - Manager operations
+│
+├── service/
+│   ├── user/       - User management
+│   ├── order/      - Order processing
+│   ├── payment/    - Payment processing
+│   ├── delivery/   - Delivery management
+│   ├── menu/       - Menu management
+│   ├── reservation/ - Reservations
+│   ├── notification/ - Notifications
+│   ├── storage/    - File storage
+│   └── database/   - Database utilities
+│
+├── dto/
+│   ├── auth/       - Authentication DTOs
+│   ├── user/       - User DTOs
+│   ├── driver/     - Driver DTOs
+│   ├── menu/       - Menu DTOs
+│   ├── order/      - Order DTOs
+│   ├── payment/    - Payment DTOs
+│   └── reservation/ - Reservation DTOs
+│
+├── entity/         - JPA entities (database models)
+├── repository/     - Spring Data repositories
+├── config/         - Configuration classes
+├── exception/      - Custom exceptions
+└── util/           - Utility classes
+```
+
+**Benefits:**
+- 🎯 Clear separation by feature and role
+- 🔍 Easy to locate related code
+- 📈 Scalable for new features
+- 🤝 Better team collaboration
+- 📚 See detailed documentation: `src/main/java/com/bms/restaurant_system/STRUCTURE.md`
+
+### **Frontend Structure** (Role-Based Organization)
+
+The frontend follows a **role-based architecture** with component separation:
+
+```
+frontend/src/
+├── components/
+│   ├── common/     - Shared components (Navbar, Layout, etc.)
+│   ├── forms/      - Form components (Login, Register, etc.)
+│   ├── admin/      - Admin-specific components
+│   ├── driver/     - Driver-specific components
+│   ├── menu/       - Menu-related components
+│   ├── payment/    - Payment components
+│   ├── layouts/    - Layout templates per role
+│   └── ui/         - UI components (buttons, modals)
+│
+├── pages/
+│   ├── public/     - Public pages (no auth)
+│   ├── user/       - Customer pages
+│   ├── admin/      - Admin dashboard
+│   ├── driver/     - Driver pages
+│   ├── kitchen/    - Kitchen pages
+│   ├── manager/    - Manager pages
+│   └── auth/       - Auth pages
+│
+├── contexts/       - React Context (Auth, Cart, Notifications)
+├── services/       - API services (authService, adminService, etc.)
+├── hooks/          - Custom React hooks
+├── routes/         - Route definitions
+├── styles/         - Global styles
+└── utils/          - Utility functions
+```
+
+**Benefits:**
+- 🎨 Role-based component organization
+- ♻️ High component reusability
+- 🧩 Modular and maintainable
+- 🚀 Easy to add new roles/features
+- 📚 See detailed documentation: `frontend/STRUCTURE.md`
+
+---
+
 ## 🗂️ Project Structure
 
 ```

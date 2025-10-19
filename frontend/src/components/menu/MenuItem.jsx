@@ -1,107 +1,110 @@
-import React from "react";
-import { Plus, Minus } from "lucide-react";
-import { toast } from "react-hot-toast";
+import React, { useState } from 'react';
+import { Star, Plus, Minus } from 'lucide-react';
+import { useCart } from '../contexts/CartContext';
+import FoodImage from './FoodImage';
+import toast from 'react-hot-toast';
 
-const MenuItem = ({ item, quantity, onQuantityChange, onAddToCart }) => {
+export default function MenuItem({ item }) {
+  const { addToCart } = useCart();
+  const [quantity, setQuantity] = useState(1);
+
+  const handleAddToCart = () => {
+    // Create cart item structure
+    const cartItem = {
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      description: item.description,
+      image: item.imageUrl,
+      quantity: quantity
+    };
+    
+    addToCart(cartItem);
+    toast.success(`Added ${item.name} to cart!`);
+    setQuantity(1);
+  };
+
+  const incrementQuantity = () => setQuantity(prev => prev + 1);
+  const decrementQuantity = () => setQuantity(prev => prev > 1 ? prev - 1 : 1);
+
   return (
-    <div className="card hover:shadow-lg transition-all duration-200 overflow-hidden">
-      {/* Image Container */}
-      <div className="relative h-48 overflow-hidden">
-        <img 
-          src={item.image} 
+    <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-200 hover:-translate-y-1 group">
+      <div className="relative overflow-hidden">
+        <FoodImage
+          src={item.imageUrl || item.image}
           alt={item.name}
-          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+          category={item.category}
+          itemName={item.name}
+          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-        
-        {/* Badges */}
-        <div className="absolute top-3 left-3 flex flex-col gap-1">
-          {item.featured && (
-            <span className="bg-orange-500 text-white text-xs font-medium px-2 py-1 rounded-full">
-              Popular
+        {!item.available && (
+          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+              Unavailable
             </span>
-          )}
-          {item.isSpicy && (
-            <span className="bg-red-500 text-white text-xs font-medium px-2 py-1 rounded-full">
-              🌶️ Spicy
-            </span>
-          )}
-          {!item.available && (
-            <span className="bg-gray-500 text-white text-xs font-medium px-2 py-1 rounded-full">
-              Sold Out
-            </span>
-          )}
-        </div>
+          </div>
+        )}
       </div>
-
-      {/* Content */}
-      <div className="p-4">
-        {/* Header */}
+      
+      <div className="p-5">
         <div className="flex justify-between items-start mb-2">
-          <h3 className="font-semibold text-gray-900 text-lg leading-tight line-clamp-2">
+          <h3 className="text-lg font-semibold text-gray-900 line-clamp-1">
             {item.name}
           </h3>
-          <div className="ml-2 flex-shrink-0">
-            <span className="text-lg font-bold text-gray-900">
-              Rs. {item.price.toLocaleString()}
+        </div>
+        
+        <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+          {item.description}
+        </p>
+        
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <span className="text-xl font-bold text-gray-900">
+              LKR {typeof item.price === 'number' ? item.price.toLocaleString() : item.price}
+            </span>
+            <span className="text-sm text-gray-500 ml-2 capitalize">
+              {item.category}
             </span>
           </div>
         </div>
 
-        {/* Description */}
-        <p className="text-gray-600 text-sm mb-4 line-clamp-2 leading-relaxed">
-          {item.description}
-        </p>
-
-        {/* Category and Dietary Info */}
-        <div className="flex flex-wrap gap-1 mb-4">
-          <span className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full">
-            {item.category}
-          </span>
-        </div>
-
-        {/* Actions */}
         {item.available ? (
           <div className="flex items-center justify-between">
-            {/* Quantity Controls */}
-            <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
+            <div className="flex items-center bg-gray-100 rounded-lg border border-gray-200">
               <button
-                onClick={() => onQuantityChange(quantity - 1)}
-                className="p-2 hover:bg-gray-50 text-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={quantity <= 1}
+                onClick={decrementQuantity}
+                className="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-gray-800 hover:bg-gray-200 transition-colors rounded-l-lg"
               >
                 <Minus className="w-4 h-4" />
               </button>
-              <span className="px-4 py-2 font-medium text-gray-900 min-w-[50px] text-center border-x border-gray-200">
+              <span className="mx-3 font-medium text-gray-900 min-w-[2rem] text-center">
                 {quantity}
               </span>
               <button
-                onClick={() => onQuantityChange(quantity + 1)}
-                className="p-2 hover:bg-gray-50 text-gray-600 transition-colors"
+                onClick={incrementQuantity}
+                className="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-gray-800 hover:bg-gray-200 transition-colors rounded-r-lg"
               >
                 <Plus className="w-4 h-4" />
               </button>
             </div>
-
-            {/* Add to Cart Button */}
+            
             <button
-              onClick={() => {
-                onAddToCart();
-                toast.success(`${item.name} added to cart!`);
-              }}
-              className="btn-primary px-6 py-2 text-sm"
+              onClick={handleAddToCart}
+              className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2 rounded-lg font-semibold transition-all duration-200 hover:shadow-md flex items-center gap-2 active:scale-[0.98]"
             >
-              Add
+              <Plus className="w-4 h-4" />
+              Add to Cart
             </button>
           </div>
         ) : (
-          <div className="flex items-center justify-center py-3">
-            <span className="text-gray-500 font-medium">Currently Unavailable</span>
-          </div>
+          <button
+            disabled
+            className="w-full bg-gray-300 text-gray-500 px-6 py-2 rounded-lg font-semibold cursor-not-allowed"
+          >
+            Unavailable
+          </button>
         )}
       </div>
     </div>
   );
-};
-
-export default MenuItem;
+}
