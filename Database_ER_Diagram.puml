@@ -1,0 +1,301 @@
+@startuml Restaurant_System_ER_Diagram
+
+!define TABLE(x) class x << (T,#FFAAAA) >>
+!define PRIMARY_KEY(x) <b><color:#b8861b><&key></color> x</b>
+!define FOREIGN_KEY(x) <color:#aaaaaa><&key></color> x
+!define NOT_NULL(x) <b>x</b>
+!define UNIQUE(x) <u>x</u>
+
+' Styling
+skinparam linetype ortho
+skinparam shadowing false
+skinparam class {
+    BackgroundColor White
+    BorderColor Black
+    ArrowColor Black
+}
+
+title Restaurant Management System - ER Diagram\n(Simplified Schema - 10 Tables, 93 Fields)
+
+' ============================================
+' ENTITIES
+' ============================================
+
+entity "users" as users {
+    PRIMARY_KEY(id) : BIGINT <<AUTO_INCREMENT>>
+    --
+    NOT_NULL(UNIQUE(username)) : VARCHAR(50)
+    NOT_NULL(password) : VARCHAR(255)
+    NOT_NULL(UNIQUE(email)) : VARCHAR(100)
+    phone : VARCHAR(20)
+    role : ENUM('USER', 'ADMIN')
+    enabled : BOOLEAN
+    created_at : DATETIME
+    updated_at : DATETIME
+}
+
+entity "menus" as menus {
+    PRIMARY_KEY(id) : BIGINT <<AUTO_INCREMENT>>
+    --
+    NOT_NULL(name) : VARCHAR(100)
+    description : TEXT
+    NOT_NULL(category) : VARCHAR(50)
+    NOT_NULL(price) : DECIMAL(10,2)
+    is_available : BOOLEAN
+    image_url : VARCHAR(255)
+    preparation_time : INT
+    is_vegetarian : BOOLEAN
+    is_vegan : BOOLEAN
+    is_gluten_free : BOOLEAN
+    is_spicy : BOOLEAN
+    spice_level : INT
+    is_featured : BOOLEAN
+    stock_quantity : INT
+    low_stock_threshold : INT
+    ingredients : TEXT
+    discount_percentage : DECIMAL(5,2)
+    discounted_price : DECIMAL(10,2)
+    created_at : DATETIME
+    updated_at : DATETIME
+    --
+    <color:#green>**21 fields total**</color>
+    <color:#green>**NO calories**</color>
+    <color:#green>**NO allergens**</color>
+}
+
+entity "orders" as orders {
+    PRIMARY_KEY(id) : BIGINT <<AUTO_INCREMENT>>
+    --
+    FOREIGN_KEY(NOT_NULL(user_id)) : BIGINT
+    order_date : DATETIME
+    status : VARCHAR(50)
+    NOT_NULL(total_amount) : DECIMAL(10,2)
+    delivery_address : TEXT
+    delivery_phone : VARCHAR(20)
+    special_instructions : TEXT
+    created_at : DATETIME
+    updated_at : DATETIME
+}
+
+entity "order_items" as order_items {
+    PRIMARY_KEY(id) : BIGINT <<AUTO_INCREMENT>>
+    --
+    FOREIGN_KEY(NOT_NULL(order_id)) : BIGINT
+    FOREIGN_KEY(NOT_NULL(menu_id)) : BIGINT
+    NOT_NULL(quantity) : INT
+    NOT_NULL(unit_price) : DECIMAL(10,2)
+    NOT_NULL(total_price) : DECIMAL(10,2)
+}
+
+entity "reservations" as reservations {
+    PRIMARY_KEY(id) : BIGINT <<AUTO_INCREMENT>>
+    --
+    FOREIGN_KEY(NOT_NULL(user_id)) : BIGINT
+    NOT_NULL(customer_name) : VARCHAR(100)
+    NOT_NULL(customer_phone) : VARCHAR(20)
+    customer_email : VARCHAR(100)
+    NOT_NULL(reservation_date) : DATE
+    NOT_NULL(reservation_time) : TIME
+    NOT_NULL(number_of_people) : INT
+    status : VARCHAR(50)
+    special_requests : TEXT
+    created_at : DATETIME
+    updated_at : DATETIME
+}
+
+entity "drivers" as drivers {
+    PRIMARY_KEY(id) : BIGINT <<AUTO_INCREMENT>>
+    --
+    NOT_NULL(name) : VARCHAR(100)
+    NOT_NULL(UNIQUE(phone)) : VARCHAR(20)
+    UNIQUE(email) : VARCHAR(100)
+    vehicle_number : VARCHAR(20)
+    status : VARCHAR(20)
+    created_at : DATETIME
+    updated_at : DATETIME
+}
+
+entity "deliveries" as deliveries {
+    PRIMARY_KEY(id) : BIGINT <<AUTO_INCREMENT>>
+    --
+    FOREIGN_KEY(NOT_NULL(order_id)) : BIGINT
+    FOREIGN_KEY(driver_id) : BIGINT
+    NOT_NULL(delivery_address) : TEXT
+    status : VARCHAR(50)
+    estimated_delivery_time : DATETIME
+    actual_delivery_time : DATETIME
+    created_at : DATETIME
+    updated_at : DATETIME
+}
+
+entity "payments" as payments {
+    PRIMARY_KEY(id) : BIGINT <<AUTO_INCREMENT>>
+    --
+    FOREIGN_KEY(NOT_NULL(order_id)) : BIGINT
+    NOT_NULL(amount) : DECIMAL(10,2)
+    NOT_NULL(payment_method) : VARCHAR(50)
+    status : VARCHAR(50)
+    transaction_id : VARCHAR(255)
+    created_at : DATETIME
+    updated_at : DATETIME
+}
+
+entity "payment_slips" as payment_slips {
+    PRIMARY_KEY(id) : BIGINT <<AUTO_INCREMENT>>
+    --
+    FOREIGN_KEY(NOT_NULL(order_id)) : BIGINT
+    NOT_NULL(file_name) : VARCHAR(255)
+    NOT_NULL(file_path) : VARCHAR(500)
+    uploaded_at : DATETIME
+}
+
+entity "reviews" as reviews {
+    PRIMARY_KEY(id) : BIGINT <<AUTO_INCREMENT>>
+    --
+    FOREIGN_KEY(NOT_NULL(user_id)) : BIGINT
+    FOREIGN_KEY(NOT_NULL(menu_id)) : BIGINT
+    NOT_NULL(rating) : INT <<CHECK 1-5>>
+    comment : TEXT
+    created_at : DATETIME
+}
+
+' ============================================
+' RELATIONSHIPS
+' ============================================
+
+' Users -> Orders (One-to-Many)
+users ||--o{ orders : "places"
+note on link
+  One user can place
+  multiple orders
+end note
+
+' Users -> Reservations (One-to-Many)
+users ||--o{ reservations : "makes"
+note on link
+  One user can make
+  multiple reservations
+end note
+
+' Users -> Reviews (One-to-Many)
+users ||--o{ reviews : "writes"
+note on link
+  One user can write
+  multiple reviews
+end note
+
+' Orders -> Order Items (One-to-Many)
+orders ||--|{ order_items : "contains"
+note on link
+  One order contains
+  multiple items
+end note
+
+' Orders -> Deliveries (One-to-One)
+orders ||--|| deliveries : "has"
+note on link
+  One order has
+  one delivery
+end note
+
+' Orders -> Payments (One-to-One)
+orders ||--|| payments : "requires"
+note on link
+  One order requires
+  one payment
+end note
+
+' Orders -> Payment Slips (One-to-Many)
+orders ||--o{ payment_slips : "has"
+note on link
+  One order can have
+  multiple payment slips
+end note
+
+' Menus -> Order Items (One-to-Many)
+menus ||--o{ order_items : "ordered in"
+note on link
+  One menu item can be
+  in multiple orders
+end note
+
+' Menus -> Reviews (One-to-Many)
+menus ||--o{ reviews : "reviewed in"
+note on link
+  One menu item can have
+  multiple reviews
+end note
+
+' Drivers -> Deliveries (One-to-Many)
+drivers ||--o{ deliveries : "assigned to"
+note on link
+  One driver can handle
+  multiple deliveries
+end note
+
+' ============================================
+' LEGEND
+' ============================================
+
+legend right
+  |= Symbol |= Meaning |
+  | <b><color:#b8861b><&key></color></b> | Primary Key |
+  | <color:#aaaaaa><&key></color> | Foreign Key |
+  | <b>field</b> | NOT NULL |
+  | <u>field</u> | UNIQUE |
+  | ||--o{ | One-to-Many |
+  | ||--|| | One-to-One |
+  
+  **Database Statistics:**
+  • Total Tables: 10
+  • Total Fields: 93
+  • Reduction: 38% (from 150 fields)
+  
+  **Key Simplifications:**
+  • Menus: 21 fields (NO calories, NO allergens)
+  • Users: Simplified to USER/ADMIN roles only
+  • Orders: Removed calculated fields
+  • Deliveries: Removed GPS tracking
+  
+  **Last Updated:** October 19, 2025
+endlegend
+
+' ============================================
+' NOTES
+' ============================================
+
+note top of menus
+  <b>Menus Table - Simplified</b>
+  ✓ 21 fields total
+  ✗ NO calories field
+  ✗ NO allergens field
+  ✓ Dietary flags included
+  ✓ Stock management
+  ✓ Discount support
+end note
+
+note top of users
+  <b>Users Table - Simplified</b>
+  ✓ 9 fields only
+  ✓ Roles: USER or ADMIN
+  ✗ NO promo code fields
+  ✗ NO last_login tracking
+end note
+
+note bottom of deliveries
+  <b>Deliveries - Simplified</b>
+  ✓ 9 fields only
+  ✗ NO GPS tracking
+  ✗ NO location coordinates
+  ✓ Basic status tracking
+end note
+
+note bottom of payments
+  <b>Payments - Simplified</b>
+  ✓ 8 fields only
+  ✗ NO gateway details
+  ✗ NO refund tracking
+  ✓ Basic transaction support
+end note
+
+@enduml
