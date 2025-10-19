@@ -24,8 +24,8 @@ A comprehensive full-stack restaurant management system built with Spring Boot a
    mysql -u root -p
    
    # Run setup script
-   source database-setup.sql
-   # Or: mysql -u root -p < database-setup.sql
+   source database/database-setup.sql
+   # Or: mysql -u root -p < database/database-setup.sql
    ```
 
 3. **Configure Backend**
@@ -39,7 +39,7 @@ A comprehensive full-stack restaurant management system built with Spring Boot a
 4. **Start Backend** (Terminal 1)
    ```bash
    mvn spring-boot:run
-   # Or use: .\start-backend.ps1
+   # Or use: .\scripts\start-backend.ps1
    ```
 
 5. **Start Frontend** (Terminal 2)
@@ -47,7 +47,7 @@ A comprehensive full-stack restaurant management system built with Spring Boot a
    cd frontend
    npm install
    npm run dev
-   # Or use: .\start-frontend.ps1
+   # Or use: .\scripts\start-frontend.ps1
    ```
 
 6. **Access Application**
@@ -84,11 +84,11 @@ A comprehensive full-stack restaurant management system built with Spring Boot a
 ```bash
 # Option 1: VS Code PlantUML Extension
 # 1. Install "PlantUML" extension by jebbs
-# 2. Open Database_ER_Diagram.puml
+# 2. Open docs/diagrams/Database_ER_Diagram.puml
 # 3. Press Alt+D to preview
 
 # Option 2: Online Viewer
-# 1. Open Database_ER_Diagram_Simple.puml
+# 1. Open docs/diagrams/Database_ER_Diagram_Simple.puml
 # 2. Copy content
 # 3. Paste at: http://www.plantuml.com/plantuml/uml/
 ```
@@ -338,9 +338,14 @@ restaurant-system/
 │   │   │   ├── service/         # Business logic
 │   │   │   └── util/            # Utility classes (JWT, etc.)
 │   │   └── resources/
-│   │       ├── application.properties  # Main config
+│   │       ├── application.properties         # Main MySQL config
+│   │       ├── application-postgresql.properties  # PostgreSQL profile
+│   │       ├── application-test.properties    # Test profile
 │   │       └── static/images/   # Uploaded images
-│   └── test/                    # Unit & integration tests
+│   └── test/
+│       ├── java/                # Unit & integration tests
+│       └── resources/
+│           └── application-test.properties  # Test configuration
 ├── frontend/
 │   ├── src/
 │   │   ├── components/          # React components
@@ -349,16 +354,32 @@ restaurant-system/
 │   │   ├── services/            # API services
 │   │   └── utils/               # Helper functions
 │   └── tests/                   # Frontend tests
+├── database/                    # Database SQL scripts
+│   ├── database-setup.sql       # Main setup script
+│   ├── setup-postgresql.sql     # PostgreSQL setup
+│   ├── verify-database.sql      # Verification script
+│   └── README.md                # Database documentation
+├── scripts/                     # Executable scripts
+│   ├── start-backend.ps1        # Backend startup
+│   ├── start-frontend.ps1       # Frontend startup
+│   ├── start-servers.bat        # Windows batch script
+│   ├── start-servers.sh         # Linux/Mac script
+│   ├── test-jwt-config.ps1      # JWT test script
+│   ├── run-all-tests.ps1        # Complete test suite
+│   └── README.md                # Scripts documentation
+├── docs/                        # Documentation & diagrams
+│   ├── diagrams/                # PlantUML diagrams
+│   │   ├── Database_ER_Diagram.puml        # Detailed ER diagram
+│   │   ├── Database_ER_Diagram_Simple.puml # Simple ER diagram
+│   │   ├── Restaurant_System_*.puml        # System diagrams
+│   │   ├── Login_*.puml         # Login/Auth diagrams
+│   │   ├── Menu_*.puml          # Menu management diagrams
+│   │   ├── Ordering_*.puml      # Order/Reservation diagrams
+│   │   └── Payment_*.puml       # Payment diagrams
+│   └── README.md                # Documentation guide
 ├── bruno-api-tests/             # Bruno API test collection
-├── database-setup.sql           # Database schema & sample data
-├── verify-database.sql          # Database verification script
-├── Database_ER_Diagram.puml     # Detailed ER diagram
-├── Database_ER_Diagram_Simple.puml  # Simple ER diagram
-├── start-backend.ps1            # Backend startup script
-├── start-frontend.ps1           # Frontend startup script
-├── test-jwt-config.ps1          # JWT test script
-├── run-all-tests.ps1            # Complete test suite
-└── README.md                    # This file
+├── pom.xml                      # Maven configuration
+└── README.md                    # This file (main documentation)
 ```
 
 ---
@@ -618,15 +639,21 @@ For issues or questions:
 
 ## 📚 Additional Resources
 
-### Files & Scripts
-- `database-setup.sql` - Complete database schema
-- `verify-database.sql` - Database validation
-- `Database_ER_Diagram.puml` - Detailed ER diagram
-- `Database_ER_Diagram_Simple.puml` - Simple ER diagram
-- `start-backend.ps1` - Backend startup (Windows)
-- `start-frontend.ps1` - Frontend startup (Windows)
-- `test-jwt-config.ps1` - JWT authentication test
-- `run-all-tests.ps1` - Complete test suite
+### Project Organization
+- **`database/`** - All SQL scripts and database documentation
+  - `database-setup.sql` - Complete MySQL schema
+  - `setup-postgresql.sql` - PostgreSQL alternative
+  - `verify-database.sql` - Database validation
+- **`docs/diagrams/`** - All PlantUML diagrams
+  - `Database_ER_Diagram.puml` - Detailed ER diagram
+  - `Database_ER_Diagram_Simple.puml` - Simple ER diagram
+  - System, Login, Menu, Order, Payment diagrams
+- **`scripts/`** - Executable scripts
+  - `start-backend.ps1` - Backend startup (Windows)
+  - `start-frontend.ps1` - Frontend startup (Windows)
+  - `test-jwt-config.ps1` - JWT authentication test
+  - `run-all-tests.ps1` - Complete test suite
+  - Cross-platform shell scripts (.sh, .bat)
 
 ### Key Endpoints for Testing
 ```bash
