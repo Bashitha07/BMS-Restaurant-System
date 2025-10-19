@@ -19,6 +19,7 @@ public record PaymentDTO(
     String failureReason,
     BigDecimal refundAmount,
     LocalDateTime refundedDate,
+    String refundReason,
     LocalDateTime createdAt,
     LocalDateTime updatedAt
 ) {}

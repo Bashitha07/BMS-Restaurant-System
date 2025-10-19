@@ -1,9 +1,9 @@
 import api from './api';
 
 const PAYMENT_ENDPOINTS = {
-  UPLOAD: '/payment-slips/upload',
-  USER_SLIPS: (userId) => `/payment-slips/user/${userId}`,
-  SLIP_BY_ID: (id) => `/payment-slips/${id}`
+  UPLOAD: '/api/payment-slips/upload',
+  USER_SLIPS: (userId) => `/api/payment-slips/user/${userId}`,
+  SLIP_BY_ID: (id) => `/api/payment-slips/${id}`
 };
 
 export const paymentService = {

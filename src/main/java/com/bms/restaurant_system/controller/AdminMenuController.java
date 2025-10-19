@@ -9,9 +9,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/admin/menu")
@@ -122,6 +129,60 @@ public class AdminMenuController {
         } catch (Exception e) {
             logger.error("Error in bulk availability update: {}", e.getMessage());
             return ResponseEntity.status(400).body("Failed to update availability: " + e.getMessage());
+        }
+    }
+
+    // Upload menu item image
+    @PostMapping("/upload-image")
+    public ResponseEntity<?> uploadMenuImage(@RequestParam("file") MultipartFile file) {
+        logger.info("Admin uploading menu image: {}", file.getOriginalFilename());
+
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().body("File is empty");
+        }
+
+        // Validate file type
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            return ResponseEntity.badRequest().body("Only image files are allowed");
+        }
+
+        // Validate file size (max 5MB)
+        if (file.getSize() > 5 * 1024 * 1024) {
+            return ResponseEntity.badRequest().body("File size must be less than 5MB");
+        }
+
+        try {
+            // Create upload directory if it doesn't exist
+            Path uploadDir = Paths.get("src/main/resources/static/images/menu");
+            if (!Files.exists(uploadDir)) {
+                Files.createDirectories(uploadDir);
+            }
+
+            // Generate unique filename
+            String originalFilename = file.getOriginalFilename();
+            String fileExtension = originalFilename != null && originalFilename.contains(".")
+                ? originalFilename.substring(originalFilename.lastIndexOf("."))
+                : ".jpg";
+            String uniqueFilename = UUID.randomUUID().toString() + fileExtension;
+
+            // Save file
+            Path filePath = uploadDir.resolve(uniqueFilename);
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            // Return the URL that can be accessed by frontend
+            String imageUrl = "/images/menu/" + uniqueFilename;
+            logger.info("Menu image uploaded successfully: {}", imageUrl);
+
+            return ResponseEntity.ok(Map.of(
+                "imageUrl", imageUrl,
+                "filename", uniqueFilename,
+                "message", "Image uploaded successfully"
+            ));
+
+        } catch (IOException e) {
+            logger.error("Error uploading menu image: {}", e.getMessage());
+            return ResponseEntity.status(500).body("Failed to upload image: " + e.getMessage());
         }
     }
 }

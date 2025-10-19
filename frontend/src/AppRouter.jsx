@@ -4,12 +4,14 @@ import { useAuth } from './contexts/AuthContext';
 import UserLayout from './components/layouts/UserLayout';
 import AdminLayout from './components/layouts/AdminLayout';
 import DriverLayout from './components/layouts/DriverLayout';
+import KitchenLayout from './components/layouts/KitchenLayout';
+import ManagerLayout from './components/layouts/ManagerLayout';
 import CartSidebar from './components/CartSidebar';
 import LoadingSpinner from './components/ui/LoadingSpinner';
 import { routes } from './routes';
 
 const AppRouter = () => {
-  const { user, isAdmin, isDriver } = useAuth();
+  const { user, isAdmin, isDriver, isKitchen, isManager } = useAuth();
   const location = useLocation();
   const [isCartOpen, setIsCartOpen] = useState(false);
 
@@ -22,6 +24,12 @@ const AppRouter = () => {
     }
     if (route.requireDriver && !isDriver) {
       return <Navigate to="/driver/login" />;
+    }
+    if (route.requireKitchen && !isKitchen) {
+      return <Navigate to="/" />;
+    }
+    if (route.requireManager && !isManager) {
+      return <Navigate to="/" />;
     }
     return <route.Component />;
   };
@@ -49,6 +57,10 @@ const AppRouter = () => {
                   <AdminLayout>{renderRoute(route)}</AdminLayout>
                 ) : route.requireDriver ? (
                   <DriverLayout>{renderRoute(route)}</DriverLayout>
+                ) : route.requireKitchen ? (
+                  <KitchenLayout>{renderRoute(route)}</KitchenLayout>
+                ) : route.requireManager ? (
+                  <ManagerLayout>{renderRoute(route)}</ManagerLayout>
                 ) : (
                   <UserLayout onCartClick={() => setIsCartOpen(true)}>{renderRoute(route)}</UserLayout>
                 )

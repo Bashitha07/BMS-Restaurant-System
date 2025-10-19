@@ -165,19 +165,10 @@ const Home = () => {
                       category={item.category}
                       className="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
                     />
-                    {item.rating > 4.7 && (
-                      <div className="absolute top-4 right-4 bg-pink-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg transform rotate-3">
-                        Popular
-                      </div>
-                    )}
                   </div>
                   <div className="p-5">
                     <div className="flex justify-between items-start mb-3">
                       <h3 className="text-lg font-bold text-gray-800">{item.name}</h3>
-                      <div className="flex items-center bg-gray-100 px-2 py-1 rounded-full text-sm">
-                        <StarIcon size={16} className="text-purple-500 mr-1" />
-                        <span>{item.rating}</span>
-                      </div>
                     </div>
                     <p className="text-gray-600 text-sm mb-4 line-clamp-2">{item.description}</p>
                     <div className="flex justify-between items-center">

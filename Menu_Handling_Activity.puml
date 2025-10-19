@@ -1,0 +1,70 @@
+@startuml Menu_Handling_Activity
+!theme plain
+title BMS Restaurant-System - Menu Handling Activity Diagram
+
+start
+
+if (User Role?) then (Admin)
+    :Access admin panel;
+    :Choose menu management;
+
+    if (Operation?) then (Create Item)
+        :Enter item details;
+        :Upload item image;
+        :Set price and category;
+        :Set availability status;
+        :Save to database;
+        :Show success message;
+    elseif (Update Item)
+        :Select item to update;
+        :Modify details/image/price;
+        :Update in database;
+        :Show success message;
+    elseif (Delete Item)
+        :Select item to delete;
+        :Confirm deletion;
+        :Remove from database;
+        :Show success message;
+    elseif (Manage Categories)
+        :View existing categories;
+        if (Add Category?) then (yes)
+            :Enter category name;
+            :Save category;
+        elseif (Edit Category?) then (yes)
+            :Select category;
+            :Update name/details;
+            :Save changes;
+        elseif (Delete Category?) then (yes)
+            :Select category;
+            :Confirm deletion;
+            :Remove category;
+        endif
+    endif
+
+elseif (Customer)
+    :Browse menu page;
+    :View all menu items;
+
+    if (Search/Filter?) then (yes)
+        :Enter search term;
+        :Select category filter;
+        :Apply sorting (price/name);
+        :Display filtered results;
+    endif
+
+    :Click on menu item;
+    :View item details;
+    :View item image;
+    :Check availability;
+    :Check price/discounts;
+
+    if (Add to cart?) then (yes)
+        :Select quantity;
+        :Add to cart;
+        :Update cart total;
+        :Show cart notification;
+    endif
+
+stop
+
+@enduml

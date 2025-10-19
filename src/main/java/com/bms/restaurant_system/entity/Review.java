@@ -1,7 +1,6 @@
 package com.bms.restaurant_system.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -27,14 +26,8 @@ public class Review {
     @Column(name = "menu_id", nullable = false)
     private Long menuId;
     
-    @NotNull
-    @Min(value = 1, message = "Rating must be at least 1")
-    @Max(value = 5, message = "Rating must be at most 5")
-    @Column(nullable = false)
-    private Integer rating;
-    
     @Column(columnDefinition = "TEXT")
-    private String comment;
+    private String feedback;
     
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

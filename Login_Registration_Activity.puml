@@ -1,0 +1,56 @@
+@startuml Login_Registration_Activity
+!theme plain
+title BMS Restaurant-System - Login & Registration Activity Diagram
+
+start
+
+:User accesses system;
+
+if (Has account?) then (yes)
+    :Enter email/password;
+    :Validate credentials;
+    if (Valid credentials?) then (yes)
+        :Generate JWT token;
+        :Set authentication cookie;
+        :Redirect to dashboard;
+        stop
+    else (no)
+        :Show login error;
+        :Increment attempt counter;
+        if (Total attempts < 5?) then (yes)
+            :Allow retry;
+            note right: Return to login (chances remaining: 5 - attempts)
+            -> Increment attempt counter;
+        else (no)
+            :Lock account temporarily;
+            :Send account lock notification;
+            stop
+        endif
+    endif
+else (no)
+    :Click "Register";
+    :Enter registration details;
+    :Validate input format;
+    if (Valid format?) then (yes)
+        :Check email uniqueness;
+        if (Email available?) then (yes)
+            :Create user account;
+            :Generate verification token;
+            :Send verification email;
+            :Show success message;
+            
+            note right: User must verify email before first login
+            
+            :Redirect to login;
+            stop
+        else (no)
+            :Show email exists error;
+            stop
+        endif
+    else (no)
+        :Show validation errors;
+        stop
+    endif
+endif
+
+@enduml

@@ -1,5 +1,5 @@
 import React from "react";
-import { Plus, Minus, Star } from "lucide-react";
+import { Plus, Minus } from "lucide-react";
 import { toast } from "react-hot-toast";
 
 const MenuItem = ({ item, quantity, onQuantityChange, onAddToCart }) => {
@@ -32,14 +32,6 @@ const MenuItem = ({ item, quantity, onQuantityChange, onAddToCart }) => {
             </span>
           )}
         </div>
-
-        {/* Rating Badge */}
-        {item.rating && (
-          <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1 flex items-center gap-1">
-            <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-            <span className="text-xs font-medium text-gray-900">{item.rating}</span>
-          </div>
-        )}
       </div>
 
       {/* Content */}
@@ -66,14 +58,6 @@ const MenuItem = ({ item, quantity, onQuantityChange, onAddToCart }) => {
           <span className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full">
             {item.category}
           </span>
-          {item.dietaryInfo && item.dietaryInfo.map((info, index) => (
-            <span 
-              key={index} 
-              className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full"
-            >
-              {info}
-            </span>
-          ))}
         </div>
 
         {/* Actions */}

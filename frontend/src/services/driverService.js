@@ -2,23 +2,23 @@ import api from './api';
 
 const DRIVER_ENDPOINTS = {
   // Driver authentication
-  LOGIN: '/drivers/auth/login',
-  LOGOUT: '/drivers/auth/logout',
+  LOGIN: '/api/drivers/auth/login',
+  LOGOUT: '/api/drivers/auth/logout',
   
   // Driver orders
-  AVAILABLE_DELIVERIES: (driverId) => `/drivers/${driverId}/available-deliveries`,
-  ACCEPT_DELIVERY: (driverId, deliveryId) => `/drivers/${driverId}/deliveries/${deliveryId}/accept`,
-  UPDATE_STATUS: (driverId, deliveryId) => `/drivers/${driverId}/deliveries/${deliveryId}/status`,
-  COMPLETE_DELIVERY: (driverId, deliveryId) => `/drivers/${driverId}/deliveries/${deliveryId}/complete`,
-  UPDATE_LOCATION: (driverId) => `/drivers/${driverId}/location`,
+  AVAILABLE_DELIVERIES: (driverId) => `/api/drivers/${driverId}/available-deliveries`,
+  ACCEPT_DELIVERY: (driverId, deliveryId) => `/api/drivers/${driverId}/deliveries/${deliveryId}/accept`,
+  UPDATE_STATUS: (driverId, deliveryId) => `/api/drivers/${driverId}/deliveries/${deliveryId}/status`,
+  COMPLETE_DELIVERY: (driverId, deliveryId) => `/api/drivers/${driverId}/deliveries/${deliveryId}/complete`,
+  UPDATE_LOCATION: (driverId) => `/api/drivers/${driverId}/location`,
   
   // Driver admin endpoints
-  ADMIN_DRIVERS: '/admin/drivers',
-  ADMIN_REGISTER: '/admin/drivers/register',
-  ADMIN_DRIVER_BY_ID: (id) => `/admin/drivers/${id}`,
-  ADMIN_UPDATE_STATUS: (id) => `/admin/drivers/${id}/status`,
-  ADMIN_PERFORMANCE: (id) => `/admin/drivers/${id}/performance`,
-  ADMIN_STATISTICS: '/admin/drivers/statistics'
+  ADMIN_DRIVERS: '/api/admin/drivers',
+  ADMIN_REGISTER: '/api/admin/drivers/register',
+  ADMIN_DRIVER_BY_ID: (id) => `/api/admin/drivers/${id}`,
+  ADMIN_UPDATE_STATUS: (id) => `/api/admin/drivers/${id}/status`,
+  ADMIN_PERFORMANCE: (id) => `/api/admin/drivers/${id}/performance`,
+  ADMIN_STATISTICS: '/api/admin/drivers/statistics'
 };
 
 export const driverService = {

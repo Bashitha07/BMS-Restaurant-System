@@ -287,11 +287,8 @@ const AdminMenuManagement = () => {
 
     setUploadingImage(true);
     try {
-      // In a real app, you would upload to a cloud service (AWS S3, Cloudinary, etc.)
-      // For demo purposes, we'll simulate the upload and use the preview URL
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate upload delay
-      
-      const uploadedUrl = imagePreview; // In real app, this would be the cloud URL
+      const response = await adminService.uploadMenuImage(imageFile);
+      const uploadedUrl = response.imageUrl;
       setFormData(prev => ({ ...prev, image: uploadedUrl }));
       toast.success('Image uploaded successfully!');
     } catch (error) {

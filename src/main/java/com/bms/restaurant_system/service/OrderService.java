@@ -324,6 +324,7 @@ public class OrderService {
                 payment.getFailureReason(),
                 payment.getRefundAmount(),
                 payment.getRefundedDate(),
+                payment.getRefundReason(),
                 payment.getCreatedAt(),
                 payment.getUpdatedAt()
         );

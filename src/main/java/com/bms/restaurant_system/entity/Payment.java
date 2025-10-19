@@ -63,6 +63,9 @@ public class Payment {
     @Column(name = "refunded_date")
     private LocalDateTime refundedDate;
 
+    @Column(name = "refund_reason", length = 500)
+    private String refundReason;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 

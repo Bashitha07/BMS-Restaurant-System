@@ -106,9 +106,11 @@ function AuthProvider({ children }) {
 
   const isAdmin = useMemo(() => (user?.role || '').toUpperCase() === 'ADMIN', [user]);
   const isDriver = useMemo(() => (user?.role || '').toUpperCase() === 'DRIVER', [user]);
+  const isKitchen = useMemo(() => (user?.role || '').toUpperCase() === 'KITCHEN', [user]);
+  const isManager = useMemo(() => (user?.role || '').toUpperCase() === 'MANAGER', [user]);
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, updateProfile, isAdmin, isDriver }}>
+    <AuthContext.Provider value={{ user, login, register, logout, updateProfile, isAdmin, isDriver, isKitchen, isManager }}>
       {children}
     </AuthContext.Provider>
   );
