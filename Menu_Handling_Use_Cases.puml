@@ -1,142 +1,100 @@
 @startuml Menu_Handling_Use_Cases
 !theme plain
 left to right direction
-title Restaurant System - Menu Handling Use Cases
+skinparam backgroundColor #FEFEFE
+skinparam packageBackgroundColor #FFFFFF
+skinparam packageBorderColor #000000
+skinparam actorBackgroundColor #FFFFFF
+skinparam actorBorderColor #000000
+skinparam usecaseBackgroundColor #FFFFFF
+skinparam usecaseBorderColor #000000
+skinparam noteBackgroundColor #FFFFFF
+skinparam noteBorderColor #000000
+skinparam packageFontSize 12
+skinparam usecaseFontSize 11
+skinparam actorFontSize 11
+title BMS Restaurant-System - Menu Management Use Cases (CRUD Structure)
 
-' Left side actors
+' Primary Actors (Right Side - inverted)
 actor "Customer" as customer
 actor "Admin" as admin
-actor "Kitchen Staff" as kitchen
 
-' System boundary
-rectangle "Menu Management System" {
-    
-    ' Customer Menu Use Cases
-    usecase "Browse Menu" as UC1
-    usecase "Search Menu Items" as UC2
-    usecase "Filter by Category" as UC3
-    usecase "Filter by Price Range" as UC4
-    usecase "View Item Details" as UC5
-    usecase "Check Item Availability" as UC6
-    usecase "View Nutritional Info" as UC7
-    usecase "View Item Ratings" as UC8
-    usecase "Sort Menu Items" as UC9
-    
-    ' Admin Menu Management
-    usecase "Create Menu Item" as UC10
-    usecase "Update Menu Item" as UC11
-    usecase "Delete Menu Item" as UC12
-    usecase "Manage Categories" as UC13
-    usecase "Set Item Prices" as UC14
-    usecase "Update Availability" as UC15
-    usecase "Upload Item Images" as UC16
-    usecase "Set Preparation Time" as UC17
-    usecase "Manage Discounts" as UC18
-    usecase "Bulk Operations" as UC19
-    
-    ' Inventory Management
-    usecase "Track Stock Levels" as UC20
-    usecase "Set Low Stock Alerts" as UC21
-    usecase "Update Stock Quantity" as UC22
-    usecase "Mark Out of Stock" as UC23
-    
-    ' Menu Analytics
-    usecase "View Popular Items" as UC24
-    usecase "Generate Menu Reports" as UC25
-    usecase "Track Item Performance" as UC26
-    usecase "Revenue by Category" as UC27
-    
-    ' Kitchen Operations
-    usecase "View Menu for Preparation" as UC28
-    usecase "Update Ingredient Status" as UC29
-    usecase "Report Menu Issues" as UC30
-    usecase "Suggest Recipe Changes" as UC31
+' System boundary with entities flowing left to right (inverted layout)
+rectangle "Menu Management System" as system {
+
+    ' Menu Item Entity - Leftmost position
+    package "Menu Item Entity" as menu_entity {
+        usecase "Manage Menu Items" as manage_items
+        usecase "Create Menu Item" as create_item
+        usecase "Read/View Menu Items" as read_items
+        usecase "Update Menu Item" as update_item
+        usecase "Delete Menu Item" as delete_item
+        usecase "Upload Item Images" as upload_images
+        usecase "Set Item Prices" as set_prices
+        usecase "Set Discounted Prices" as set_discounts
+        usecase "Update Availability Status" as update_avail
+    }
+
+    ' Category Entity - Next to Menu Item Entity
+    package "Category Entity" as category_entity {
+        usecase "Manage Categories" as manage_cat
+        usecase "Create Category" as create_cat
+        usecase "Read/View Categories" as read_cat
+        usecase "Update Category" as update_cat
+        usecase "Delete Category" as delete_cat
+    }
+
+    ' Customer Browsing - Rightmost position
+    package "Customer Browsing" as customer_ops {
+        usecase "Browse Menu" as browse_menu
+        usecase "Search Menu Items" as search_items
+        usecase "Filter by Category" as filter_cat
+        usecase "Check Item Availability" as check_avail
+        usecase "View Item Images" as view_images
+        usecase "Sort Menu Items" as sort_items
+    }
 }
 
-' Right side external systems
-actor "Image Storage" as storage
-actor "Analytics Service" as analytics
-actor "Inventory System" as inventory
+' CRUD Relationships - Menu Items (Include: mandatory, base -> included)
+manage_items --> create_item : <<include>>
+manage_items --> read_items : <<include>>
+manage_items --> update_item : <<include>>
+manage_items --> delete_item : <<include>>
 
-' Customer Menu Interactions
-customer --> UC1
-customer --> UC2
-customer --> UC3
-customer --> UC4
-customer --> UC5
-customer --> UC6
-customer --> UC7
-customer --> UC8
-customer --> UC9
+' Extended Menu Item operations (Extend: optional, extender -> base)
+read_items <.. upload_images : <<extend>>
+read_items <.. set_prices : <<extend>>
+read_items <.. set_discounts : <<extend>>
+read_items <.. update_avail : <<extend>>
 
-' Admin Menu Management
-admin --> UC10
-admin --> UC11
-admin --> UC12
-admin --> UC13
-admin --> UC14
-admin --> UC15
-admin --> UC16
-admin --> UC17
-admin --> UC18
-admin --> UC19
+' CRUD Relationships - Categories (Include: mandatory, base -> included)
+manage_cat --> create_cat : <<include>>
+manage_cat --> read_cat : <<include>>
+manage_cat --> update_cat : <<include>>
+manage_cat --> delete_cat : <<include>>
 
-' Inventory Management
-UC20 <-- admin
-UC21 <-- admin
-UC22 <-- admin
-UC23 <-- admin
+' Extended Customer operations (Extend: optional, extender -> base)
+browse_menu <.. search_items : <<extend>>
+browse_menu <.. filter_cat : <<extend>>
+browse_menu <.. check_avail : <<extend>>
+browse_menu <.. view_images : <<extend>>
+browse_menu <.. sort_items : <<extend>>
 
-' Analytics and Reporting
-UC24 <-- admin
-UC25 <-- admin
-UC26 <-- admin
-UC27 <-- admin
+' Actor Relationships
+customer --> browse_menu
 
-' Kitchen Staff Operations
-UC28 <-- kitchen
-UC29 <-- kitchen
-UC30 <-- kitchen
-UC31 <-- kitchen
+admin --> manage_items
+admin --> manage_cat
 
-' Include Relationships
-UC1 ..> UC6 : <<include>>
-UC5 ..> UC7 : <<include>>
-UC10 ..> UC16 : <<include>>
-UC11 ..> UC15 : <<include>>
-UC25 ..> UC26 : <<include>>
+' Notes for clarity
+note left of browse_menu : <b>Layout Structure (Inverted):</b>\n• Entities positioned right to left\n• Functions flow within each entity\n• Include/Extend relationships shown\n\n<b>Include vs Extend Pattern:</b>\n• <<include>>: Mandatory behavior (base → included)\n• <<extend>>: Optional behavior (extender → base)
 
-' Extend Relationships
-UC2 ..> UC3 : <<extend>>
-UC2 ..> UC4 : <<extend>>
-UC15 ..> UC23 : <<extend>>
-UC19 ..> UC15 : <<extend>>
-UC19 ..> UC14 : <<extend>>
+note left of search_items : <b>CRUD Operations:</b>\n• Create: Add new menu items\n• Read: View existing items\n• Update: Modify item details\n• Delete: Remove items\n\nAll CRUD operations are <<include>> relationships
 
-' External System Relationships
-UC16 --> storage
-UC25 --> analytics
-UC26 --> analytics
-UC20 --> inventory
-UC22 --> inventory
+note left of manage_cat : <b>Entity Flow (Inverted):</b>\nCustomer Browsing → Category Entity → Menu Item Entity\n\nEach entity contains its complete functionality set
 
-note top of UC1
-  Menu browsing includes
-  categories: Pasta, Salads,
-  Burgers, Rice, Beverages, etc.
-end note
+note left of manage_items : <b>Function Progression:</b>\nWithin each entity:\n• Base management use case\n• CRUD operations (included)\n• Extended functions (optional)\n\nShows complete functionality spectrum
 
-note right of UC19
-  Bulk operations include
-  updating availability,
-  prices, and categories
-  for multiple items
-end note
-
-note bottom of UC20
-  Real-time stock tracking
-  with automatic alerts when
-  items run low
-end note
+note left of browse_menu : <b>User Types & Entity Access:</b>\n• Customer: Menu browsing and interaction\n• Admin: Full CRUD operations on menu items and categories\n\n<b>Layout Direction:</b> Entities right-to-left, functions within entities right-to-left
 
 @enduml

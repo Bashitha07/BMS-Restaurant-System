@@ -27,9 +27,6 @@ export default function MenuItem({ item }) {
   const incrementQuantity = () => setQuantity(prev => prev + 1);
   const decrementQuantity = () => setQuantity(prev => prev > 1 ? prev - 1 : 1);
 
-  // Generate random rating for demo
-  const rating = (4 + Math.random()).toFixed(1);
-
   return (
     <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-200 hover:-translate-y-1 group">
       <div className="relative overflow-hidden">
@@ -54,10 +51,6 @@ export default function MenuItem({ item }) {
           <h3 className="text-lg font-semibold text-gray-900 line-clamp-1">
             {item.name}
           </h3>
-          <div className="flex items-center text-orange-500 ml-2">
-            <Star className="w-4 h-4 fill-current" />
-            <span className="ml-1 text-sm font-medium">{rating}</span>
-          </div>
         </div>
         
         <p className="text-gray-600 text-sm mb-3 line-clamp-2">

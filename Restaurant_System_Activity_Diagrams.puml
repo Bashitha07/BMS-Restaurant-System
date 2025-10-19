@@ -1,177 +1,331 @@
 @startuml Restaurant_Order_Flow_Activity
 !theme plain
-title Restaurant System - Main Order Flow Activity Diagram
+title BMS Restaurant-System - Complete Order Flow Activity Diagram
 
 start
 
-:Customer accesses system;
+:Customer accesses restaurant system;
 
-if (New customer?) then (yes)
-    :Register account;
+if (Has account?) then (yes)
+    :Login with email/password;
+    :JWT token generated;
 else (no)
-    :Login;
+    :Register new account;
+    :Email verification sent;
+    :Verify email;
+    :Account activated;
 endif
 
-:Browse menu;
+:Browse menu categories;
+:Search/filter menu items;
+:View item details & images;
 :Add items to cart;
+:Update quantities;
 
-if (Ready to order?) then (no)
-    :Save cart;
+if (Continue shopping?) then (yes)
+    :Continue browsing;
+else (no)
+endif
+
+:Review cart contents;
+:Calculate totals;
+
+if (Proceed to checkout?) then (no)
+    :Save cart for later;
     stop
 else (yes)
 endif
 
-if (Order type?) then (delivery)
+:Select order type;
+if (Order type?) then (DELIVERY)
     :Enter delivery address;
-else (dine-in)
-    :Make reservation;
+    :Select delivery time slot;
+    :Calculate delivery fee;
+else (TAKEAWAY)
+    :Select pickup time;
+else (DINE_IN)
+    :Make table reservation;
+    :Select date/time/party size;
+    :Confirm reservation;
 endif
 
-:Proceed to checkout;
+:Add special instructions;
+:Select payment method;
 
-if (Payment method?) then (online)
+if (Payment method?) then (DEPOSIT_SLIP)
+    :Upload deposit slip image;
+    :Enter transaction details;
+    :Submit for verification;
+    :Payment status: PENDING;
+else (CARD)
+    :Enter card details;
     :Process card payment;
     if (Payment successful?) then (no)
-        :Show error;
-        stop
+        :Show payment error;
+        :Retry or change method;
     else (yes)
+        :Payment status: COMPLETED;
     endif
-else (cash)
-    :Mark as cash payment;
+else (CASH)
+    :Payment status: PENDING;
 endif
 
 :Submit order;
-:Generate order ID;
-:Send confirmation;
+:Generate unique order number;
+:Order status: PENDING;
+:Send order confirmation email/SMS;
 
 split
-    :Notify kitchen;
+    :Notify admin;
+    :Order status: CONFIRMED;
 split again
-    :Update order status;
+    :Send customer notification;
 split again
     if (Delivery order?) then (yes)
-        :Assign driver;
+        :Auto-assign driver;
+        :Send driver notification;
     else (no)
     endif
 end split
 
-:Kitchen prepares order;
-:Mark order ready;
+:Admin reviews order;
+:Check ingredient availability;
 
-if (Delivery?) then (yes)
-    :Driver picks up;
-    :Deliver to customer;
-else (no)
-    :Customer picks up;
-endif
-
-:Complete order;
-:Generate receipt;
-
-stop
-
-stop
-
-@enduml
-
-@startuml Restaurant_Delivery_Activity
-!theme plain
-title Restaurant System - Delivery Process Activity Diagram
-
-start
-
-:Order marked as ready;
-:System assigns driver;
-
-if (Driver available?) then (no)
-    :Add to queue;
-    :Wait for driver;
-else (yes)
-endif
-
-:Driver accepts delivery;
-:Driver goes to restaurant;
-:Pick up order;
-:Navigate to customer;
-
-if (Address found?) then (no)
-    :Contact customer;
-else (yes)
-endif
-
-:Deliver order;
-
-if (Cash payment?) then (yes)
-    :Collect payment;
-else (no)
-endif
-
-:Mark delivery complete;
-:Update driver status;
-
-stop
-
-@enduml
-
-@startuml Restaurant_Kitchen_Activity
-!theme plain
-title Restaurant System - Kitchen Process Activity Diagram
-
-start
-
-:Receive order notification;
-:Review order details;
-
-if (Ingredients available?) then (no)
-    :Contact customer;
-    :Get substitution approval;
+if (All ingredients available?) then (no)
+    :Contact customer for substitutions;
+    :Get approval;
 else (yes)
 endif
 
 :Start preparation;
-:Update status to preparing;
-:Cook items;
-:Quality check;
-:Mark order ready;
+:Order status: PREPARING;
+:Update preparation progress;
 
 if (Delivery order?) then (yes)
-    :Notify driver;
+    :Coordinate with driver;
+    :Mark order ready for pickup;
+    :Order status: READY;
+    :Notify assigned driver;
+    :Driver accepts assignment;
+    :Driver picks up order;
+    :Update delivery status;
+    :GPS tracking begins;
+    :Contact customer if needed;
+    :Deliver order;
+    if (Cash payment?) then (yes)
+        :Collect cash payment;
+        :Provide receipt;
+    else (no)
+    endif
+    :Upload delivery proof;
+    :Order status: DELIVERED;
 else (no)
-    :Notify customer for pickup;
+    :Mark order ready for pickup;
+    :Order status: READY;
+    :Notify customer;
+    :Customer picks up order;
+    :Order status: DELIVERED;
 endif
+
+:Generate digital receipt;
+:Send order completion notification;
+:Request customer feedback;
 
 stop
 
 @enduml
 
-@startuml Restaurant_Admin_Activity
+@startuml Restaurant_Delivery_Tracking_Activity
 !theme plain
-title Restaurant System - Admin Management Activity Diagram
+title BMS Restaurant-System - Delivery Tracking Activity Diagram
 
 start
 
-:Admin logs in;
-:Access dashboard;
+:Order confirmed for delivery;
+:System finds available drivers;
+
+if (Drivers available?) then (yes)
+    :Auto-assign nearest driver;
+    :Send push notification to driver;
+else (no)
+    :Add to driver queue;
+    :Send notification when driver available;
+endif
+
+:Driver receives notification;
+:Driver views delivery details;
+
+if (Accept delivery?) then (yes)
+    :Driver accepts assignment;
+    :Delivery status: ASSIGNED;
+    :Send confirmation to admin;
+else (no)
+    :Driver declines assignment;
+    :Reassign to another driver;
+endif
+
+:Admin prepares order;
+:Order status: PREPARING;
+:Admin updates progress;
+
+:Order ready for pickup;
+:Delivery status: PICKED_UP;
+:Driver collects order;
+:GPS tracking activated;
+:Driver starts navigation;
 
 repeat
-    switch (Task?)
-    case (Menu)
-        :Manage menu items;
-        :Update prices;
-    case (Orders)
-        :View all orders;
-        :Update status;
-    case (Reports)
-        :Generate reports;
-        :Export data;
-    case (Users)
-        :Manage users;
-        :Update permissions;
-    endswitch
-repeat while (More tasks?)
+    :Customer receives ETA updates;
+repeat while (Not at destination?)
 
-:Save changes;
-:Log out;
+:Arrive at delivery address;
+:Contact customer (optional);
+:Deliver order;
+
+if (Cash payment?) then (yes)
+    :Collect exact cash amount;
+    :Provide printed receipt;
+    :Update payment status;
+else (no)
+endif
+
+:Take delivery photo proof;
+:Upload proof of delivery;
+:Mark delivery complete;
+:Delivery status: DELIVERED;
+:Order status: DELIVERED;
+
+:Driver becomes available again;
+:Send delivery completion notification;
+
+stop
+
+@enduml
+
+@startuml Restaurant_Payment_Verification_Activity
+!theme plain
+title BMS Restaurant-System - Payment Verification Activity Diagram
+
+start
+
+:Customer submits deposit slip payment;
+
+:Upload deposit slip image;
+:Enter transaction details;
+:Bank name, account number, amount, date;
+
+:Payment status: PENDING;
+:Send verification request to admin;
+
+:Admin receives notification;
+:Review pending payments;
+
+repeat
+    :Select payment for verification;
+    :View deposit slip image;
+    :Check image quality & readability;
+
+    if (Image valid?) then (yes)
+        :Extract transaction details;
+        :Verify amount matches order;
+        :Check bank details;
+        :Cross-reference with bank records;
+
+        if (All details match?) then (yes)
+            :Approve payment;
+            :Payment status: COMPLETED;
+            :Send approval notification;
+            :Process order;
+        else (no)
+            :Request additional information;
+            :Send clarification request to customer;
+            :Wait for customer response;
+        endif
+    else (no)
+        :Reject payment - poor image;
+        :Request new image upload;
+        :Send rejection reason;
+    endif
+
+    if (Payment approved?) then (yes)
+        :Update order status;
+        :Send confirmation to customer;
+        :Proceed with order fulfillment;
+    else (no)
+    endif
+
+repeat while (More payments to verify?)
+
+stop
+
+@enduml
+
+@startuml Restaurant_Admin_Management_Activity
+!theme plain
+title BMS Restaurant-System - Admin Management Activity Diagram
+
+start
+
+:Admin logs in with JWT;
+:Dashboard loads with metrics;
+
+repeat
+    switch (Main Category?)
+    case (Menu Management)
+        :View menu items;
+        :Add new menu item;
+        :Upload item image;
+        :Set categories & prices;
+        :Update availability;
+        :Set allergens & spice levels;
+
+    case (Order Management)
+        :View all orders by status;
+        :Filter orders by date/type;
+        :Update order status;
+        :Assign delivery drivers;
+        :Handle order modifications;
+        :Process refunds;
+
+    case (Payment Management)
+        :Review pending deposit slips;
+        :Verify payment details;
+        :Approve/reject payments;
+        :Process refunds;
+        :Reconcile bank deposits;
+
+    case (Delivery Management)
+        :View driver locations;
+        :Reassign deliveries;
+        :Handle delivery issues;
+
+    case (User Management)
+        :View all users;
+        :Manage user roles;
+        :Activate/deactivate accounts;
+        :Reset passwords;
+        :View user activity;
+
+    case (Reservation Management)
+        :View reservation calendar;
+        :Confirm reservations;
+        :Assign tables;
+        :Manage table layout;
+
+    case (System Settings)
+        :Configure payment methods;
+        :Manage delivery zones;
+        :Set business hours;
+        :Update system preferences;
+    endswitch
+
+    :Save changes;
+    :System updates database;
+
+repeat while (Continue working?)
+
+:Admin logs out;
+:JWT token invalidated;
 
 stop
 

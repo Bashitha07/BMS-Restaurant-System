@@ -1,8 +1,8 @@
 import api from './api';
 
 const AUTH_ENDPOINTS = {
-  LOGIN: '/auth/login',
-  REGISTER: '/auth/register'
+  LOGIN: '/api/auth/login',
+  REGISTER: '/api/auth/register'
 };
 
 export const authService = {

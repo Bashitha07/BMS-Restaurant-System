@@ -72,12 +72,6 @@ public class Menu {
     @Column(name = "spice_level")
     private Integer spiceLevel; // 1-5 scale
 
-    @Column(name = "rating", precision = 3, scale = 2)
-    private BigDecimal rating = BigDecimal.ZERO;
-
-    @Column(name = "total_reviews")
-    private Integer totalReviews = 0;
-
     @Column(name = "stock_quantity")
     private Integer stockQuantity;
 
@@ -131,17 +125,6 @@ public class Menu {
         } else {
             this.discountedPrice = this.price;
         }
-    }
-
-    public void updateRating(BigDecimal newRating) {
-        if (this.totalReviews == 0) {
-            this.rating = newRating;
-        } else {
-            BigDecimal totalRatingPoints = this.rating.multiply(BigDecimal.valueOf(this.totalReviews));
-            totalRatingPoints = totalRatingPoints.add(newRating);
-            this.rating = totalRatingPoints.divide(BigDecimal.valueOf(this.totalReviews + 1), 2, java.math.RoundingMode.HALF_UP);
-        }
-        this.totalReviews++;
     }
 
     public boolean isInStock() {

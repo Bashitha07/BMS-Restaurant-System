@@ -20,8 +20,6 @@ public record MenuDTO(
     Boolean isGlutenFree,
     Boolean isSpicy,
     Integer spiceLevel,
-    BigDecimal rating,
-    Integer totalReviews,
     Integer stockQuantity,
     Integer lowStockThreshold,
     Boolean isFeatured,

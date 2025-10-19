@@ -90,6 +90,26 @@ const adminRoutes = [
   },
 ];
 
+// Kitchen routes
+const kitchenRoutes = [
+  {
+    path: '/kitchen/dashboard',
+    Component: lazy(() => import('../pages/kitchen/KitchenDashboard')),
+    requireAuth: true,
+    requireKitchen: true,
+  },
+];
+
+// Manager routes
+const managerRoutes = [
+  {
+    path: '/manager/dashboard',
+    Component: lazy(() => import('../pages/manager/ManagerDashboard')),
+    requireAuth: true,
+    requireManager: true,
+  },
+];
+
 // Driver routes
 const driverRoutes = [
   {
@@ -186,4 +206,6 @@ export const routes = [
   ...userRoutes,
   ...adminRoutes,
   ...driverRoutes,
+  ...kitchenRoutes,
+  ...managerRoutes,
 ];

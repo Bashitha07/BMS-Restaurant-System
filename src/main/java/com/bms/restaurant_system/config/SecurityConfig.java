@@ -36,6 +36,10 @@ public class SecurityConfig {
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/delivery-drivers/**").hasRole("ADMIN")
                 .requestMatchers("/api/users/*/role").hasRole("ADMIN")
+                // Kitchen staff endpoints
+                .requestMatchers("/api/kitchen/**").hasRole("KITCHEN")
+                // Manager endpoints
+                .requestMatchers("/api/manager/**").hasRole("MANAGER")
                 // Other authenticated endpoints
                 .requestMatchers("/api/reservations", "/api/reservations/**").authenticated()  // Reservations require auth
                 .anyRequest().authenticated()

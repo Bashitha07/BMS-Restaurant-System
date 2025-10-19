@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -69,5 +70,33 @@ public class PaymentController {
         PaymentDTO approvedPayment = paymentService.approvePayment(id);
         logger.info("Payment approved with id: {}", id);
         return ResponseEntity.ok(approvedPayment);
+    }
+
+    @PostMapping("/{id}/refund")
+    public ResponseEntity<PaymentDTO> processRefund(@PathVariable Long id,
+                                                   @RequestParam BigDecimal amount,
+                                                   @RequestParam String reason) {
+        logger.info("Processing refund for payment id: {} with amount: {}", id, amount);
+        PaymentDTO refundedPayment = paymentService.processRefund(id, amount, reason);
+        logger.info("Refund processed for payment id: {}", id);
+        return ResponseEntity.ok(refundedPayment);
+    }
+
+    @PostMapping("/{id}/refund/full")
+    public ResponseEntity<PaymentDTO> processFullRefund(@PathVariable Long id,
+                                                       @RequestParam String reason) {
+        logger.info("Processing full refund for payment id: {}", id);
+        PaymentDTO refundedPayment = paymentService.processFullRefund(id, reason);
+        logger.info("Full refund processed for payment id: {}", id);
+        return ResponseEntity.ok(refundedPayment);
+    }
+
+    @GetMapping("/calculate-refund")
+    public ResponseEntity<BigDecimal> calculateRefundAmount(@RequestParam Long orderId,
+                                                           @RequestParam String refundType) {
+        logger.info("Calculating refund amount for order id: {} with type: {}", orderId, refundType);
+        BigDecimal refundAmount = paymentService.calculateRefundAmount(orderId, refundType);
+        logger.info("Calculated refund amount: {} for order id: {}", refundAmount, orderId);
+        return ResponseEntity.ok(refundAmount);
     }
 }

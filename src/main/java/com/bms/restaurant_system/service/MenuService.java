@@ -189,8 +189,6 @@ public class MenuService {
             menu.getIsGlutenFree(),
             menu.getIsSpicy(),
             menu.getSpiceLevel(),
-            menu.getRating(),
-            menu.getTotalReviews(),
             menu.getStockQuantity(),
             menu.getLowStockThreshold(),
             menu.getIsFeatured(),

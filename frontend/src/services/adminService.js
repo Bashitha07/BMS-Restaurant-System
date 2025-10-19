@@ -2,49 +2,50 @@ import axios from '../utils/axios';
 
 const ADMIN_ENDPOINTS = {
   // User Management
-  USERS: '/admin/users',
-  USER_BY_ID: (id) => `/admin/users/${id}`,
-  UPDATE_ROLE: (id) => `/admin/users/${id}/role`,
-  UPDATE_STATUS: (id) => `/admin/users/${id}/status`,
-  USERS_BY_ROLE: (role) => `/admin/users/by-role/${role}`,
-  USER_STATISTICS: '/admin/users/statistics',
+  USERS: '/api/admin/users',
+  USER_BY_ID: (id) => `/api/admin/users/${id}`,
+  UPDATE_ROLE: (id) => `/api/admin/users/${id}/role`,
+  UPDATE_STATUS: (id) => `/api/admin/users/${id}/status`,
+  USERS_BY_ROLE: (role) => `/api/admin/users/by-role/${role}`,
+  USER_STATISTICS: '/api/admin/users/statistics',
 
   // Order Management
-  ORDERS: '/orders',
-  ORDER_BY_ID: (id) => `/orders/${id}`,
-  UPDATE_ORDER_STATUS: (id) => `/orders/${id}/status`,
-  ORDERS_BY_STATUS: (status) => `/orders/status/${status}`,
-  ORDERS_BY_DATE: '/orders/by-date',
-  ORDER_STATISTICS: '/orders/statistics',
+  ORDERS: '/api/orders',
+  ORDER_BY_ID: (id) => `/api/orders/${id}`,
+  UPDATE_ORDER_STATUS: (id) => `/api/admin/orders/${id}/status`,
+  ORDERS_BY_STATUS: (status) => `/api/orders/status/${status}`,
+  ORDERS_BY_DATE: '/api/orders/by-date',
+  ORDER_STATISTICS: '/api/orders/statistics',
 
   // Menu Management
-  MENU: '/admin/menu',
-  MENU_BY_ID: (id) => `/admin/menu/${id}`,
-  MENU_AVAILABILITY: (id) => `/admin/menu/${id}/availability`,
-  MENU_BY_CATEGORY: (category) => `/admin/menu/category/${category}`,
-  MENU_STATISTICS: '/admin/menu/statistics',
-  BULK_AVAILABILITY: '/admin/menu/bulk-availability',
+  MENU: '/api/admin/menu',
+  MENU_BY_ID: (id) => `/api/admin/menu/${id}`,
+  MENU_AVAILABILITY: (id) => `/api/admin/menu/${id}/availability`,
+  MENU_BY_CATEGORY: (category) => `/api/admin/menu/category/${category}`,
+  MENU_STATISTICS: '/api/admin/menu/statistics',
+  BULK_AVAILABILITY: '/api/admin/menu/bulk-availability',
+  UPLOAD_MENU_IMAGE: '/api/admin/menu/upload-image',
 
   // Reservation Management
-  RESERVATIONS: '/admin/reservations',
-  RESERVATION_BY_ID: (id) => `/admin/reservations/${id}`,
-  CONFIRM_RESERVATION: (id) => `/admin/reservations/${id}/confirm`,
-  RESERVATION_STATUS: (id) => `/admin/reservations/${id}/status`,
-  RESERVATIONS_BY_DATE: '/admin/reservations/by-date',
-  RESERVATION_STATISTICS: '/admin/reservations/statistics',
+  RESERVATIONS: '/api/admin/reservations',
+  RESERVATION_BY_ID: (id) => `/api/admin/reservations/${id}`,
+  CONFIRM_RESERVATION: (id) => `/api/admin/reservations/${id}/confirm`,
+  RESERVATION_STATUS: (id) => `/api/admin/reservations/${id}/status`,
+  RESERVATIONS_BY_DATE: '/api/admin/reservations/by-date',
+  RESERVATION_STATISTICS: '/api/admin/reservations/statistics',
 
   // Payment Slip Management
-  PAYMENT_SLIPS: '/admin/payment-slips',
-  PAYMENT_SLIP_BY_ID: (id) => `/admin/payment-slips/${id}`,
-  CONFIRM_PAYMENT: (id) => `/admin/payment-slips/${id}/confirm`,
-  REJECT_PAYMENT: (id) => `/admin/payment-slips/${id}/reject`,
-  PAYMENT_STATISTICS: '/admin/payment-slips/statistics',
+  PAYMENT_SLIPS: '/api/admin/payment-slips',
+  PAYMENT_SLIP_BY_ID: (id) => `/api/admin/payment-slips/${id}`,
+  CONFIRM_PAYMENT: (id) => `/api/admin/payment-slips/${id}/confirm`,
+  REJECT_PAYMENT: (id) => `/api/admin/payment-slips/${id}/reject`,
+  PAYMENT_STATISTICS: '/api/admin/payment-slips/statistics',
 
   // Delivery Driver Management
-  DELIVERY_DRIVERS: '/admin/drivers',
-  PENDING_DRIVERS: '/delivery-drivers/pending',
-  APPROVE_DRIVER: (id) => `/delivery-drivers/${id}/approve`,
-  REJECT_DRIVER: (id) => `/delivery-drivers/${id}/reject`
+  DELIVERY_DRIVERS: '/api/admin/drivers',
+  PENDING_DRIVERS: '/api/delivery-drivers/pending',
+  APPROVE_DRIVER: (id) => `/api/delivery-drivers/${id}/approve`,
+  REJECT_DRIVER: (id) => `/api/delivery-drivers/${id}/reject`
 };
 
 export const adminService = {
@@ -56,7 +57,7 @@ export const adminService = {
     });
     
     try {
-      const response = await api.get(ADMIN_ENDPOINTS.USERS);
+      const response = await axios.get(ADMIN_ENDPOINTS.USERS);
       
       console.log('✅ [API] Successfully received users from backend:', {
         endpoint: ADMIN_ENDPOINTS.USERS,
@@ -79,7 +80,7 @@ export const adminService = {
 
   getUserById: async (id) => {
     try {
-      const response = await api.get(ADMIN_ENDPOINTS.USER_BY_ID(id));
+      const response = await axios.get(ADMIN_ENDPOINTS.USER_BY_ID(id));
       return response.data;
     } catch (error) {
       throw error.response?.data || 'Failed to fetch user';
@@ -95,7 +96,7 @@ export const adminService = {
     });
     
     try {
-      const response = await api.put(ADMIN_ENDPOINTS.UPDATE_ROLE(id), roleData);
+      const response = await axios.put(ADMIN_ENDPOINTS.UPDATE_ROLE(id), roleData);
       
       console.log('✅ [API] Successfully updated user role in backend:', {
         endpoint: ADMIN_ENDPOINTS.UPDATE_ROLE(id),
@@ -128,7 +129,7 @@ export const adminService = {
     });
     
     try {
-      const response = await api.put(ADMIN_ENDPOINTS.UPDATE_STATUS(id), { enabled });
+      const response = await axios.put(ADMIN_ENDPOINTS.UPDATE_STATUS(id), { enabled });
       
       console.log('✅ [API] Successfully updated user status in backend:', {
         endpoint: ADMIN_ENDPOINTS.UPDATE_STATUS(id),
@@ -154,7 +155,7 @@ export const adminService = {
 
   deleteUser: async (id) => {
     try {
-      const response = await api.delete(ADMIN_ENDPOINTS.USER_BY_ID(id));
+      const response = await axios.delete(ADMIN_ENDPOINTS.USER_BY_ID(id));
       return response.data;
     } catch (error) {
       throw error.response?.data || 'Failed to delete user';
@@ -163,7 +164,7 @@ export const adminService = {
 
   getUsersByRole: async (role) => {
     try {
-      const response = await api.get(ADMIN_ENDPOINTS.USERS_BY_ROLE(role));
+      const response = await axios.get(ADMIN_ENDPOINTS.USERS_BY_ROLE(role));
       return response.data;
     } catch (error) {
       throw error.response?.data || 'Failed to fetch users by role';
@@ -172,7 +173,7 @@ export const adminService = {
 
   getUserStatistics: async () => {
     try {
-      const response = await api.get(ADMIN_ENDPOINTS.USER_STATISTICS);
+      const response = await axios.get(ADMIN_ENDPOINTS.USER_STATISTICS);
       return response.data;
     } catch (error) {
       throw error.response?.data || 'Failed to fetch user statistics';
@@ -182,7 +183,7 @@ export const adminService = {
   // Menu Management
   getAllMenuItems: async () => {
     try {
-      const response = await api.get(ADMIN_ENDPOINTS.MENU);
+      const response = await axios.get(ADMIN_ENDPOINTS.MENU);
       return response.data;
     } catch (error) {
       throw error.response?.data || 'Failed to fetch menu items';
@@ -191,7 +192,7 @@ export const adminService = {
 
   createMenuItem: async (menuData) => {
     try {
-      const response = await api.post(ADMIN_ENDPOINTS.MENU, menuData);
+      const response = await axios.post(ADMIN_ENDPOINTS.MENU, menuData);
       return response.data;
     } catch (error) {
       throw error.response?.data || 'Failed to create menu item';
@@ -200,7 +201,7 @@ export const adminService = {
 
   updateMenuItem: async (id, menuData) => {
     try {
-      const response = await api.put(ADMIN_ENDPOINTS.MENU_BY_ID(id), menuData);
+      const response = await axios.put(ADMIN_ENDPOINTS.MENU_BY_ID(id), menuData);
       return response.data;
     } catch (error) {
       throw error.response?.data || 'Failed to update menu item';
@@ -209,7 +210,7 @@ export const adminService = {
 
   deleteMenuItem: async (id) => {
     try {
-      const response = await api.delete(ADMIN_ENDPOINTS.MENU_BY_ID(id));
+      const response = await axios.delete(ADMIN_ENDPOINTS.MENU_BY_ID(id));
       return response.data;
     } catch (error) {
       throw error.response?.data || 'Failed to delete menu item';
@@ -218,7 +219,7 @@ export const adminService = {
 
   updateMenuAvailability: async (id, available) => {
     try {
-      const response = await api.put(ADMIN_ENDPOINTS.MENU_AVAILABILITY(id), null, {
+      const response = await axios.put(ADMIN_ENDPOINTS.MENU_AVAILABILITY(id), null, {
         params: { available }
       });
       return response.data;
@@ -229,7 +230,7 @@ export const adminService = {
 
   getMenuByCategory: async (category) => {
     try {
-      const response = await api.get(ADMIN_ENDPOINTS.MENU_BY_CATEGORY(category));
+      const response = await axios.get(ADMIN_ENDPOINTS.MENU_BY_CATEGORY(category));
       return response.data;
     } catch (error) {
       throw error.response?.data || 'Failed to fetch menu by category';
@@ -238,7 +239,7 @@ export const adminService = {
 
   getMenuStatistics: async () => {
     try {
-      const response = await api.get(ADMIN_ENDPOINTS.MENU_STATISTICS);
+      const response = await axios.get(ADMIN_ENDPOINTS.MENU_STATISTICS);
       return response.data;
     } catch (error) {
       throw error.response?.data || 'Failed to fetch menu statistics';
@@ -247,7 +248,7 @@ export const adminService = {
 
   bulkUpdateAvailability: async (menuItemIds, available) => {
     try {
-      const response = await api.put(ADMIN_ENDPOINTS.BULK_AVAILABILITY, {
+      const response = await axios.put(ADMIN_ENDPOINTS.BULK_AVAILABILITY, {
         menuItemIds,
         available
       });
@@ -260,7 +261,7 @@ export const adminService = {
   // Reservation Management
   getAllReservations: async () => {
     try {
-      const response = await api.get(ADMIN_ENDPOINTS.RESERVATIONS);
+      const response = await axios.get(ADMIN_ENDPOINTS.RESERVATIONS);
       return response.data;
     } catch (error) {
       throw error.response?.data || 'Failed to fetch reservations';
@@ -269,7 +270,7 @@ export const adminService = {
 
   getReservationById: async (id) => {
     try {
-      const response = await api.get(ADMIN_ENDPOINTS.RESERVATION_BY_ID(id));
+      const response = await axios.get(ADMIN_ENDPOINTS.RESERVATION_BY_ID(id));
       return response.data;
     } catch (error) {
       throw error.response?.data || 'Failed to fetch reservation';
@@ -278,7 +279,7 @@ export const adminService = {
 
   confirmReservation: async (id, confirmationData) => {
     try {
-      const response = await api.put(ADMIN_ENDPOINTS.CONFIRM_RESERVATION(id), confirmationData);
+      const response = await axios.put(ADMIN_ENDPOINTS.CONFIRM_RESERVATION(id), confirmationData);
       return response.data;
     } catch (error) {
       throw error.response?.data || 'Failed to confirm reservation';
@@ -287,7 +288,7 @@ export const adminService = {
 
   updateReservationStatus: async (id, status) => {
     try {
-      const response = await api.put(ADMIN_ENDPOINTS.RESERVATION_STATUS(id), { status });
+      const response = await axios.put(ADMIN_ENDPOINTS.RESERVATION_STATUS(id), { status });
       return response.data;
     } catch (error) {
       throw error.response?.data || 'Failed to update reservation status';
@@ -296,7 +297,7 @@ export const adminService = {
 
   getReservationsByDate: async (startDate, endDate) => {
     try {
-      const response = await api.get(ADMIN_ENDPOINTS.RESERVATIONS_BY_DATE, {
+      const response = await axios.get(ADMIN_ENDPOINTS.RESERVATIONS_BY_DATE, {
         params: { startDate, endDate }
       });
       return response.data;
@@ -307,7 +308,7 @@ export const adminService = {
 
   getReservationStatistics: async () => {
     try {
-      const response = await api.get(ADMIN_ENDPOINTS.RESERVATION_STATISTICS);
+      const response = await axios.get(ADMIN_ENDPOINTS.RESERVATION_STATISTICS);
       return response.data;
     } catch (error) {
       throw error.response?.data || 'Failed to fetch reservation statistics';
@@ -322,7 +323,7 @@ export const adminService = {
     });
     
     try {
-      const response = await api.get(ADMIN_ENDPOINTS.ORDERS);
+      const response = await axios.get(ADMIN_ENDPOINTS.ORDERS);
       
       console.log('✅ [API] Successfully received orders from backend:', {
         endpoint: ADMIN_ENDPOINTS.ORDERS,
@@ -346,7 +347,7 @@ export const adminService = {
   getOrderById: async (id) => {
     console.log(`🌐 [API] Fetching order details for ID: ${id}`);
     try {
-      const response = await api.get(ADMIN_ENDPOINTS.ORDER_BY_ID(id));
+      const response = await axios.get(ADMIN_ENDPOINTS.ORDER_BY_ID(id));
       console.log(`✅ [API] Successfully fetched order ${id}:`, response.data);
       return response.data;
     } catch (error) {
@@ -358,7 +359,7 @@ export const adminService = {
   updateOrderStatus: async (id, status) => {
     console.log(`🔄 [API] Updating order ${id} status to ${status}`);
     try {
-      const response = await api.put(ADMIN_ENDPOINTS.UPDATE_ORDER_STATUS(id), { status });
+      const response = await axios.put(ADMIN_ENDPOINTS.UPDATE_ORDER_STATUS(id), { status });
       console.log(`✅ [API] Successfully updated order ${id} status:`, response.data);
       return response.data;
     } catch (error) {
@@ -370,7 +371,7 @@ export const adminService = {
   getOrdersByStatus: async (status) => {
     console.log(`🌐 [API] Fetching orders with status: ${status}`);
     try {
-      const response = await api.get(ADMIN_ENDPOINTS.ORDERS_BY_STATUS(status));
+      const response = await axios.get(ADMIN_ENDPOINTS.ORDERS_BY_STATUS(status));
       console.log(`✅ [API] Successfully fetched ${status} orders:`, response.data);
       return response.data;
     } catch (error) {
@@ -382,7 +383,7 @@ export const adminService = {
   getOrdersByDate: async (dateRange) => {
     console.log('🌐 [API] Fetching orders by date range:', dateRange);
     try {
-      const response = await api.post(ADMIN_ENDPOINTS.ORDERS_BY_DATE, dateRange);
+      const response = await axios.post(ADMIN_ENDPOINTS.ORDERS_BY_DATE, dateRange);
       console.log('✅ [API] Successfully fetched orders by date:', response.data);
       return response.data;
     } catch (error) {
@@ -394,7 +395,7 @@ export const adminService = {
   getOrderStatistics: async () => {
     console.log('🌐 [API] Fetching order statistics');
     try {
-      const response = await api.get(ADMIN_ENDPOINTS.ORDER_STATISTICS);
+      const response = await axios.get(ADMIN_ENDPOINTS.ORDER_STATISTICS);
       console.log('✅ [API] Successfully fetched order statistics:', response.data);
       return response.data;
     } catch (error) {
@@ -406,7 +407,7 @@ export const adminService = {
   // Payment Slip Management
   getAllPaymentSlips: async () => {
     try {
-      const response = await api.get(ADMIN_ENDPOINTS.PAYMENT_SLIPS);
+      const response = await axios.get(ADMIN_ENDPOINTS.PAYMENT_SLIPS);
       return response.data;
     } catch (error) {
       throw error.response?.data || 'Failed to fetch payment slips';
@@ -415,7 +416,7 @@ export const adminService = {
 
   getPaymentSlipById: async (id) => {
     try {
-      const response = await api.get(ADMIN_ENDPOINTS.PAYMENT_SLIP_BY_ID(id));
+      const response = await axios.get(ADMIN_ENDPOINTS.PAYMENT_SLIP_BY_ID(id));
       return response.data;
     } catch (error) {
       throw error.response?.data || 'Failed to fetch payment slip';
@@ -424,7 +425,7 @@ export const adminService = {
 
   confirmPaymentSlip: async (id, confirmationData) => {
     try {
-      const response = await api.put(ADMIN_ENDPOINTS.CONFIRM_PAYMENT(id), confirmationData);
+      const response = await axios.put(ADMIN_ENDPOINTS.CONFIRM_PAYMENT(id), confirmationData);
       return response.data;
     } catch (error) {
       throw error.response?.data || 'Failed to confirm payment slip';
@@ -433,7 +434,7 @@ export const adminService = {
 
   rejectPaymentSlip: async (id, rejectionData) => {
     try {
-      const response = await api.put(ADMIN_ENDPOINTS.REJECT_PAYMENT(id), rejectionData);
+      const response = await axios.put(ADMIN_ENDPOINTS.REJECT_PAYMENT(id), rejectionData);
       return response.data;
     } catch (error) {
       throw error.response?.data || 'Failed to reject payment slip';
@@ -442,7 +443,7 @@ export const adminService = {
 
   getPaymentStatistics: async () => {
     try {
-      const response = await api.get(ADMIN_ENDPOINTS.PAYMENT_STATISTICS);
+      const response = await axios.get(ADMIN_ENDPOINTS.PAYMENT_STATISTICS);
       return response.data;
     } catch (error) {
       throw error.response?.data || 'Failed to fetch payment statistics';
@@ -452,7 +453,7 @@ export const adminService = {
   // Delivery Driver Management
   getPendingDrivers: async () => {
     try {
-      const response = await api.get(ADMIN_ENDPOINTS.PENDING_DRIVERS);
+      const response = await axios.get(ADMIN_ENDPOINTS.PENDING_DRIVERS);
       return response.data;
     } catch (error) {
       throw error.response?.data || 'Failed to fetch pending drivers';
@@ -461,7 +462,7 @@ export const adminService = {
 
   approveDriver: async (id) => {
     try {
-      const response = await api.post(ADMIN_ENDPOINTS.APPROVE_DRIVER(id));
+      const response = await axios.post(ADMIN_ENDPOINTS.APPROVE_DRIVER(id));
       return response.data;
     } catch (error) {
       throw error.response?.data || 'Failed to approve driver';
@@ -470,10 +471,47 @@ export const adminService = {
 
   rejectDriver: async (id) => {
     try {
-      const response = await api.post(ADMIN_ENDPOINTS.REJECT_DRIVER(id));
+      const response = await axios.post(ADMIN_ENDPOINTS.REJECT_DRIVER(id));
       return response.data;
     } catch (error) {
       throw error.response?.data || 'Failed to reject driver';
+    }
+  },
+
+  uploadMenuImage: async (file) => {
+    console.log('🌐 [API] Uploading menu image:', {
+      endpoint: ADMIN_ENDPOINTS.UPLOAD_MENU_IMAGE,
+      filename: file.name,
+      size: file.size,
+      timestamp: new Date().toISOString()
+    });
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await axios.post(ADMIN_ENDPOINTS.UPLOAD_MENU_IMAGE, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      console.log('✅ [API] Successfully uploaded menu image:', {
+        endpoint: ADMIN_ENDPOINTS.UPLOAD_MENU_IMAGE,
+        response: response.data,
+        timestamp: new Date().toISOString()
+      });
+
+      return response.data;
+    } catch (error) {
+      console.error('❌ [API] Failed to upload menu image:', {
+        endpoint: ADMIN_ENDPOINTS.UPLOAD_MENU_IMAGE,
+        error: error.response?.data || error.message,
+        status: error.response?.status,
+        timestamp: new Date().toISOString()
+      });
+
+      throw error.response?.data || 'Failed to upload image';
     }
   }
 };

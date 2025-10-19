@@ -80,7 +80,6 @@ The system follows a well-structured entity model with proper inheritance and re
 - **Profile Management**: Update, view, and delete account operations
 
 #### External Integrations
-- SMS Service for phone verification
 - Authentication Server for token management
 
 ### 2. Menu Handling System
@@ -119,7 +118,7 @@ The system follows a well-structured entity model with proper inheritance and re
 - **Admin Oversight**: Complete system monitoring and management
 
 #### External Integrations
-- SMS/Email Services for notifications
+- Website notifications for order updates
 - GPS Navigation for delivery routing
 - Table Management System for reservations
 
@@ -142,7 +141,7 @@ The system follows a well-structured entity model with proper inheritance and re
 - Payment Gateway for card processing
 - Bank API for deposit verification
 - Security Service for data protection
-- SMS/Email for payment confirmations
+- Website notifications for payment confirmations
 
 ## 🔄 Activity Diagram Details
 

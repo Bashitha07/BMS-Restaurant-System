@@ -1,113 +1,152 @@
 @startuml Login_Register_Use_Cases
 !theme plain
 left to right direction
-title Restaurant System - Login & Registration Use Cases
+skinparam backgroundColor #FEFEFE
+skinparam packageBackgroundColor #FFFFFF
+skinparam packageBorderColor #000000
+skinparam actorBackgroundColor #FFFFFF
+skinparam actorBorderColor #000000
+skinparam usecaseBackgroundColor #FFFFFF
+skinparam usecaseBorderColor #000000
+skinparam noteBackgroundColor #FFFFFF
+skinparam noteBorderColor #000000
+skinparam packageFontSize 12
+skinparam usecaseFontSize 11
+skinparam actorFontSize 11
+title BMS Restaurant-System - Authentication & User Management Use Cases (Access Control)
 
-' Left side actors
-actor "New Customer" as newcustomer
-actor "Existing Customer" as customer
-actor "Driver" as driver
+' Primary Actors (Left Side)
+actor "New User" as newuser
+actor "Customer" as customer
 actor "Admin" as admin
+actor "Driver" as driver
 
-' System boundary
-rectangle "Authentication & Registration System" {
-    
-    ' Registration Use Cases
-    usecase "Register Customer Account" as UC1
-    usecase "Verify Phone Number" as UC3
-    usecase "Set Profile Information" as UC4
-    usecase "Register Driver Account" as UC5
-    usecase "Submit Driver Application" as UC6
-    usecase "Upload Driver Documents" as UC7
-    usecase "Vehicle Registration" as UC8
-    
-    ' Login/Authentication Use Cases
-    usecase "Customer Login" as UC9
-    usecase "Driver Login" as UC10
-    usecase "Admin Login" as UC11
-    usecase "Validate Credentials" as UC12
-    usecase "Generate JWT Token" as UC13
-    
-    ' Session Management
-    usecase "Logout" as UC25
-    usecase "Session Timeout" as UC26
-    usecase "Auto-Login" as UC27
-    usecase "Remember Me" as UC28
-    
-    ' Profile Management
-    usecase "Update Profile" as UC29
-    usecase "View Profile" as UC30
-    usecase "Delete Account" as UC31
-    usecase "Account Verification" as UC32
-    
-    ' Security Features
-    usecase "Encrypt Sensitive Data" as UC33
-    usecase "Audit Password Changes" as UC34
-    usecase "Rate Limit Reset Attempts" as UC35
-    usecase "Secure Token Storage" as UC36
+' System boundary (Right Side with spacing)
+rectangle "Authentication & User Management System" as system {
+
+    package "User Registration" as reg {
+        usecase "Register User Account" as reg_user
+        usecase "Set User Profile" as set_profile
+    }
+
+    package "Driver Registration" as driver_reg {
+        usecase "Register Driver Account" as reg_driver
+        usecase "Submit Driver Application" as submit_app
+        usecase "Upload Driver Documents" as upload_docs
+        usecase "Vehicle Registration" as vehicle_reg
+        usecase "Verify Driver Application" as verify_driver
+    }
+
+    package "Authentication" as auth {
+        usecase "User Login (JWT)" as user_login
+        usecase "Admin Login (JWT)" as admin_login
+        usecase "Driver Login (JWT)" as driver_login
+    }
+
+    package "Session Management" as session {
+        usecase "Validate JWT Token" as validate_token
+        usecase "Refresh JWT Token" as refresh_token
+        usecase "Logout" as logout
+    }
+
+    package "Personal Profile Management" as personal_profile {
+        usecase "Update Own Profile" as update_own_profile
+        usecase "View Own Profile" as view_own_profile
+        usecase "Change Own Password" as change_own_password
+    }
+
+    package "Admin User Management" as admin_user_mgmt {
+        usecase "View All User Accounts" as view_all_users
+        usecase "View User Account Details" as view_user_details
+        usecase "Update User Account" as update_user_account
+        usecase "Deactivate User Account" as deactivate_user
+        usecase "Reset User Password" as reset_user_password
+        usecase "Manage User Roles" as manage_user_roles
+        usecase "View User Activity Logs" as view_user_logs
+    }
+
+    package "Role-Based Access Control" as rbac {
+        usecase "Check User Permissions" as check_permissions
+        usecase "Role-Based Menu Access" as menu_access
+        usecase "Admin Dashboard Access" as admin_dashboard
+        usecase "Driver Portal Access" as driver_portal
+    }
 }
 
-' Right side external systems
-actor "SMS Service" as sms
-actor "Authentication Server" as auth
-actor "Security Service" as security
-
-' New Customer Registration Flow
-newcustomer --> UC1
-newcustomer --> UC3
-newcustomer --> UC4
+' User Registration Flow
+newuser --> reg_user
+newuser --> set_profile
 
 ' Driver Registration Flow
-driver --> UC5
-driver --> UC6
-driver --> UC7
-driver --> UC8
+driver --> reg_driver
+driver --> submit_app
+driver --> upload_docs
+driver --> vehicle_reg
 
-' Login Flow
-customer --> UC9
-driver --> UC10
-admin --> UC11
+' Admin Driver Verification
+admin --> verify_driver
 
-' Session Management
-UC25 <-- customer
-UC25 <-- driver
-UC25 <-- admin
+' Authentication by Role
+customer --> user_login
+admin --> admin_login
+driver --> driver_login
 
-' Profile Management
-UC29 <-- customer
-UC30 <-- customer
-UC31 <-- customer
+' Session Management (all authenticated users)
+customer --> validate_token
+admin --> validate_token
+driver --> validate_token
 
-' Include Relationships
-UC1 ..> UC12 : <<include>>
-UC9 ..> UC12 : <<include>>
-UC10 ..> UC12 : <<include>>
-UC11 ..> UC12 : <<include>>
-UC12 ..> UC13 : <<include>>
+customer --> refresh_token
+admin --> refresh_token
+driver --> refresh_token
 
-' Extend Relationships
-UC9 ..> UC27 : <<extend>>
-UC9 ..> UC28 : <<extend>>
+customer --> logout
+admin --> logout
+driver --> logout
 
-' External System Relationships
-UC3 --> sms
-UC12 --> auth
-UC13 --> auth
-UC33 --> security
-UC34 --> security
-UC36 --> security
+' Personal Profile Management (users can only manage their own profiles)
+customer --> update_own_profile
+admin --> update_own_profile
+driver --> update_own_profile
 
-note top of UC1
-    Customer registration includes
-    username, email, phone, password
-end note
+customer --> view_own_profile
+admin --> view_own_profile
+driver --> view_own_profile
 
-note bottom of UC5
-  Driver registration requires
-  additional verification and
-  document submission
-end note
+customer --> change_own_password
+admin --> change_own_password
+driver --> change_own_password
 
+' Admin User Management (admin only - can view/manage all user accounts)
+admin --> view_all_users
+admin --> view_user_details
+admin --> update_user_account
+admin --> deactivate_user
+admin --> reset_user_password
+admin --> manage_user_roles
+admin --> view_user_logs
 
+' Role-Based Access Control
+admin --> check_permissions
+admin --> menu_access
+admin --> admin_dashboard
+driver --> driver_portal
+
+' Notes for clarity
+note right of reg_user : User registration includes:\nusername, email, password,\nphone, address, role selection
+
+note right of user_login : JWT authentication with\nrole-based access control\nand token expiration
+
+note right of verify_driver : Driver verification includes:\ndocument review, background\ncheck, and vehicle inspection
+
+note right of view_all_users : <b>Admin Privilege:</b>\nOnly admin can view and manage\nall user accounts. Regular users\ncan only access their own profiles.
+
+note right of update_own_profile : Users can only update\ntheir own profile information\nand passwords
+
+note right of manage_user_roles : Admin can assign/change user roles\n(USER, ADMIN, DRIVER) and\nmanage permissions
+
+note right of rbac : <b>Access Control Rules:</b>\n• Users can only view/edit their own profiles\n• Only Admin can view other user accounts\n• Admin has full user management capabilities\n• Role-based permissions restrict access to sensitive operations
+
+note right of driver : <b>User Types & Permissions:</b>\n• New User: Account registration only\n• Customer: Personal profile + basic system access\n• Admin: Full system access + user management\n• Driver: Personal profile + driver portal access
 
 @enduml
