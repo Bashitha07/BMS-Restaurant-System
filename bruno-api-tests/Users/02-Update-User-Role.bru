@@ -1,0 +1,27 @@
+meta {
+  name: Update User Role (Admin)
+  type: http
+  seq: 2
+}
+
+put {
+  url: {{baseUrl}}/api/admin/users/{{userId}}/role?role=ADMIN
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminToken}}
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("User role updated to ADMIN", function() {
+    if (res.getStatus() === 200) {
+      expect(res.getBody().role).to.equal('ADMIN');
+    }
+  });
+}

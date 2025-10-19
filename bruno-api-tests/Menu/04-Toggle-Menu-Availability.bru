@@ -1,0 +1,27 @@
+meta {
+  name: Toggle Menu Availability (Admin)
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/api/admin/menu/{{menuId}}/availability?available=false
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminToken}}
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Menu item availability toggled", function() {
+    if (res.getStatus() === 200) {
+      expect(res.getBody().isAvailable).to.equal(false);
+    }
+  });
+}

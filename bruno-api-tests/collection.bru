@@ -1,0 +1,22 @@
+script:pre-request {
+  // Log request details
+  const method = req.getMethod();
+  const url = req.getUrl();
+  console.log(`[${method}] ${url}`);
+  
+  // Add timestamp
+  const timestamp = new Date().toISOString();
+  req.setHeader('X-Request-Time', timestamp);
+}
+
+script:post-response {
+  // Log response status
+  const status = res.getStatus();
+  const time = res.getResponseTime();
+  console.log(`Response: ${status} (${time}ms)`);
+  
+  // Log errors
+  if (status >= 400) {
+    console.error('Error Response:', res.getBody());
+  }
+}

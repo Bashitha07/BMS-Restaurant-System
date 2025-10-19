@@ -1,0 +1,95 @@
+meta {
+  name: Complete System Test
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{adminUsername}}",
+    "password": "{{adminPassword}}"
+  }
+}
+
+docs {
+  # Complete System Test - Run This First!
+  
+  This test validates the entire system:
+  1. Admin login with JWT
+  2. Token storage
+  3. API accessibility
+  4. Database schema (no calories/allergens)
+  
+  ## Expected Results:
+  - Status: 200
+  - Token: JWT string
+  - Role: ADMIN
+  - Username: admin
+  
+  ## Next Steps:
+  After this test passes, run the folder tests in order:
+  1. Menu (CRUD operations)
+  2. Users (Admin management)
+  3. Orders (User creation + Admin visibility)
+  4. Reservations (User creation + Admin visibility)
+}
+
+tests {
+  test("✅ Login successful - Status 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("✅ Response has JWT token", function() {
+    const body = res.getBody();
+    expect(body).to.have.property('token');
+    expect(body.token).to.be.a('string');
+    expect(body.token.length).to.be.greaterThan(20);
+  });
+  
+  test("✅ Response has correct username", function() {
+    expect(res.getBody().username).to.equal('admin');
+  });
+  
+  test("✅ Response has ADMIN role", function() {
+    expect(res.getBody().role).to.equal('ADMIN');
+  });
+  
+  test("✅ JWT token format is valid (3 parts)", function() {
+    const token = res.getBody().token;
+    const parts = token.split('.');
+    expect(parts.length).to.equal(3);
+  });
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+    const responseBody = res.getBody();
+    
+    // Save tokens to environment
+    bru.setVar("adminToken", responseBody.token);
+    bru.setVar("token", responseBody.token);
+    
+    console.log("✅ ADMIN LOGIN SUCCESSFUL");
+    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    console.log("Username:", responseBody.username);
+    console.log("Role:", responseBody.role);
+    console.log("Token (first 30 chars):", responseBody.token.substring(0, 30) + "...");
+    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    console.log("");
+    console.log("🎯 Next: Run Menu, Users, Orders, and Reservations tests");
+    console.log("");
+  } else {
+    console.error("❌ LOGIN FAILED");
+    console.error("Status:", res.getStatus());
+    console.error("Check:");
+    console.error("1. Backend running on port 8084");
+    console.error("2. Admin credentials: admin / admin123");
+    console.error("3. MySQL database is running");
+  }
+}

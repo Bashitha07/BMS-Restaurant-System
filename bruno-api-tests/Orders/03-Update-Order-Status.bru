@@ -1,0 +1,27 @@
+meta {
+  name: Update Order Status (Admin)
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/api/admin/orders/{{orderId}}/status?status=CONFIRMED
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminToken}}
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Order status updated to CONFIRMED", function() {
+    if (res.getStatus() === 200) {
+      expect(res.getBody().status).to.equal('CONFIRMED');
+    }
+  });
+}

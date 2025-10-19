@@ -1,0 +1,45 @@
+meta {
+  name: Login as Admin
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{adminUsername}}",
+    "password": "{{adminPassword}}"
+  }
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response has token", function() {
+    expect(res.getBody()).to.have.property('token');
+  });
+  
+  test("Response has username", function() {
+    expect(res.getBody().username).to.equal('admin');
+  });
+  
+  test("Response has role ADMIN", function() {
+    expect(res.getBody().role).to.equal('ADMIN');
+  });
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+    const responseBody = res.getBody();
+    bru.setVar("adminToken", responseBody.token);
+    bru.setVar("token", responseBody.token);
+    console.log("Admin token saved:", responseBody.token);
+  }
+}

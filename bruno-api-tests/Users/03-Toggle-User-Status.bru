@@ -1,0 +1,27 @@
+meta {
+  name: Toggle User Status (Admin)
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/api/admin/users/{{userId}}/status?enabled=false
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminToken}}
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("User status toggled", function() {
+    if (res.getStatus() === 200) {
+      expect(res.getBody().enabled).to.equal(false);
+    }
+  });
+}

@@ -1,0 +1,47 @@
+meta {
+  name: Get All Users (Admin)
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/admin/users
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminToken}}
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response is array", function() {
+    if (res.getStatus() === 200) {
+      expect(res.getBody()).to.be.an('array');
+    }
+  });
+  
+  test("Admin user exists in list", function() {
+    if (res.getStatus() === 200) {
+      const users = res.getBody();
+      const admin = users.find(u => u.username === 'admin');
+      expect(admin).to.exist;
+      expect(admin.role).to.equal('ADMIN');
+    }
+  });
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+    const users = res.getBody();
+    const testUser = users.find(u => u.username === 'testuser');
+    if (testUser) {
+      bru.setVar("userId", testUser.id);
+      console.log("Test user ID saved:", testUser.id);
+    }
+  }
+}
