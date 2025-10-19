@@ -1,0 +1,43 @@
+meta {
+  name: Get All Menus (Public)
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/menu
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status code is 200 or 403", function() {
+    const status = res.getStatus();
+    expect([200, 403]).to.include(status);
+  });
+  
+  test("Response is array if successful", function() {
+    if (res.getStatus() === 200) {
+      expect(res.getBody()).to.be.an('array');
+    }
+  });
+  
+  test("Menu items have correct structure (no calories/allergens)", function() {
+    if (res.getStatus() === 200 && res.getBody().length > 0) {
+      const menu = res.getBody()[0];
+      expect(menu).to.have.property('id');
+      expect(menu).to.have.property('name');
+      expect(menu).to.have.property('price');
+      expect(menu).to.have.property('category');
+      expect(menu).to.not.have.property('calories');
+      expect(menu).to.not.have.property('allergens');
+    }
+  });
+}
+
+script:post-response {
+  if (res.getStatus() === 200 && res.getBody().length > 0) {
+    bru.setVar("menuId", res.getBody()[0].id);
+    console.log("First menu ID saved:", res.getBody()[0].id);
+  }
+}

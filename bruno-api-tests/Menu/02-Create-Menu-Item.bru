@@ -1,0 +1,67 @@
+meta {
+  name: Create Menu Item (Admin)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/admin/menu
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminToken}}
+}
+
+body:json {
+  {
+    "name": "Test Pizza",
+    "description": "Delicious test pizza",
+    "price": 15.99,
+    "category": "Main Course",
+    "isAvailable": true,
+    "imageUrl": "https://example.com/pizza.jpg",
+    "preparationTime": 20,
+    "ingredients": "Cheese, Tomato, Dough",
+    "isVegetarian": true,
+    "isVegan": false,
+    "isGlutenFree": false,
+    "isSpicy": false,
+    "spiceLevel": 0,
+    "stockQuantity": 100,
+    "lowStockThreshold": 10,
+    "isFeatured": false,
+    "discountPercentage": 0.00,
+    "discountedPrice": 15.99
+  }
+}
+
+tests {
+  test("Status code is 200 or 201", function() {
+    const status = res.getStatus();
+    expect([200, 201]).to.include(status);
+  });
+  
+  test("Response has menu ID", function() {
+    if (res.getStatus() === 200 || res.getStatus() === 201) {
+      expect(res.getBody()).to.have.property('id');
+    }
+  });
+  
+  test("Menu item created without calories/allergens", function() {
+    if (res.getStatus() === 200 || res.getStatus() === 201) {
+      const menu = res.getBody();
+      expect(menu.name).to.equal('Test Pizza');
+      expect(menu).to.not.have.property('calories');
+      expect(menu).to.not.have.property('allergens');
+    }
+  });
+}
+
+script:post-response {
+  if (res.getStatus() === 200 || res.getStatus() === 201) {
+    bru.setVar("menuId", res.getBody().id);
+    console.log("Created menu ID:", res.getBody().id);
+  }
+}

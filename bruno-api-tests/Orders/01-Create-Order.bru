@@ -1,0 +1,63 @@
+meta {
+  name: Create Order (User)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/orders
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{userToken}}
+}
+
+body:json {
+  {
+    "items": [
+      {
+        "menuId": 1,
+        "quantity": 2,
+        "specialInstructions": "Extra cheese"
+      },
+      {
+        "menuId": 2,
+        "quantity": 1,
+        "specialInstructions": "No onions"
+      }
+    ],
+    "deliveryAddress": "123 Test Street, Colombo",
+    "deliveryPhone": "0771234567",
+    "specialInstructions": "Call before delivery",
+    "orderType": "DELIVERY",
+    "paymentMethod": "CASH_ON_DELIVERY"
+  }
+}
+
+tests {
+  test("Status code is 200 or 201", function() {
+    const status = res.getStatus();
+    expect([200, 201]).to.include(status);
+  });
+  
+  test("Order created with ID", function() {
+    if (res.getStatus() === 200 || res.getStatus() === 201) {
+      expect(res.getBody()).to.have.property('id');
+    }
+  });
+  
+  test("Order has correct status", function() {
+    if (res.getStatus() === 200 || res.getStatus() === 201) {
+      expect(res.getBody().status).to.equal('PENDING');
+    }
+  });
+}
+
+script:post-response {
+  if (res.getStatus() === 200 || res.getStatus() === 201) {
+    bru.setVar("orderId", res.getBody().id);
+    console.log("Created order ID:", res.getBody().id);
+  }
+}

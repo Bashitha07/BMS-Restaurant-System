@@ -1,0 +1,41 @@
+meta {
+  name: Register New User
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/auth/register
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{testUsername}}",
+    "email": "testuser@example.com",
+    "password": "{{testPassword}}",
+    "phone": "0771234567",
+    "role": "USER"
+  }
+}
+
+tests {
+  test("Status code is 200 or 201", function() {
+    const status = res.getStatus();
+    expect([200, 201]).to.include(status);
+  });
+  
+  test("Response has username", function() {
+    const body = res.getBody();
+    if (body.username) {
+      expect(body.username).to.equal('testuser');
+    }
+  });
+}
+
+script:post-response {
+  if (res.getStatus() === 200 || res.getStatus() === 201) {
+    console.log("User registered successfully");
+  }
+}

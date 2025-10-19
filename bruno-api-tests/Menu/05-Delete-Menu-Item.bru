@@ -1,0 +1,28 @@
+meta {
+  name: Delete Menu Item (Admin)
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/api/admin/menu/{{menuId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminToken}}
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Menu item deleted successfully", function() {
+    if (res.getStatus() === 200) {
+      const message = res.getBody();
+      expect(message).to.include('deleted');
+    }
+  });
+}

@@ -1,0 +1,53 @@
+meta {
+  name: Create Reservation (User)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/reservations
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{userToken}}
+}
+
+body:json {
+  {
+    "customerName": "Test User",
+    "customerEmail": "testuser@example.com",
+    "customerPhone": "0771234567",
+    "reservationDate": "2025-10-25",
+    "reservationTime": "19:00:00",
+    "numberOfPeople": 4,
+    "specialRequests": "Window seat preferred"
+  }
+}
+
+tests {
+  test("Status code is 200 or 201", function() {
+    const status = res.getStatus();
+    expect([200, 201]).to.include(status);
+  });
+  
+  test("Reservation created with ID", function() {
+    if (res.getStatus() === 200 || res.getStatus() === 201) {
+      expect(res.getBody()).to.have.property('id');
+    }
+  });
+  
+  test("Reservation has PENDING status", function() {
+    if (res.getStatus() === 200 || res.getStatus() === 201) {
+      expect(res.getBody().status).to.equal('PENDING');
+    }
+  });
+}
+
+script:post-response {
+  if (res.getStatus() === 200 || res.getStatus() === 201) {
+    bru.setVar("reservationId", res.getBody().id);
+    console.log("Created reservation ID:", res.getBody().id);
+  }
+}

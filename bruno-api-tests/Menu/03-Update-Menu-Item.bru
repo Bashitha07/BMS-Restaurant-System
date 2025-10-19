@@ -1,0 +1,53 @@
+meta {
+  name: Update Menu Item (Admin)
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/api/admin/menu/{{menuId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminToken}}
+}
+
+body:json {
+  {
+    "name": "Updated Test Pizza",
+    "description": "Updated delicious test pizza",
+    "price": 17.99,
+    "category": "Main Course",
+    "isAvailable": true,
+    "imageUrl": "https://example.com/pizza-updated.jpg",
+    "preparationTime": 25,
+    "ingredients": "Cheese, Tomato, Dough, Olives",
+    "isVegetarian": true,
+    "isVegan": false,
+    "isGlutenFree": false,
+    "isSpicy": true,
+    "spiceLevel": 2,
+    "stockQuantity": 100,
+    "lowStockThreshold": 10,
+    "isFeatured": true,
+    "discountPercentage": 10.00,
+    "discountedPrice": 16.19
+  }
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Menu item updated correctly", function() {
+    if (res.getStatus() === 200) {
+      const menu = res.getBody();
+      expect(menu.name).to.equal('Updated Test Pizza');
+      expect(menu.price).to.equal(17.99);
+      expect(menu.isSpicy).to.equal(true);
+    }
+  });
+}
