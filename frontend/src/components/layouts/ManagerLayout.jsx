@@ -1,3 +1,10 @@
+      <footer className="bg-primary-500 border-t mt-12">
+        <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+          <div className="text-center text-sm text-white">
+            <p>Manager Panel Footer</p>
+          </div>
+        </div>
+      </footer>
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -26,20 +33,20 @@ const ManagerLayout = ({ children }) => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+  <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+  <header className="bg-primary-500 shadow-sm border-b border-accent-400">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gray-900">BMS Kingdom of Taste - Manager</h1>
+              <h1 className="text-2xl font-bold text-accent">BMS Kingdom of Taste - Manager</h1>
             </div>
             <div className="flex items-center space-x-4">
               <NotificationDropdown />
-              <span className="text-sm text-gray-700">Welcome, {user?.username}</span>
+              <span className="text-sm text-accent">Welcome, {user?.username}</span>
               <button
                 onClick={handleLogout}
-                className="text-sm text-gray-700 hover:text-gray-900"
+                className="text-sm text-primary bg-accent hover:bg-accent/80 px-3 py-1 rounded-md transition-colors font-medium"
               >
                 Logout
               </button>
@@ -50,7 +57,7 @@ const ManagerLayout = ({ children }) => {
 
       <div className="flex">
         {/* Sidebar */}
-        <nav className="w-64 bg-white shadow-sm min-h-[calc(100vh-4rem)]">
+  <nav className="w-64 bg-white shadow-sm min-h-[calc(100vh-4rem)] border-r border-accent-100">
           <div className="p-4">
             <ul className="space-y-2">
               {navItems.map((item) => (
@@ -59,8 +66,8 @@ const ManagerLayout = ({ children }) => {
                     to={item.path}
                     className={`flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                       location.pathname === item.path
-                        ? 'bg-blue-100 text-blue-700'
-                        : 'text-gray-700 hover:bg-gray-100'
+                        ? 'bg-accent/10 text-accent'
+                        : 'text-accent/80 hover:bg-accent/10'
                     }`}
                   >
                     <item.icon className="w-5 h-5 mr-3" />

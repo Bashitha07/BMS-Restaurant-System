@@ -4,8 +4,9 @@ export function Button({ onClick, variant = 'default', size = 'md', className = 
   const baseStyles = 'rounded font-semibold focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200 flex items-center justify-center gap-2';
   
   const variants = {
-    default: 'bg-orange-600 text-white hover:bg-orange-700 focus:ring-orange-500',
-    outline: 'border border-orange-600 text-orange-600 hover:bg-orange-100 focus:ring-orange-500',
+    default: 'bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500',
+    outline: 'border border-primary-600 text-primary-600 hover:bg-primary-50 focus:ring-primary-500',
+    accent: 'bg-accent-500 text-white hover:bg-accent-600 focus:ring-accent-400',
     error: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
   };
   

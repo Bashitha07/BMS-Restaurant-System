@@ -105,7 +105,7 @@ function Home() {
             ].map((category, index) => (
               <div
                 key={index}
-                className="bg-white rounded-lg overflow-hidden shadow-md transition-transform hover:scale-105"
+                className="bg-white rounded-2xl overflow-hidden shadow-md transition-transform hover:scale-105"
               >
                 <div className="h-48 overflow-hidden">
                   <img
@@ -134,7 +134,7 @@ function Home() {
       
       {/* Login/Register Section - Only show if user is not logged in */}
       {!user && (
-        <section className="py-16 bg-gradient-to-r from-orange-500 to-red-500 text-white">
+  <section className="py-16 bg-primary-500 text-white rounded-2xl">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-6">
               Join BMS Kingdom of Taste Today!
@@ -144,7 +144,7 @@ function Home() {
               make reservations, and enjoy personalized recommendations just for you.
             </p>
             <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6">
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 max-w-md">
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 max-w-md">
                 <h3 className="text-xl font-semibold mb-3">New Customer?</h3>
                 <p className="text-sm mb-4 opacity-90">
                   Create an account to start ordering and enjoy member benefits
@@ -159,7 +159,7 @@ function Home() {
                 </Link>
               </div>
               
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 max-w-md">
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 max-w-md">
                 <h3 className="text-xl font-semibold mb-3">Already a Member?</h3>
                 <p className="text-sm mb-4 opacity-90">
                   Sign in to access your account and continue where you left off
@@ -185,7 +185,7 @@ function Home() {
 
       {/* Welcome Back Section - Only show if user is logged in */}
       {user && (
-        <section className="py-16 bg-gradient-to-r from-green-500 to-blue-500 text-white">
+  <section className="py-16 bg-white text-primary-900">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
               Welcome Back, {user.username}! 👋
@@ -227,7 +227,7 @@ function Home() {
       )}
       
       {/* Call to Action */}
-      <section className="py-16 bg-orange-600 text-white">
+  <section className="py-16 bg-primary-600 text-white rounded-2xl">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-6">
             {user ? "Ready for Your Next Meal?" : "Ready to Experience Our Delicious Food?"}
