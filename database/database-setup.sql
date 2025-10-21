@@ -101,18 +101,6 @@ CREATE TABLE IF NOT EXISTS reservations (
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
-    customer_phone VARCHAR(255) NOT NULL,
-    special_requests TEXT,
-    table_number INT,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME,
-    confirmed_at DATETIME,
-    cancelled_at DATETIME,
-    cancellation_reason VARCHAR(255),
-    reminder_sent BOOLEAN DEFAULT FALSE,
-    admin_notes TEXT,
-    user_id BIGINT NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 
 -- ============================================
 -- 6. DRIVERS TABLE (Simplified - 7 fields)
@@ -277,6 +265,87 @@ INSERT INTO deliveries (order_id, driver_id, delivery_address, status) VALUES
 (1, 1, '123 Main Street, Colombo', 'ASSIGNED')
 ON DUPLICATE KEY UPDATE order_id = order_id;
 
+-- ============================================
+-- COMPREHENSIVE PAYMENT TEST DATA
+-- ============================================
+-- Payment methods: CASH_ON_DELIVERY, BANK_DEPOSIT, ONLINE (NO CARD)
+-- Statuses: PENDING, COMPLETED, FAILED, VERIFIED
+
+-- Payment 1: Cash on Delivery - Pending
+INSERT INTO payments (order_id, amount, payment_method, status, transaction_id, created_at) VALUES
+(1, 850.00, 'CASH_ON_DELIVERY', 'PENDING', 'COD-2025-0001', NOW())
+ON DUPLICATE KEY UPDATE order_id = order_id;
+
+-- Additional orders for payment testing
+INSERT INTO orders (user_id, order_date, status, total_amount, delivery_address, delivery_phone) VALUES
+(2, DATE_SUB(NOW(), INTERVAL 1 DAY), 'CONFIRMED', 1500.00, '456 Park Avenue, Colombo', '0772345678'),
+(2, DATE_SUB(NOW(), INTERVAL 2 DAYS), 'DELIVERED', 2300.00, '789 Beach Road, Colombo', '0773456789'),
+(2, DATE_SUB(NOW(), INTERVAL 3 DAYS), 'PENDING', 950.00, '321 Hill Street, Kandy', '0774567890'),
+(2, DATE_SUB(NOW(), INTERVAL 5 DAYS), 'COMPLETED', 1800.00, '654 Lake View, Galle', '0775678901')
+ON DUPLICATE KEY UPDATE user_id = user_id;
+
+-- Get the IDs of newly inserted orders (assuming auto-increment continues from 2)
+-- Payment 2: Bank Deposit - Verified (with payment slip)
+INSERT INTO payments (order_id, amount, payment_method, status, transaction_id, created_at) VALUES
+(2, 1500.00, 'BANK_DEPOSIT', 'VERIFIED', 'DEPOSIT-2025-0001', DATE_SUB(NOW(), INTERVAL 1 DAY))
+ON DUPLICATE KEY UPDATE order_id = order_id;
+
+-- Payment 3: Cash on Delivery - Completed
+INSERT INTO payments (order_id, amount, payment_method, status, transaction_id, created_at) VALUES
+(3, 2300.00, 'CASH_ON_DELIVERY', 'COMPLETED', 'COD-2025-0002', DATE_SUB(NOW(), INTERVAL 2 DAYS))
+ON DUPLICATE KEY UPDATE order_id = order_id;
+
+-- Payment 4: Bank Deposit - Pending (with payment slip awaiting verification)
+INSERT INTO payments (order_id, amount, payment_method, status, transaction_id, created_at) VALUES
+(4, 950.00, 'BANK_DEPOSIT', 'PENDING', 'DEPOSIT-2025-0002', DATE_SUB(NOW(), INTERVAL 3 DAYS))
+ON DUPLICATE KEY UPDATE order_id = order_id;
+
+-- Payment 5: Online Payment - Completed
+INSERT INTO payments (order_id, amount, payment_method, status, transaction_id, created_at) VALUES
+(5, 1800.00, 'ONLINE', 'COMPLETED', 'ONLINE-2025-0001', DATE_SUB(NOW(), INTERVAL 5 DAYS))
+ON DUPLICATE KEY UPDATE order_id = order_id;
+
+-- ============================================
+-- PAYMENT SLIP TEST DATA
+-- ============================================
+-- Payment slips for bank deposit transactions
+
+-- Payment Slip 1: Verified bank deposit (Order 2)
+INSERT INTO payment_slips (order_id, file_name, file_path, uploaded_at) VALUES
+(2, 'bank_slip_order_2_verified.jpg', '/uploads/payment_slips/bank_slip_order_2_verified.jpg', DATE_SUB(NOW(), INTERVAL 1 DAY))
+ON DUPLICATE KEY UPDATE order_id = order_id;
+
+-- Payment Slip 2: Pending verification bank deposit (Order 4)
+INSERT INTO payment_slips (order_id, file_name, file_path, uploaded_at) VALUES
+(4, 'bank_slip_order_4_pending.jpg', '/uploads/payment_slips/bank_slip_order_4_pending.jpg', DATE_SUB(NOW(), INTERVAL 3 DAYS))
+ON DUPLICATE KEY UPDATE order_id = order_id;
+
+-- Payment Slip 3: Another verified deposit (additional test case)
+INSERT INTO orders (user_id, order_date, status, total_amount, delivery_address, delivery_phone) VALUES
+(2, DATE_SUB(NOW(), INTERVAL 7 DAYS), 'DELIVERED', 1200.00, '888 Mountain View, Nuwara Eliya', '0776789012')
+ON DUPLICATE KEY UPDATE user_id = user_id;
+
+INSERT INTO payments (order_id, amount, payment_method, status, transaction_id, created_at) VALUES
+(6, 1200.00, 'BANK_DEPOSIT', 'VERIFIED', 'DEPOSIT-2025-0003', DATE_SUB(NOW(), INTERVAL 7 DAYS))
+ON DUPLICATE KEY UPDATE order_id = order_id;
+
+INSERT INTO payment_slips (order_id, file_name, file_path, uploaded_at) VALUES
+(6, 'bank_slip_order_6_verified.pdf', '/uploads/payment_slips/bank_slip_order_6_verified.pdf', DATE_SUB(NOW(), INTERVAL 7 DAYS))
+ON DUPLICATE KEY UPDATE order_id = order_id;
+
+-- Payment Slip 4: Failed verification (for testing rejection scenario)
+INSERT INTO orders (user_id, order_date, status, total_amount, delivery_address, delivery_phone) VALUES
+(2, DATE_SUB(NOW(), INTERVAL 4 DAYS), 'CANCELLED', 750.00, '999 Garden Road, Colombo', '0777890123')
+ON DUPLICATE KEY UPDATE user_id = user_id;
+
+INSERT INTO payments (order_id, amount, payment_method, status, transaction_id, created_at) VALUES
+(7, 750.00, 'BANK_DEPOSIT', 'FAILED', 'DEPOSIT-2025-0004', DATE_SUB(NOW(), INTERVAL 4 DAYS))
+ON DUPLICATE KEY UPDATE order_id = order_id;
+
+INSERT INTO payment_slips (order_id, file_name, file_path, uploaded_at) VALUES
+(7, 'bank_slip_order_7_failed.jpg', '/uploads/payment_slips/bank_slip_order_7_failed.jpg', DATE_SUB(NOW(), INTERVAL 4 DAYS))
+ON DUPLICATE KEY UPDATE order_id = order_id;
+
 -- Insert Sample Reviews
 INSERT INTO reviews (user_id, menu_id, rating, comment) VALUES
 (2, 1, 5, 'Amazing pizza! Best I have ever tasted.'),
@@ -308,8 +377,33 @@ ON DUPLICATE KEY UPDATE user_id = user_id;
 -- FROM reservations r;
 
 -- View payments with order info
--- SELECT p.id, p.amount, p.payment_method, p.status, o.id AS order_id
+-- SELECT p.id, p.amount, p.payment_method, p.status, p.transaction_id, o.id AS order_id, o.status AS order_status
 -- FROM payments p JOIN orders o ON p.order_id = o.id;
+
+-- View payment slips with payment details
+-- SELECT ps.id, ps.order_id, ps.file_name, ps.uploaded_at, p.payment_method, p.status AS payment_status, p.amount
+-- FROM payment_slips ps 
+-- JOIN payments p ON ps.order_id = p.order_id;
+
+-- View all Cash on Delivery payments
+-- SELECT p.id, o.id AS order_id, p.amount, p.status, p.transaction_id, o.delivery_address
+-- FROM payments p 
+-- JOIN orders o ON p.order_id = o.id
+-- WHERE p.payment_method = 'CASH_ON_DELIVERY';
+
+-- View all Bank Deposit payments with slips
+-- SELECT p.id, o.id AS order_id, p.amount, p.status, ps.file_name, ps.uploaded_at
+-- FROM payments p 
+-- JOIN orders o ON p.order_id = o.id
+-- LEFT JOIN payment_slips ps ON o.id = ps.order_id
+-- WHERE p.payment_method = 'BANK_DEPOSIT';
+
+-- View pending payment verifications
+-- SELECT p.id, o.id AS order_id, p.amount, p.transaction_id, ps.file_name, ps.uploaded_at
+-- FROM payments p 
+-- JOIN orders o ON p.order_id = o.id
+-- JOIN payment_slips ps ON o.id = ps.order_id
+-- WHERE p.payment_method = 'BANK_DEPOSIT' AND p.status = 'PENDING';
 
 -- View reviews with menu and user info
 -- SELECT r.rating, r.comment, m.name AS menu_name, u.username

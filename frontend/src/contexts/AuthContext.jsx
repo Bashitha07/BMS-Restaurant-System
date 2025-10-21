@@ -17,44 +17,64 @@ function AuthProvider({ children }) {
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
-      setUser(JSON.parse(savedUser));
+      try {
+        const parsedUser = JSON.parse(savedUser);
+        setUser(parsedUser);
+        console.log('Restored user session from localStorage:', {
+          username: parsedUser.username,
+          role: parsedUser.role
+        });
+      } catch (err) {
+        console.error('Error parsing saved user data:', err);
+        // Don't clear localStorage on parse error to allow retry
+      }
     }
   }, []);
 
   const login = async (username, password) => {
     try {
-      // Try real API login first
+      console.log("Login attempt:", username);
+      
+      // Clear any previous login data
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      
+      // API login - userService now handles the demo credentials internally
       const data = await userService.login({ username, password });
+      console.log("Login response:", data);
+      
       // Expected response: { token, username, role }
       if (data?.token) {
         localStorage.setItem('token', data.token);
       }
+      
+      // Create user object from response
       const userData = {
-        id: Date.now(),
+        id: data?.id || Date.now(),
         username: data?.username || username,
-        email: '',
+        email: data?.email || '',
         role: (data?.role || 'USER').toUpperCase(),
       };
+      
+      console.log("Setting user data:", userData);
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
+      
+      // Return the user data for the component to use
       return userData;
     } catch (error) {
-      // Fallback to simple mock for local demo
-      if (username === 'admin' && password === 'admin123') {
-        const userData = { id: 1, username: 'admin', email: 'admin@example.com', role: 'ADMIN' };
-        setUser(userData);
-        localStorage.setItem('user', JSON.stringify(userData));
-        return userData;
-      } else if (username === 'user' && password === 'user123') {
-        const userData = { id: 2, username: 'user', email: 'user@example.com', role: 'USER' };
-        setUser(userData);
-        localStorage.setItem('user', JSON.stringify(userData));
-        return userData;
-      }
+      console.error("Login error in AuthContext:", error);
+      
+      // Clear any stale data
       setUser(null);
       localStorage.removeItem('user');
       localStorage.removeItem('token');
-      throw error;
+      
+      if (error.message && typeof error.message === 'string') {
+        throw error;
+      } else {
+        throw new Error('Login failed. Please check your credentials and try again.');
+      }
     }
   };
 
@@ -104,13 +124,56 @@ function AuthProvider({ children }) {
     }
   };
 
-  const isAdmin = useMemo(() => (user?.role || '').toUpperCase() === 'ADMIN', [user]);
-  const isDriver = useMemo(() => (user?.role || '').toUpperCase() === 'DRIVER', [user]);
-  const isKitchen = useMemo(() => (user?.role || '').toUpperCase() === 'KITCHEN', [user]);
-  const isManager = useMemo(() => (user?.role || '').toUpperCase() === 'MANAGER', [user]);
+  // Add persistence check to avoid losing user state during page refresh
+  const getSavedUser = () => {
+    if (user) return user; // Use context state if available
+    
+    // Fallback to localStorage if context hasn't loaded yet
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      try {
+        return JSON.parse(savedUser);
+      } catch (err) {
+        return null;
+      }
+    }
+    return null;
+  };
+  
+  const persistentUser = getSavedUser();
+  
+  const isAdmin = useMemo(() => {
+    const roleToCheck = persistentUser?.role || '';
+    return roleToCheck.toUpperCase() === 'ADMIN';
+  }, [persistentUser, user]);
+  
+  const isDriver = useMemo(() => {
+    const roleToCheck = persistentUser?.role || '';
+    return roleToCheck.toUpperCase() === 'DRIVER';
+  }, [persistentUser, user]);
+  
+  const isKitchen = useMemo(() => {
+    const roleToCheck = persistentUser?.role || '';
+    return roleToCheck.toUpperCase() === 'KITCHEN';
+  }, [persistentUser, user]);
+  
+  const isManager = useMemo(() => {
+    const roleToCheck = persistentUser?.role || '';
+    return roleToCheck.toUpperCase() === 'MANAGER';
+  }, [persistentUser, user]);
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, updateProfile, isAdmin, isDriver, isKitchen, isManager }}>
+    <AuthContext.Provider value={{ 
+      user: user || persistentUser, // Use persistentUser as fallback
+      login, 
+      register, 
+      logout, 
+      updateProfile, 
+      isAdmin, 
+      isDriver, 
+      isKitchen, 
+      isManager 
+    }}>
       {children}
     </AuthContext.Provider>
   );

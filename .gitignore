@@ -31,3 +31,37 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Temporary Files ###
+*.bak
+*.log
+*.tmp
+*~
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+### Temporary Documentation ###
+*-FIXED.md
+*-STATUS.md
+SETUP-*.md
+FINAL-*.md
+SUCCESS.md
+APPLICATION-*.md
+
+### Temporary Scripts ###
+fix-*.ps1
+fix-*.bat
+test-*.ps1
+
+### Node/Frontend ###
+node_modules/
+dist/
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

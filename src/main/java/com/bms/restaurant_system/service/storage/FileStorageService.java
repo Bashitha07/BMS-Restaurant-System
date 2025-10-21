@@ -1,4 +1,4 @@
-package com.bms.restaurant_system.service;
+package com.bms.restaurant_system.service.storage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

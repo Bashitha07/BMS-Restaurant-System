@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { SearchIcon, FilterIcon, PlusIcon, MinusIcon } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
-import { menuItems, menuCategories } from '../../data/menuData';
-import { formatPrice } from '../../utils/currency';
-import FoodImage from '../../components/FoodImage';
+import { menuCategories } from '../../data/menuData';
+import { formatPrice } from "../../utils/currency";
+import FoodImage from "../../components/common/FoodImage";
+import { menuService } from "../../services/api";
 
 const Menu = () => {
   const { addItem } = useCart();
@@ -11,14 +12,35 @@ const Menu = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [showAvailableOnly, setShowAvailableOnly] = useState(false);
   const [itemQuantities, setItemQuantities] = useState({});
+  const [menuItems, setMenuItems] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Initialize all item quantities to 1
+  // Fetch menu items from API
   useEffect(() => {
-    const initialQuantities = {};
-    menuItems.forEach((item) => {
-      initialQuantities[item.id] = 1;
-    });
-    setItemQuantities(initialQuantities);
+    const fetchMenuItems = async () => {
+      setIsLoading(true);
+      try {
+        const response = await menuService.getAllMenus();
+        setMenuItems(response.data || []);
+        
+        // Initialize quantities after fetching items
+        const initialQuantities = {};
+        response.data.forEach((item) => {
+          initialQuantities[item.id] = 1;
+        });
+        setItemQuantities(initialQuantities);
+        
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching menu items:", err);
+        setError("Failed to load menu items. Please try again later.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchMenuItems();
   }, []);
 
   const handleQuantityChange = (itemId, newQuantity) => {

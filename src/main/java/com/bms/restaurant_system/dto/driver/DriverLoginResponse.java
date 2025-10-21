@@ -1,4 +1,4 @@
-package com.bms.restaurant_system.dto;
+package com.bms.restaurant_system.dto.driver;
 
 public class DriverLoginResponse {
     private String token;

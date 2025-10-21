@@ -1,8 +1,8 @@
-package com.bms.restaurant_system.controller;
+package com.bms.restaurant_system.controller.user;
 
 import com.bms.restaurant_system.dto.OrderCreateDTO;
 import com.bms.restaurant_system.dto.OrderDTO;
-import com.bms.restaurant_system.service.OrderService;
+import com.bms.restaurant_system.service.order.OrderService;
 import com.bms.restaurant_system.exception.ResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,6 +74,19 @@ public class OrderController {
         } catch (ResourceNotFoundException e) {
             logger.warn("Order not found with id: {}", id);
             return ResponseEntity.notFound().build();
+        }
+    }
+    
+    @GetMapping("/my-orders")
+    public ResponseEntity<List<OrderDTO>> getMyOrders() {
+        logger.info("Fetching orders for current user");
+        try {
+            List<OrderDTO> orders = orderService.getOrdersForCurrentUser();
+            logger.info("Found {} orders for current user", orders.size());
+            return ResponseEntity.ok(orders);
+        } catch (Exception e) {
+            logger.error("Error fetching user orders", e);
+            return ResponseEntity.internalServerError().build();
         }
     }
 }

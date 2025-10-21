@@ -73,7 +73,7 @@ const UserLayout = ({ children, onCartClick }) => {
                   </span>
                 )}
               </button>
-              <NotificationDropdown />
+              {user && <NotificationDropdown />}
               
               {/* Conditional User Info and Logout */}
               {user ? (

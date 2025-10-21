@@ -8,7 +8,7 @@ import {
   Calendar, 
   CreditCard 
 } from 'lucide-react';
-import { formatPrice } from '../utils/currency';
+import { formatPrice } from '../../utils/currency';
 
 const Invoice = ({ orderData, onDownload }) => {
   const formatDate = (dateString) => {

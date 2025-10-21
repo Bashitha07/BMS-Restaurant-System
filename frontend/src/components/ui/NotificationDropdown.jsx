@@ -5,7 +5,7 @@ import { useNotifications } from '../../contexts/NotificationContext';
 const NotificationDropdown = () => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
-  const { notifications, unreadCount, markAsRead, markAllAsRead, clearNotifications } = useNotifications();
+  const { notifications = [], unreadCount = 0, markAsRead, markAllAsRead, clearNotifications } = useNotifications() || {};
 
   useEffect(() => {
     const handleClickOutside = (event) => {

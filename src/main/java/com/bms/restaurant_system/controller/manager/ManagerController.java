@@ -1,8 +1,8 @@
-package com.bms.restaurant_system.controller;
+package com.bms.restaurant_system.controller.manager;
 
 import com.bms.restaurant_system.dto.OrderDTO;
 import com.bms.restaurant_system.entity.Order;
-import com.bms.restaurant_system.service.OrderService;
+import com.bms.restaurant_system.service.order.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

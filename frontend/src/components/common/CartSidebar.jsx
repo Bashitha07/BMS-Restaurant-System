@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X, ShoppingBag, Plus, Minus, Trash2, CreditCard } from 'lucide-react';
-import { useCart } from '../contexts/CartContext';
-import { formatPrice } from '../utils/currency';
+import { useCart } from '../../contexts/CartContext';
+import { formatPrice } from '../../utils/currency';
 
 const CartSidebar = ({ isOpen, onClose }) => {
   const navigate = useNavigate();

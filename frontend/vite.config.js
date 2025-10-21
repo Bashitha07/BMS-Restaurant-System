@@ -16,6 +16,7 @@ export default defineConfig({
         target: 'http://localhost:8084',
         changeOrigin: true,
         secure: false,
+        rewrite: (path) => path
       },
       '/images': {
         target: 'http://localhost:8084',

@@ -6,7 +6,7 @@ import AdminLayout from './components/layouts/AdminLayout';
 import DriverLayout from './components/layouts/DriverLayout';
 import KitchenLayout from './components/layouts/KitchenLayout';
 import ManagerLayout from './components/layouts/ManagerLayout';
-import CartSidebar from './components/CartSidebar';
+import CartSidebar from './components/common/CartSidebar';
 import LoadingSpinner from './components/ui/LoadingSpinner';
 import { routes } from './routes';
 
@@ -16,10 +16,27 @@ const AppRouter = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   const renderRoute = (route) => {
+    // Add a check to prevent redirection during page refresh or when backend is unavailable
+    const isPageRefresh = performance.navigation && performance.navigation.type === 1;
+    const hasLocalStorageUser = localStorage.getItem('user') !== null;
+    
+    // If this is a page refresh and we have a user in localStorage, don't redirect
+    if (route.requireAuth && !user && hasLocalStorageUser) {
+      console.log('Page refreshed with stored user data. Preventing redirect to login.');
+      return <route.Component />;
+    }
+    
+    // Normal auth checks
     if (route.requireAuth && !user) {
       return <Navigate to="/login" />;
     }
     if (route.requireAdmin && !isAdmin) {
+      // If user has admin role in localStorage but context hasn't loaded yet, don't redirect
+      const storedUser = localStorage.getItem('user');
+      const isLocalAdmin = storedUser && JSON.parse(storedUser).role === 'ADMIN';
+      if (isLocalAdmin) {
+        return <route.Component />;
+      }
       return <Navigate to="/" />;
     }
     if (route.requireDriver && !isDriver) {

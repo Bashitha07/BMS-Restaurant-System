@@ -94,6 +94,21 @@ export default function PaymentManagement() {
     }
   };
 
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [paymentToReject, setPaymentToReject] = useState(null);
+  
+  const openRejectDialog = (payment) => {
+    setPaymentToReject(payment);
+    setRejectionReason('');
+    setRejectDialogOpen(true);
+  };
+  
+  const closeRejectDialog = () => {
+    setRejectDialogOpen(false);
+    setPaymentToReject(null);
+  };
+  
   const handleRejectPayment = async (payment, reason = 'Payment verification failed') => {
     try {
       // Get orders from localStorage
@@ -108,7 +123,7 @@ export default function PaymentManagement() {
             status: 'payment_failed',
             paymentStatus: 'failed',
             trackingUpdates: [
-              ...order.trackingUpdates,
+              ...(order.trackingUpdates || []),
               {
                 status: 'payment_failed',
                 title: 'Payment Rejected',
@@ -126,6 +141,7 @@ export default function PaymentManagement() {
       localStorage.setItem('orders', JSON.stringify(updatedOrders));
       toast.success('Payment rejected');
       loadPayments();
+      closeRejectDialog();
     } catch (error) {
       console.error('Error rejecting payment:', error);
       toast.error('Failed to reject payment');
@@ -133,7 +149,22 @@ export default function PaymentManagement() {
   };
 
   const downloadDepositSlip = (payment) => {
-    // Create a link and trigger download
+    // For backend API-based slips
+    if (payment.depositSlip && payment.depositSlip.startsWith('/uploads/')) {
+      // For API-based URLs, use the full server URL
+      const baseUrl = import.meta.env.VITE_API_URL || window.location.origin;
+      const fullUrl = `${baseUrl}${payment.depositSlip}`;
+      
+      const link = document.createElement('a');
+      link.href = fullUrl;
+      link.download = payment.depositSlipName || 'deposit-slip.jpg';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      return;
+    }
+    
+    // For local mock data
     const link = document.createElement('a');
     link.href = payment.depositSlip;
     link.download = payment.depositSlipName || 'deposit-slip.jpg';
@@ -191,6 +222,40 @@ export default function PaymentManagement() {
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow-md divide-y divide-gray-200">
+          {/* Rejection Dialog */}
+          {rejectDialogOpen && paymentToReject && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg p-6 w-full max-w-md">
+                <h3 className="text-xl font-medium text-gray-900 mb-4">Reject Payment</h3>
+                <p className="text-sm text-gray-500 mb-4">
+                  Please provide a reason for rejecting this payment.
+                </p>
+                <textarea
+                  value={rejectionReason}
+                  onChange={(e) => setRejectionReason(e.target.value)}
+                  placeholder="Reason for rejection..."
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:outline-none mb-4"
+                  rows="3"
+                ></textarea>
+                <div className="flex justify-end gap-2">
+                  <button
+                    onClick={closeRejectDialog}
+                    className="px-4 py-2 text-gray-500 hover:text-gray-700"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => handleRejectPayment(paymentToReject, rejectionReason || 'Payment verification failed')}
+                    disabled={!rejectionReason.trim()}
+                    className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:bg-red-300"
+                  >
+                    Reject Payment
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          
           {payments.map((payment) => (
             <div key={payment.id} className="p-6 hover:bg-gray-50 transition-colors">
               <div className="flex justify-between items-start mb-4">
@@ -248,9 +313,16 @@ export default function PaymentManagement() {
                     <div>
                       <div className="mb-4">
                         <img 
-                          src={payment.depositSlip} 
+                          src={payment.depositSlip.startsWith('/uploads/') 
+                            ? `${import.meta.env.VITE_API_URL || ''}${payment.depositSlip}` 
+                            : payment.depositSlip} 
                           alt="Deposit slip" 
                           className="max-w-full h-48 object-cover rounded-lg border"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = '/images/placeholder-image.png';
+                            console.error('Error loading image:', payment.depositSlip);
+                          }}
                         />
                       </div>
                       <div className="flex gap-2">
@@ -271,7 +343,7 @@ export default function PaymentManagement() {
                               Verify
                             </button>
                             <button
-                              onClick={() => handleRejectPayment(payment)}
+                              onClick={() => openRejectDialog(payment)}
                               className="flex items-center gap-2 px-4 py-2 text-red-600 border border-red-600 rounded-md hover:bg-red-50 transition-colors"
                             >
                               <XCircle className="w-4 h-4" />

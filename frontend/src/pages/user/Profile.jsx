@@ -4,7 +4,8 @@ import { useNotifications } from '../../contexts/NotificationContext';
 import { Button } from '../../components/ui/Button';
 import adminService from '../../services/adminService';
 import AdminMenuManagement from '../../components/admin/AdminMenuManagement';
-import { Users, UserCheck, Shield, Eye, Edit, Save, X, ChefHat, Settings } from 'lucide-react';
+import AdminDeliveryDrivers from '../../components/admin/AdminDeliveryDrivers';
+import { Users, UserCheck, Shield, Eye, Edit, Save, X, ChefHat, Settings, Truck } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 export default function Profile() {
@@ -16,18 +17,6 @@ export default function Profile() {
   // Get tab from URL parameters
   const urlParams = new URLSearchParams(location.search);
   const initialTab = urlParams.get('tab') || 'profile';
-  
-  console.log('🎬 [COMPONENT] Profile component initialized:', {
-    user: user ? {
-      id: user.id,
-      username: user.username,
-      email: user.email,
-      role: user.role
-    } : null,
-    isAdmin: user?.role?.toLowerCase() === 'admin' || user?.role === 'ADMIN',
-    initialTab: initialTab,
-    timestamp: new Date().toISOString()
-  });
   
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -75,21 +64,9 @@ export default function Profile() {
   const fetchUsers = async () => {
     if (!isAdmin) return;
     
-    console.log('🔍 [DB] Fetching all users from database...');
     setUsersLoading(true);
     try {
       const allUsers = await adminService.getAllUsers();
-      console.log('✅ [DB] Successfully fetched users:', {
-        totalUsers: allUsers.length,
-        usersByRole: {
-          customers: allUsers.filter(u => hasRole(u.role, 'user')).length,
-          drivers: allUsers.filter(u => hasRole(u.role, 'delivery_driver')).length,
-          admins: allUsers.filter(u => hasRole(u.role, 'admin')).length,
-          managers: allUsers.filter(u => hasRole(u.role, 'manager')).length
-        },
-        activeUsers: allUsers.filter(u => u.enabled).length,
-        users: allUsers
-      });
       setUsers(allUsers);
     } catch (error) {
       console.error('❌ [DB] Failed to fetch users from database:', error);
@@ -115,11 +92,6 @@ export default function Profile() {
         { id: 12, username: 'alex_supervisor', email: 'alex.supervisor@restaurant.com', phone: '+94773344556', role: 'manager', enabled: true, createdAt: '2024-02-01', lastLogin: '2024-10-05', department: 'Customer Service' }
       ];
       
-      console.log('⚠️ [DB] Using fallback user data (database connection failed):', {
-        totalUsers: fallbackUsers.length,
-        fallbackData: fallbackUsers
-      });
-      
       setUsers(fallbackUsers);
     } finally {
       setUsersLoading(false);
@@ -127,15 +99,8 @@ export default function Profile() {
   };
 
   useEffect(() => {
-    console.log('🔍 [LIFECYCLE] Profile component effect triggered:', {
-      isAdmin: isAdmin,
-      showAdminSection: showAdminSection,
-      activeTab: activeTab,
-      shouldFetchUsers: isAdmin && (showAdminSection || activeTab === 'users')
-    });
-    
     if (isAdmin && (showAdminSection || activeTab === 'users')) {
-      console.log('📋 [DB] Triggering user fetch due to tab/section change');
+
       fetchUsers();
     }
   }, [isAdmin, showAdminSection, activeTab]);
@@ -405,112 +370,57 @@ export default function Profile() {
                   <ChefHat className="w-4 h-4 inline mr-2" />
                   Menu Management
                 </button>
+                <button
+                  onClick={() => handleTabChange('drivers')}
+                  className={`py-4 px-6 border-b-2 font-medium text-sm ${
+                    activeTab === 'drivers'
+                      ? 'border-purple-500 text-purple-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <Truck className="w-4 h-4 inline mr-2" />
+                  Driver Applications
+                </button>
               </nav>
             </div>
           </div>
         )}
 
         {/* Tab Content */}
-        {activeTab === 'profile' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* User Profile Section */}
-            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h1 className="text-2xl font-bold text-gray-900">My Profile</h1>
-              </div>
+        {activeTab === 'profile' && isAdmin && (
+          <div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Admin Statistics Panel */}
+              <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-200">
+                  <h1 className="text-2xl font-bold text-gray-900">System Statistics</h1>
+                </div>
 
-              <div className="px-6 py-6">
-              {!isEditing ? (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Username</label>
-                    <p className="mt-1 text-sm text-gray-900">{user.username}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Email</label>
-                    <p className="mt-1 text-sm text-gray-900">{user.email}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Phone</label>
-                    <p className="mt-1 text-sm text-gray-900">{user.phone || 'Not provided'}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Role</label>
-                    <div className="mt-1 flex items-center gap-2">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        hasRole(user.role, 'admin') ? 'bg-red-100 text-red-800' :
-                        hasRole(user.role, 'manager') ? 'bg-purple-100 text-purple-800' :
-                        hasRole(user.role, 'delivery_driver') ? 'bg-blue-100 text-blue-800' :
-                        'bg-green-100 text-green-800'
-                      }`}>
-                        {roleLabels[user.role] || user.role}
-                      </span>
-                      {hasRole(user.role, 'admin') && <Shield className="h-4 w-4 text-red-600" />}
+                <div className="px-6 py-6">
+                  {/* System statistics content would go here */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                      <div className="text-sm font-medium text-blue-800">Total Orders</div>
+                      <div className="text-2xl font-bold text-blue-900">156</div>
+                    </div>
+                    <div className="bg-green-50 p-3 rounded-lg border border-green-200">
+                      <div className="text-sm font-medium text-green-800">Active Users</div>
+                      <div className="text-2xl font-bold text-green-900">42</div>
+                    </div>
+                    <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
+                      <div className="text-sm font-medium text-purple-800">Menu Items</div>
+                      <div className="text-2xl font-bold text-purple-900">38</div>
+                    </div>
+                    <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                      <div className="text-sm font-medium text-yellow-800">Daily Revenue</div>
+                      <div className="text-2xl font-bold text-yellow-900">₹12,500</div>
                     </div>
                   </div>
-                  <Button onClick={() => setIsEditing(true)} className="mt-4">
-                    Edit Profile
-                  </Button>
                 </div>
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
-                    <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                      Username
-                    </label>
-                    <input
-                      type="text"
-                      id="username"
-                      name="username"
-                      value={formData.username}
-                      onChange={handleInputChange}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-                      Phone
-                    </label>
-                    <input
-                      type="tel"
-                      id="phone"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    />
-                  </div>
-                  <div className="flex space-x-4">
-                    <Button type="submit" disabled={loading}>
-                      {loading ? 'Saving...' : 'Save Changes'}
-                    </Button>
-                    <Button type="button" variant="outline" onClick={handleCancel} disabled={loading}>
-                      Cancel
-                    </Button>
-                  </div>
-                </form>
-              )}
+              </div>
             </div>
-          </div>
-
-          {/* Admin User Management Section */}
-          {isAdmin && (
-            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+            
+            <div className="bg-white rounded-lg shadow-sm overflow-hidden mt-6">
               <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-red-50 to-purple-50">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -768,10 +678,9 @@ export default function Profile() {
                 </div>
               )}
             </div>
-          )}
           </div>
         )}
-
+        
         {/* User Management Tab */}
         {activeTab === 'users' && isAdmin && (
           <div className="bg-white rounded-lg shadow-sm overflow-hidden">
@@ -969,8 +878,30 @@ export default function Profile() {
           </div>
         )}
 
+        {/* Driver Applications Tab */}
+        {activeTab === 'drivers' && isAdmin && (
+          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+              <div className="flex items-center gap-2">
+                <Truck className="h-5 w-5 text-blue-600" />
+                <h2 className="text-xl font-bold text-gray-900">Driver Applications Dashboard</h2>
+                <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-medium">
+                  Approval Management
+                </span>
+              </div>
+              <p className="text-sm text-gray-600 mt-2">
+                Review and approve delivery driver applications
+              </p>
+            </div>
+
+            <div className="p-6">
+              <AdminDeliveryDrivers />
+            </div>
+          </div>
+        )}
+
         {/* Non-admin users see simplified profile only */}
-        {!isAdmin && (
+        {(!isAdmin || (isAdmin && activeTab === 'profile')) && (
           <div className="max-w-2xl mx-auto">
             <div className="bg-white rounded-lg shadow-sm overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200">

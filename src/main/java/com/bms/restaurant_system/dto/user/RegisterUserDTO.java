@@ -1,4 +1,4 @@
-package com.bms.restaurant_system.dto;
+package com.bms.restaurant_system.dto.user;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

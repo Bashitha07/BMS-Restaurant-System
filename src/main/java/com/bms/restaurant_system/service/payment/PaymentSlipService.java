@@ -1,4 +1,4 @@
-package com.bms.restaurant_system.service;
+package com.bms.restaurant_system.service.payment;
 
 import com.bms.restaurant_system.dto.PaymentSlipDTO;
 import com.bms.restaurant_system.entity.Order;
@@ -8,7 +8,10 @@ import com.bms.restaurant_system.exception.ResourceNotFoundException;
 import com.bms.restaurant_system.repository.OrderRepository;
 import com.bms.restaurant_system.repository.PaymentSlipRepository;
 import com.bms.restaurant_system.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,6 +29,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class PaymentSlipService {
+    private static final Logger logger = LoggerFactory.getLogger(PaymentSlipService.class);
     
     @Autowired
     private PaymentSlipRepository paymentSlipRepository;
@@ -36,7 +40,12 @@ public class PaymentSlipService {
     @Autowired
     private UserRepository userRepository;
     
-    private final String uploadDir = "uploads/payment-slips/";
+    @Value("${app.upload.dir:${user.home}/restaurant-system/uploads}")
+    private String uploadBaseDir;
+    
+    private String getUploadDir() {
+        return uploadBaseDir + "/payment-slips/";
+    }
     
     // User methods
     public PaymentSlipDTO uploadPaymentSlip(Long orderId, Long userId, MultipartFile file, 
@@ -60,9 +69,11 @@ public class PaymentSlipService {
         }
         
         // Create upload directory if it doesn't exist
+        String uploadDir = getUploadDir();
         Path uploadPath = Paths.get(uploadDir);
         if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath);
+            logger.info("Created directory: {}", uploadPath);
         }
         
         // Generate unique filename
@@ -77,6 +88,7 @@ public class PaymentSlipService {
         // Save file
         Path targetPath = Paths.get(filePath);
         Files.copy(file.getInputStream(), targetPath);
+        logger.info("Saved file to: {}", targetPath);
         
         // Create payment slip entity
         PaymentSlip paymentSlip = new PaymentSlip(order, user, originalFilename, filePath, 
@@ -138,13 +150,23 @@ public class PaymentSlipService {
         
         paymentSlip.confirm(adminUsername, notes);
         paymentSlip = paymentSlipRepository.save(paymentSlip);
+        logger.info("Payment slip confirmed with ID: {} by admin: {}", id, adminUsername);
         
         // Update order payment status
         Order order = paymentSlip.getOrder();
         if (order != null) {
-            // You might want to update order status or add payment record here
-            // order.setStatus(Order.OrderStatus.CONFIRMED);
-            // orderRepository.save(order);
+            order.setStatus(Order.OrderStatus.CONFIRMED);
+            order.setPaymentStatus(Order.PaymentStatus.PAID);
+            order.addTrackingUpdate(
+                "payment_confirmed",
+                "Payment Confirmed",
+                "Payment was verified by admin: " + adminUsername,
+                true
+            );
+            orderRepository.save(order);
+            logger.info("Updated order status to CONFIRMED for order ID: {}", order.getId());
+        } else {
+            logger.warn("No order found for payment slip ID: {}", id);
         }
         
         return convertToDTO(paymentSlip);
@@ -160,6 +182,23 @@ public class PaymentSlipService {
         
         paymentSlip.reject(adminUsername, reason, notes);
         paymentSlip = paymentSlipRepository.save(paymentSlip);
+        logger.info("Payment slip rejected with ID: {} by admin: {}", id, adminUsername);
+        
+        // Update order payment status
+        Order order = paymentSlip.getOrder();
+        if (order != null) {
+            order.setPaymentStatus(Order.PaymentStatus.FAILED);
+            order.addTrackingUpdate(
+                "payment_rejected",
+                "Payment Rejected",
+                "Payment verification failed: " + reason,
+                false
+            );
+            orderRepository.save(order);
+            logger.info("Updated order payment status to FAILED for order ID: {}", order.getId());
+        } else {
+            logger.warn("No order found for payment slip ID: {}", id);
+        }
         
         return convertToDTO(paymentSlip);
     }
@@ -171,13 +210,20 @@ public class PaymentSlipService {
         // Delete physical file
         try {
             Path filePath = Paths.get(paymentSlip.getFilePath());
-            Files.deleteIfExists(filePath);
+            boolean deleted = Files.deleteIfExists(filePath);
+            if (deleted) {
+                logger.info("Deleted file: {}", filePath);
+            } else {
+                logger.warn("File not found for deletion: {}", filePath);
+            }
         } catch (IOException e) {
             // Log error but don't fail the operation
-            System.err.println("Failed to delete file: " + paymentSlip.getFilePath());
+            logger.error("Failed to delete file: {}", paymentSlip.getFilePath(), e);
         }
         
+        // Delete from database
         paymentSlipRepository.delete(paymentSlip);
+        logger.info("Deleted payment slip record with ID: {}", id);
     }
     
     public Map<String, Object> getPaymentSlipStatistics() {

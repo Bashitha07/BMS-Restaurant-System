@@ -1,0 +1,10 @@
+{
+  "properties": [
+    {
+      "name": "app.upload.dir",
+      "type": "java.lang.String",
+      "description": "Directory path for uploading files (menu images, documents, etc.)",
+      "defaultValue": "${user.home}/restaurant-system/uploads"
+    }
+  ]
+}

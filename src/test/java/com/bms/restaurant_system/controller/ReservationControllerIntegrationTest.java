@@ -8,10 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureWebMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.time.LocalDate;
@@ -24,7 +24,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureWebMvc
 @ActiveProfiles("test")
-@Transactional
 class ReservationControllerIntegrationTest {
 
     @Autowired
@@ -46,6 +45,7 @@ class ReservationControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = "customer", roles = {"USER"})
     void getAllReservations_ShouldReturnReservationsList() throws Exception {
         mockMvc.perform(get("/api/reservations"))
                 .andExpect(status().isOk())
@@ -53,6 +53,7 @@ class ReservationControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = "customer", roles = {"USER"})
     void getReservationById_WithValidId_ShouldReturnReservation() throws Exception {
         mockMvc.perform(get("/api/reservations/1"))
                 .andExpect(status().isOk())
@@ -60,6 +61,7 @@ class ReservationControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = "customer", roles = {"USER"})
     void getReservationById_WithInvalidId_ShouldReturnNotFound() throws Exception {
         mockMvc.perform(get("/api/reservations/99999"))
                 .andExpect(status().isNotFound());
@@ -101,6 +103,7 @@ class ReservationControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = "customer", roles = {"USER"})
     void updateReservation_WithValidData_ShouldReturnUpdatedReservation() throws Exception {
         // First create a reservation
         LocalDateTime reservationDateTime = LocalDateTime.now().plusDays(1);
@@ -201,12 +204,13 @@ class ReservationControllerIntegrationTest {
 
         ReservationDTO created = objectMapper.readValue(response, ReservationDTO.class);
 
-        // Delete the reservation
+        // Delete the reservation - returns 204 NO_CONTENT
         mockMvc.perform(delete("/api/reservations/" + created.id()))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
     }
 
     @Test
+    @WithMockUser(username = "customer", roles = {"USER"})
     void getReservationsByUser_ShouldReturnUserReservations() throws Exception {
         mockMvc.perform(get("/api/reservations/user/1"))
                 .andExpect(status().isOk())
@@ -214,6 +218,7 @@ class ReservationControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = "customer", roles = {"USER"})
     void getReservationsByDateRange_ShouldReturnReservationsInRange() throws Exception {
         mockMvc.perform(get("/api/reservations/date-range")
                 .param("startDate", "2025-01-01T00:00:00")

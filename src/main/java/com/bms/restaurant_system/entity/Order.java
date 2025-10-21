@@ -79,6 +79,14 @@ public class Order {
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Payment> payments;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_status")
+    private PaymentStatus paymentStatus = PaymentStatus.PENDING;
+    
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OrderBy("timestamp ASC")
+    private List<OrderTracking> trackingUpdates;
 
     public enum OrderStatus {
         PENDING,
@@ -90,11 +98,36 @@ public class Order {
         CANCELLED,
         REFUNDED
     }
+    
+    public enum PaymentStatus {
+        PENDING,
+        PAID,
+        FAILED,
+        REFUNDED
+    }
 
     public enum OrderType {
         DELIVERY,
         PICKUP,
         DINE_IN
+    }
+    
+    /**
+     * Adds a tracking update to this order
+     */
+    public void addTrackingUpdate(String status, String title, String description, boolean completed) {
+        OrderTracking tracking = new OrderTracking();
+        tracking.setOrder(this);
+        tracking.setStatus(status);
+        tracking.setTitle(title);
+        tracking.setDescription(description);
+        tracking.setCompleted(completed);
+        tracking.setTimestamp(LocalDateTime.now());
+        
+        if (this.trackingUpdates == null) {
+            this.trackingUpdates = new java.util.ArrayList<>();
+        }
+        this.trackingUpdates.add(tracking);
     }
 
     @PreUpdate

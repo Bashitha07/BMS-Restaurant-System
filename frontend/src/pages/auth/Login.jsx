@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import LoginForm from '../../components/LoginForm';
-import RegisterForm from '../../components/RegisterForm';
+import LoginForm from '../../components/forms/LoginForm';
+import RegisterForm from '../../components/forms/RegisterForm';
 
 const Login = () => {
   const [mode, setMode] = useState('login');

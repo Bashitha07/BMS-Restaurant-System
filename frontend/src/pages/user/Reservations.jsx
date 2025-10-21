@@ -1,92 +1,146 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CalendarIcon, ClockIcon, UsersIcon, TrashIcon } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
+import axios from '../../utils/axios';
 
-export function Reservations() {
-  // Mock reservations data
-  const [reservations, setReservations] = useState([
-    {
-      id: 'RES-1234',
-      date: '2023-06-10',
-      time: '19:00',
-      guests: 4,
-      status: 'confirmed',
-    },
-    {
-      id: 'RES-1235',
-      date: '2023-06-15',
-      time: '20:00',
-      guests: 2,
-      status: 'pending',
-    },
-  ]);
+export default function Reservations() {
+  const [reservations, setReservations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const [formData, setFormData] = useState({
     date: '',
     time: '',
     guests: '',
+    specialRequests: '',
   });
+
+  // Fetch reservations from backend
+  useEffect(() => {
+    fetchReservations();
+  }, []);
+
+  const fetchReservations = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.get('/api/reservations/my-reservations');
+      console.log('Fetched reservations from backend:', response.data);
+      setReservations(response.data);
+    } catch (err) {
+      console.error('Failed to fetch reservations:', err);
+      setError('Failed to load reservations. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { id, value } = e.target;
+    const fieldName = id.replace('res', '').toLowerCase();
     setFormData({
       ...formData,
-      [id.replace('res', '').toLowerCase()]: value,
+      [fieldName]: value,
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Create a new reservation
-    const newReservation = {
-      id: `RES-${Math.floor(1000 + Math.random() * 9000)}`,
-      date: formData.date,
-      time: formData.time,
-      guests: parseInt(formData.guests),
-      status: 'pending',
-    };
-    setReservations([...reservations, newReservation]);
-    // Reset form
-    setFormData({
-      date: '',
-      time: '',
-      guests: '',
-    });
-    // Show success message (in a real app, you might use a toast notification)
-    alert('Reservation submitted successfully!');
+    
+    if (!formData.date || !formData.time || !formData.guests) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    try {
+      const reservationData = {
+        reservationDate: formData.date,
+        reservationTime: formData.time,
+        partySize: parseInt(formData.guests),
+        specialRequests: formData.specialRequests || '',
+        status: 'PENDING'
+      };
+
+      console.log('Submitting reservation:', reservationData);
+      const response = await axios.post('/api/reservations', reservationData);
+      console.log('Reservation created:', response.data);
+      
+      alert('Reservation submitted successfully! Awaiting confirmation.');
+      
+      // Reset form
+      setFormData({
+        date: '',
+        time: '',
+        guests: '',
+        specialRequests: '',
+      });
+      
+      // Refresh reservations list
+      fetchReservations();
+    } catch (err) {
+      console.error('Failed to create reservation:', err);
+      alert('Failed to submit reservation. Please try again.');
+    }
   };
 
-  const cancelReservation = (id) => {
-    // In a real app, you would call an API to cancel the reservation
-    setReservations(
-      reservations.map((res) =>
-        res.id === id
-          ? {
-              ...res,
-              status: 'cancelled',
-            }
-          : res
-      )
-    );
+  const cancelReservation = async (id) => {
+    if (!confirm('Are you sure you want to cancel this reservation?')) {
+      return;
+    }
+
+    try {
+      await axios.delete(`/api/reservations/${id}`);
+      alert('Reservation cancelled successfully');
+      fetchReservations();
+    } catch (err) {
+      console.error('Failed to cancel reservation:', err);
+      alert('Failed to cancel reservation. Please try again.');
+    }
   };
 
   const getStatusClass = (status) => {
-    switch (status) {
+    const statusLower = status?.toLowerCase() || '';
+    switch (statusLower) {
       case 'confirmed':
         return 'bg-green-100 text-green-800';
       case 'pending':
         return 'bg-yellow-100 text-yellow-800';
       case 'cancelled':
+      case 'rejected':
         return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-12 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading reservations...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="container mx-auto px-4">
         <h1 className="text-3xl font-bold mb-8 text-center">Table Reservations</h1>
+        
+        {error && (
+          <div className="mb-6 p-4 bg-red-100 text-red-700 rounded-lg">
+            {error}
+            <button 
+              onClick={fetchReservations} 
+              className="ml-4 underline hover:no-underline"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+
         {/* Current Reservations */}
         <div className="mb-12">
           <h2 className="text-2xl font-semibold mb-6">Your Reservations</h2>
@@ -97,7 +151,7 @@ export function Reservations() {
           ) : (
             <div className="grid gap-6 md:grid-cols-2">
               {reservations
-                .filter((res) => res.status !== 'cancelled')
+                .filter((res) => res.status?.toLowerCase() !== 'cancelled')
                 .map((reservation) => (
                   <div key={reservation.id} className="bg-white rounded-lg shadow-sm p-6">
                     <div className="flex justify-between items-start mb-4">
@@ -107,14 +161,14 @@ export function Reservations() {
                           reservation.status
                         )}`}
                       >
-                        {reservation.status.charAt(0).toUpperCase() + reservation.status.slice(1)}
+                        {reservation.status?.toUpperCase() || 'UNKNOWN'}
                       </span>
                     </div>
                     <div className="space-y-3 mb-6">
                       <div className="flex items-center text-gray-700">
                         <CalendarIcon size={18} className="mr-2 text-indigo-500" />
                         <span>
-                          {new Date(reservation.date).toLocaleDateString('en-US', {
+                          {new Date(reservation.reservationDate).toLocaleDateString('en-US', {
                             weekday: 'long',
                             year: 'numeric',
                             month: 'long',
@@ -124,16 +178,21 @@ export function Reservations() {
                       </div>
                       <div className="flex items-center text-gray-700">
                         <ClockIcon size={18} className="mr-2 text-indigo-500" />
-                        <span>{reservation.time}</span>
+                        <span>{reservation.reservationTime || 'Not set'}</span>
                       </div>
                       <div className="flex items-center text-gray-700">
                         <UsersIcon size={18} className="mr-2 text-indigo-500" />
                         <span>
-                          {reservation.guests} {reservation.guests === 1 ? 'Guest' : 'Guests'}
+                          {reservation.partySize} {reservation.partySize === 1 ? 'Guest' : 'Guests'}
                         </span>
                       </div>
+                      {reservation.specialRequests && (
+                        <div className="text-sm text-gray-600 mt-2">
+                          <strong>Special Requests:</strong> {reservation.specialRequests}
+                        </div>
+                      )}
                     </div>
-                    {reservation.status !== 'cancelled' && (
+                    {reservation.status?.toLowerCase() === 'pending' && (
                       <button
                         onClick={() => cancelReservation(reservation.id)}
                         className="flex items-center text-red-600 hover:text-red-800 transition-colors"
@@ -220,6 +279,22 @@ export function Reservations() {
                   <option value="8">8+ People</option>
                 </select>
               </div>
+              <div>
+                <label
+                  htmlFor="resSpecialrequests"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Special Requests (Optional)
+                </label>
+                <textarea
+                  id="resSpecialrequests"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  rows="3"
+                  placeholder="Any dietary restrictions, allergies, or special occasions..."
+                  value={formData.specialRequests}
+                  onChange={handleInputChange}
+                />
+              </div>
             </div>
             <Button
               type="submit"
@@ -233,4 +308,4 @@ export function Reservations() {
       </div>
     </div>
   );
-};
+}

@@ -48,7 +48,7 @@ export const NotificationProvider = ({ children }) => {
     const newNotification = {
       id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       userId: user.id, // Associate notification with current user
-      message,
+      message: String(message),
       type,
       read: false,
       timestamp: new Date(),
@@ -145,19 +145,19 @@ export const NotificationProvider = ({ children }) => {
   };
 
   const notifySuccess = (message) => {
-    addNotification(message, 'success');
+    addNotification(String(message), 'success');
   };
 
   const notifyError = (message) => {
-    addNotification(message, 'error');
+    addNotification(String(message), 'error');
   };
 
   const notifyInfo = (message) => {
-    addNotification(message, 'info');
+    addNotification(String(message), 'info');
   };
 
   const notifyWarning = (message) => {
-    addNotification(message, 'warning');
+    addNotification(String(message), 'warning');
   };
 
   // Order-specific notification functions
@@ -175,7 +175,7 @@ export const NotificationProvider = ({ children }) => {
         notification = {
           type: 'payment_confirmed',
           title: 'Payment Confirmed',
-          message: `Your payment for Order #${orderId} has been verified`,
+          message: `Your payment for Order #${String(orderId)} has been verified`,
           orderId,
           userId: user.id
         };
@@ -193,7 +193,7 @@ export const NotificationProvider = ({ children }) => {
         notification = {
           type: 'driver_assigned',
           title: 'Driver Assigned',
-          message: `Driver ${driverInfo?.name} (${driverInfo?.vehicle}) has been assigned`,
+          message: `Driver ${String(driverInfo?.name || '')} (${String(driverInfo?.vehicle || '')}) has been assigned`,
           orderId,
           driverInfo,
           userId: user.id
@@ -203,7 +203,7 @@ export const NotificationProvider = ({ children }) => {
         notification = {
           type: 'out_for_delivery',
           title: 'Out for Delivery',
-          message: `Your order is on the way! Driver: ${driverInfo?.name}`,
+          message: `Your order is on the way! Driver: ${String(driverInfo?.name || '')}`,
           orderId,
           driverInfo,
           userId: user.id
@@ -236,7 +236,7 @@ export const NotificationProvider = ({ children }) => {
         notification = {
           type: 'reservation_confirmed',
           title: 'Reservation Confirmed',
-          message: `Your reservation #${reservationId} has been confirmed`,
+          message: `Your reservation #${String(reservationId)} has been confirmed`,
           reservationId,
           userId: user.id,
           ...details
@@ -246,7 +246,7 @@ export const NotificationProvider = ({ children }) => {
         notification = {
           type: 'reservation_cancelled',
           title: 'Reservation Cancelled',
-          message: `Your reservation #${reservationId} has been cancelled`,
+          message: `Your reservation #${String(reservationId)} has been cancelled`,
           reservationId,
           userId: user.id,
           ...details
@@ -270,7 +270,7 @@ export const NotificationProvider = ({ children }) => {
   };
 
   // Filter notifications to only show user's notifications
-  const userNotifications = user ? notifications.filter(n => n.userId === user.id) : [];
+  const userNotifications = user && user.id ? notifications.filter(n => String(n.userId) === String(user.id)) : [];
   const unreadCount = userNotifications.filter(n => !n.read).length;
 
   return (

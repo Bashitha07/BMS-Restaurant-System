@@ -1,12 +1,16 @@
-package com.bms.restaurant_system.controller;
+package com.bms.restaurant_system.controller.user;
 
 import com.bms.restaurant_system.dto.ReservationDTO;
-import com.bms.restaurant_system.service.ReservationService;
+import com.bms.restaurant_system.service.reservation.ReservationService;
 import com.bms.restaurant_system.exception.ResourceNotFoundException;
+import com.bms.restaurant_system.entity.User;
+import com.bms.restaurant_system.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
@@ -20,10 +24,47 @@ public class ReservationController {
     @Autowired
     private ReservationService reservationService;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @GetMapping
     public ResponseEntity<List<ReservationDTO>> getAllReservations() {
         logger.info("Fetching all reservations");
         return ResponseEntity.ok(reservationService.getAllReservations());
+    }
+
+    @GetMapping("/my-reservations")
+    public ResponseEntity<List<ReservationDTO>> getMyReservations() {
+        logger.info("Fetching reservations for current user");
+        try {
+            // Get the authenticated username from SecurityContext
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+                logger.warn("No authenticated user found");
+                return ResponseEntity.status(401).build();
+            }
+
+            String username = authentication.getName();
+            logger.info("Authenticated user: {}", username);
+
+            // Find the user by username
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
+
+            logger.info("User found with id: {}", user.getId());
+
+            // Get reservations for this user
+            List<ReservationDTO> reservations = reservationService.getReservationsByUser(user.getId());
+            logger.info("Found {} reservations for user: {}", reservations.size(), username);
+            
+            return ResponseEntity.ok(reservations);
+        } catch (ResourceNotFoundException e) {
+            logger.error("User not found: {}", e.getMessage());
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            logger.error("Error fetching reservations: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     @GetMapping("/{id}")

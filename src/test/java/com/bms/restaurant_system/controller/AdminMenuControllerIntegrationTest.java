@@ -1,6 +1,6 @@
 package com.bms.restaurant_system.controller;
 
-import com.bms.restaurant_system.dto.MenuDTO;
+import com.bms.restaurant_system.dto.menu.MenuDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -65,9 +65,9 @@ class AdminMenuControllerIntegrationTest {
             true, // isAvailable
             null, // imageUrl
             15, // preparationTime
-            500, // calories
+            null, // calories
             "Test ingredients", // ingredients
-            "Test allergens", // allergens
+            null, // allergens
             true, // isVegetarian
             false, // isVegan
             true, // isGlutenFree
@@ -103,9 +103,9 @@ class AdminMenuControllerIntegrationTest {
             true, // isAvailable
             null, // imageUrl
             15, // preparationTime
-            500, // calories
+            null, // calories
             "Test ingredients", // ingredients
-            "Test allergens", // allergens
+            null, // allergens
             true, // isVegetarian
             false, // isVegan
             true, // isGlutenFree
@@ -137,9 +137,9 @@ class AdminMenuControllerIntegrationTest {
             true, // isAvailable
             null, // imageUrl
             15, // preparationTime
-            500, // calories
+            null, // calories
             "Test ingredients", // ingredients
-            "Test allergens", // allergens
+            null, // allergens
             true, // isVegetarian
             false, // isVegan
             true, // isGlutenFree
@@ -174,9 +174,9 @@ class AdminMenuControllerIntegrationTest {
             true, // isAvailable
             null, // imageUrl
             15, // preparationTime
-            500, // calories
+            null, // calories
             "Test ingredients", // ingredients
-            "Test allergens", // allergens
+            null, // allergens
             true, // isVegetarian
             false, // isVegan
             true, // isGlutenFree
@@ -217,9 +217,9 @@ class AdminMenuControllerIntegrationTest {
             true, // isAvailable
             null, // imageUrl
             15, // preparationTime
-            500, // calories
+            null, // calories
             "Test ingredients", // ingredients
-            "Test allergens", // allergens
+            null, // allergens
             true, // isVegetarian
             false, // isVegan
             true, // isGlutenFree
@@ -288,7 +288,7 @@ class AdminMenuControllerIntegrationTest {
         mockMvc.perform(multipart("/api/admin/menu/upload-image")
                 .file(emptyFile))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("File is empty"));
+                .andExpect(content().string("File cannot be empty"));
     }
 
     @Test
@@ -304,6 +304,6 @@ class AdminMenuControllerIntegrationTest {
         mockMvc.perform(multipart("/api/admin/menu/upload-image")
                 .file(textFile))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Only image files are allowed"));
+                .andExpect(content().string("Only image files (JPEG, PNG, GIF) are allowed"));
     }
 }

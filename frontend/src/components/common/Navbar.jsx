@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { useCart } from '../contexts/CartContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { useCart } from '../../contexts/CartContext';
 import { toast } from 'react-hot-toast';
 import { User, ShoppingBag, Menu as MenuIcon, Search, MapPin, X } from 'lucide-react';
 import { useState } from 'react';

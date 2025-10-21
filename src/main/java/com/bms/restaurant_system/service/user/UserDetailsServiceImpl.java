@@ -1,4 +1,4 @@
-package com.bms.restaurant_system.service;
+package com.bms.restaurant_system.service.user;
 
 import com.bms.restaurant_system.entity.User;
 import com.bms.restaurant_system.repository.UserRepository;

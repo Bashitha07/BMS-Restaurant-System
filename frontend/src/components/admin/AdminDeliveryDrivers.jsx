@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { Car, Phone, User, CheckCircle, XCircle, AlertTriangle, RefreshCw } from 'lucide-react';
-import adminService from '../services/adminService';
+import adminService from '../../services/adminService';
 
 export default function AdminDeliveryDrivers({ onUpdate }) {
   const [pendingDrivers, setPendingDrivers] = useState([]);

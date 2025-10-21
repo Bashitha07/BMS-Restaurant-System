@@ -3,7 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useCart } from '../../contexts/CartContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import Invoice from '../../components/Invoice';
+import Invoice from '../../components/common/Invoice';
 import { formatPrice } from '../../utils/currency';
 import { orderService } from '../../services/api';
 import {
@@ -35,6 +35,76 @@ export default function OrderHistory() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showOrderDetails, setShowOrderDetails] = useState(false);
 
+  // Helper functions for safely displaying order information
+  const formatDate = (dateString) => {
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return 'Invalid date';
+      }
+      return date.toLocaleDateString(undefined, {
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Invalid date';
+    }
+  };
+  
+  const getStatusIcon = (status) => {
+    try {
+      status = String(status || 'pending').toLowerCase();
+      switch (status) {
+        case 'pending':
+          return Clock;
+        case 'confirmed':
+          return CheckCircle;
+        case 'preparing':
+          return Package;
+        case 'ready':
+          return Package;
+        case 'delivered':
+          return Truck;
+        case 'cancelled':
+          return XCircle;
+        default:
+          return Clock;
+      }
+    } catch (error) {
+      console.error('Error getting status icon:', error);
+      return Clock;
+    }
+  };
+  
+  const getStatusColor = (status) => {
+    try {
+      status = String(status || 'pending').toLowerCase();
+      switch (status) {
+        case 'pending':
+          return 'yellow';
+        case 'confirmed':
+          return 'blue';
+        case 'preparing':
+          return 'orange';
+        case 'ready':
+          return 'purple';
+        case 'delivered':
+          return 'green';
+        case 'cancelled':
+          return 'red';
+        default:
+          return 'gray';
+      }
+    } catch (error) {
+      console.error('Error getting status color:', error);
+      return 'gray';
+    }
+  };
+
   const orderStatuses = [
     { value: 'all', label: 'All Orders', color: 'gray' },
     { value: 'pending', label: 'Pending', color: 'yellow' },
@@ -56,59 +126,109 @@ export default function OrderHistory() {
   const loadOrders = async () => {
     setLoading(true);
     try {
-      // Fetch orders from the backend API
+      console.log('Fetching orders...');
+      
+      // Make sure we have a user before trying to load orders
+      if (!user || !user.id) {
+        console.log('No user found, cannot load orders');
+        setOrders([]);
+        setLoading(false);
+        return;
+      }
+      
+      // Fetch orders from service (which handles API or localStorage)
       const response = await orderService.getMyOrders();
-      const ordersData = response.data || [];
+      console.log('Orders response:', response);
+      
+      // Show toast message if there's a message in the response
+      if (response.message && response.success) {
+        toast.success(response.message);
+      } else if (response.message && !response.success) {
+        toast.error(response.message);
+      }
+      
+      // Extract orders data (ensure it's an array)
+      const ordersData = Array.isArray(response.data) ? response.data : [];
+      console.log(`Processing ${ordersData.length} orders for user ${user.id}`);
 
-      // Process orders to add tracking updates and ensure all fields are present
+      // Process orders with robust error handling for each order
       const processedOrders = ordersData.map(order => {
-        // Calculate totals if not present
-        const subtotal = order.subtotal || order.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const tax = order.tax || subtotal * 0.06; // 6% tax
-        const deliveryFee = order.deliveryFee || 0;
-        const total = order.total || (subtotal + tax + deliveryFee);
-
-        return {
-          ...order,
-          subtotal,
-          tax,
-          deliveryFee,
-          total,
-          trackingUpdates: generateTrackingUpdates(order.orderDate, order.status),
-          estimatedDelivery: order.estimatedDelivery || new Date(Date.now() + 45 * 60 * 1000).toISOString()
-        };
-      });
-
-      setOrders(processedOrders);
-    } catch (error) {
-      console.error('Failed to load orders from database:', error);
-      toast.error('Failed to load order history from database');
-
-      // Fallback to localStorage if API fails
-      try {
-        const storedOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-        const ordersWithTracking = storedOrders.map(order => {
-          const subtotal = order.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-          const tax = subtotal * 0.06;
-          const deliveryFee = order.deliveryFee || 0;
-          const total = subtotal + tax + deliveryFee;
-
+        try {
+          if (!order) return null;
+          
+          // Safely access items array and handle potential issues
+          const items = Array.isArray(order.items) ? order.items : [];
+          
+          // Calculate totals with safeguards against NaN values
+          let subtotal = 0;
+          if (typeof order.subtotal === 'number') {
+            subtotal = order.subtotal;
+          } else {
+            // Calculate from items with safety checks
+            subtotal = items.reduce((sum, item) => {
+              const price = typeof item?.price === 'number' ? item.price : 0;
+              const quantity = typeof item?.quantity === 'number' ? item.quantity : 0;
+              return sum + (price * quantity);
+            }, 0);
+          }
+          
+          const tax = typeof order.tax === 'number' ? order.tax : subtotal * 0.06;
+          const deliveryFee = typeof order.deliveryFee === 'number' ? order.deliveryFee : 0;
+          const total = typeof order.total === 'number' ? order.total : (subtotal + tax + deliveryFee);
+          
+          // Ensure order status is a string
+          const status = typeof order.status === 'string' ? order.status : 'pending';
+          
+          // Ensure orderDate is a valid date string
+          const orderDate = order.orderDate && !isNaN(new Date(order.orderDate).getTime()) 
+            ? order.orderDate 
+            : new Date().toISOString();
+          
           return {
-            ...order,
-            status: order.status || getRandomStatus(),
-            subtotal: order.subtotal || subtotal,
-            tax: order.tax || tax,
-            deliveryFee: deliveryFee,
-            total: order.total || total,
-            trackingUpdates: generateTrackingUpdates(order.orderDate, order.status || getRandomStatus()),
+            id: String(order.id || `unknown-${Date.now()}`),
+            userId: String(order.userId || user.id || '0'),
+            orderDate,
+            status,
+            items: items.map(item => ({
+              id: item.id || Math.random().toString(36).substr(2, 9),
+              name: String(item.name || 'Unknown Item'),
+              price: typeof item.price === 'number' ? item.price : 0,
+              quantity: typeof item.quantity === 'number' ? item.quantity : 0,
+              image: item.image || null
+            })),
+            subtotal,
+            tax,
+            deliveryFee,
+            total,
+            paymentMethod: String(order.paymentMethod || 'Not specified'),
+            deliveryAddress: order.deliveryAddress || { street: '', city: '', state: '', zipCode: '' },
+            customerName: String(order.customerName || user.username || 'Customer'),
+            customerPhone: String(order.customerPhone || 'Not provided'),
+            trackingUpdates: generateTrackingUpdates(orderDate, status),
             estimatedDelivery: order.estimatedDelivery || new Date(Date.now() + 45 * 60 * 1000).toISOString()
           };
-        });
-        setOrders(ordersWithTracking);
-        toast.success('Showing orders from local storage');
-      } catch (fallbackError) {
-        console.error('Fallback to localStorage also failed:', fallbackError);
+        } catch (orderError) {
+          console.error('Error processing order:', orderError, order);
+          return null; // Skip invalid orders
+        }
+      }).filter(order => order !== null); // Remove any null entries
+
+      setOrders(processedOrders);
+      
+      // In development mode, show a message about where data came from
+      if (import.meta.env.DEV) {
+        if (response.fromLocalStorage) {
+          toast.success('Showing orders from local storage');
+        } else if (response.fromMockData) {
+          toast.success('Showing demo orders for development');
+        }
       }
+    } catch (error) {
+      console.error('Failed to load orders:', error);
+      toast.error('Failed to load order history');
+      
+      // Set empty orders array as a last resort
+      setOrders([]);
     } finally {
       setLoading(false);
     }
@@ -120,110 +240,157 @@ export default function OrderHistory() {
   };
 
   const generateTrackingUpdates = (orderDate, currentStatus) => {
-    const baseDate = new Date(orderDate);
-    const updates = [
-      {
-        status: 'pending',
-        title: 'Order Placed',
-        description: 'Your order has been received and is being processed',
-        timestamp: baseDate.toISOString(),
-        completed: true
+    try {
+      // Validate inputs
+      if (!orderDate) {
+        orderDate = new Date().toISOString();
       }
-    ];
+      
+      // Convert to string if not already
+      currentStatus = String(currentStatus || 'pending').toLowerCase();
+      
+      // Parse date safely
+      let baseDate;
+      try {
+        baseDate = new Date(orderDate);
+        if (isNaN(baseDate.getTime())) {
+          // If invalid date, use current date
+          baseDate = new Date();
+        }
+      } catch (e) {
+        baseDate = new Date();
+      }
+      
+      const updates = [
+        {
+          status: 'pending',
+          title: 'Order Placed',
+          description: 'Your order has been received and is being processed',
+          timestamp: baseDate.toISOString(),
+          completed: true
+        }
+      ];
 
-    if (['confirmed', 'preparing', 'ready', 'delivered'].includes(currentStatus)) {
-      updates.push({
-        status: 'confirmed',
-        title: 'Order Confirmed',
-        description: 'Restaurant has confirmed your order',
-        timestamp: new Date(baseDate.getTime() + 5 * 60 * 1000).toISOString(),
-        completed: true
-      });
+      if (['confirmed', 'preparing', 'ready', 'delivered'].includes(currentStatus)) {
+        updates.push({
+          status: 'confirmed',
+          title: 'Order Confirmed',
+          description: 'Restaurant has confirmed your order',
+          timestamp: new Date(baseDate.getTime() + 5 * 60 * 1000).toISOString(),
+          completed: true
+        });
+      }
+
+      if (['preparing', 'ready', 'delivered'].includes(currentStatus)) {
+        updates.push({
+          status: 'preparing',
+          title: 'Preparing Your Food',
+          description: 'Our chefs are preparing your delicious meal',
+          timestamp: new Date(baseDate.getTime() + 15 * 60 * 1000).toISOString(),
+          completed: true
+        });
+      }
+
+      if (['ready', 'delivered'].includes(currentStatus)) {
+        updates.push({
+          status: 'ready',
+          title: 'Order Ready',
+          description: 'Your order is ready for delivery',
+          timestamp: new Date(baseDate.getTime() + 35 * 60 * 1000).toISOString(),
+          completed: true
+        });
+      }
+
+      if (currentStatus === 'delivered') {
+        updates.push({
+          status: 'delivered',
+          title: 'Order Delivered',
+          description: 'Your order has been delivered successfully',
+          timestamp: new Date(baseDate.getTime() + 50 * 60 * 1000).toISOString(),
+          completed: true
+        });
+      }
+
+      return updates;
+    } catch (error) {
+      console.error('Error generating tracking updates:', error);
+      // Return basic update as fallback
+      return [
+        {
+          status: 'pending',
+          title: 'Order Placed',
+          description: 'Your order has been received',
+          timestamp: new Date().toISOString(),
+          completed: true
+        }
+      ];
     }
-
-    if (['preparing', 'ready', 'delivered'].includes(currentStatus)) {
-      updates.push({
-        status: 'preparing',
-        title: 'Preparing Your Food',
-        description: 'Our chefs are preparing your delicious meal',
-        timestamp: new Date(baseDate.getTime() + 15 * 60 * 1000).toISOString(),
-        completed: true
-      });
-    }
-
-    if (['ready', 'delivered'].includes(currentStatus)) {
-      updates.push({
-        status: 'ready',
-        title: 'Order Ready',
-        description: 'Your order is ready for delivery',
-        timestamp: new Date(baseDate.getTime() + 35 * 60 * 1000).toISOString(),
-        completed: true
-      });
-    }
-
-    if (currentStatus === 'delivered') {
-      updates.push({
-        status: 'delivered',
-        title: 'Order Delivered',
-        description: 'Your order has been delivered successfully',
-        timestamp: new Date(baseDate.getTime() + 50 * 60 * 1000).toISOString(),
-        completed: true
-      });
-    }
-
-    return updates;
   };
 
   const filterOrders = () => {
-    let filtered = [...orders];
-
-    // Filter by search term
-    if (searchTerm) {
-      filtered = filtered.filter(order =>
-        order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.items.some(item => 
-          item.name.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      );
+    if (!Array.isArray(orders)) {
+      console.error('Orders is not an array:', orders);
+      setFilteredOrders([]);
+      return;
     }
+    
+    try {
+      let filtered = [...orders];
 
-    // Filter by status
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(order => order.status === statusFilter);
+      // Filter by search term with safety checks
+      if (searchTerm) {
+        filtered = filtered.filter(order => {
+          try {
+            // Safety check for order ID
+            const idMatch = order.id && typeof order.id === 'string' && 
+              order.id.toLowerCase().includes(searchTerm.toLowerCase());
+              
+            // Safety check for items array
+            const itemsMatch = Array.isArray(order.items) && order.items.some(item => 
+              item && item.name && typeof item.name === 'string' && 
+              item.name.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            
+            return idMatch || itemsMatch;
+          } catch (err) {
+            console.error('Error filtering order:', err, order);
+            return false;
+          }
+        });
+      }
+
+      // Filter by status with safety check
+      if (statusFilter !== 'all') {
+        filtered = filtered.filter(order => 
+          order && order.status && order.status === statusFilter
+        );
+      }
+
+      // Sort by date with safety checks
+      filtered.sort((a, b) => {
+        try {
+          const dateA = new Date(a.orderDate);
+          const dateB = new Date(b.orderDate);
+          
+          if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
+            return 0; // If either date is invalid, don't change order
+          }
+          
+          return dateB - dateA; // Most recent first
+        } catch (err) {
+          console.error('Error sorting orders:', err);
+          return 0;
+        }
+      });
+
+      setFilteredOrders(filtered);
+    } catch (error) {
+      console.error('Error in filterOrders:', error);
+      setFilteredOrders([]);
     }
-
-    // Sort by date (most recent first)
-    filtered.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
-
-    setFilteredOrders(filtered);
   };
 
-  const getStatusColor = (status) => {
-    const statusConfig = orderStatuses.find(s => s.value === status);
-    return statusConfig ? statusConfig.color : 'gray';
-  };
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'pending': return Clock;
-      case 'confirmed': return CheckCircle;
-      case 'preparing': return Package;
-      case 'ready': return Package;
-      case 'delivered': return CheckCircle;
-      case 'cancelled': return XCircle;
-      default: return Clock;
-    }
-  };
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleString('en-PK', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
+  // These helper functions have been moved to the top of the component
 
   const reorderItems = (order) => {
     order.items.forEach(item => {
@@ -535,12 +702,12 @@ export default function OrderHistory() {
         </div>
 
         {/* Orders List */}
-        {filteredOrders.length === 0 ? (
+        {!Array.isArray(filteredOrders) || filteredOrders.length === 0 ? (
           <div className="bg-white rounded-lg shadow-md p-12 text-center">
             <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-700 mb-2">No Orders Found</h3>
             <p className="text-gray-500 mb-6">
-              {orders.length === 0 
+              {!Array.isArray(orders) || orders.length === 0 
                 ? "You haven't placed any orders yet" 
                 : "No orders match your search criteria"
               }
@@ -555,29 +722,38 @@ export default function OrderHistory() {
         ) : (
           <div className="space-y-6">
             {filteredOrders.map((order) => {
-              const StatusIcon = getStatusIcon(order.status);
-              const statusColor = getStatusColor(order.status);
+              if (!order || typeof order !== 'object') {
+                return null; // Skip invalid orders
+              }
               
-              return (
-                <div key={order.id} className="bg-white rounded-lg shadow-md overflow-hidden">
-                  <div className="p-6">
-                    {/* Order Header */}
-                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
-                      <div className="flex items-center gap-4 mb-2 md:mb-0">
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-900">
-                            Order #{order.id}
-                          </h3>
-                          <p className="text-gray-600 text-sm flex items-center gap-1">
-                            <Calendar className="w-4 h-4" />
-                            {formatDate(order.orderDate)}
-                          </p>
+              try {
+                // Safely get status icon and color
+                const StatusIcon = getStatusIcon(order.status || 'pending');
+                const statusColor = getStatusColor(order.status || 'pending');
+                const orderId = String(order.id || 'unknown');
+                const orderDate = order.orderDate || new Date().toISOString();
+                const status = String(order.status || 'pending');
+                
+                return (
+                  <div key={orderId} className="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div className="p-6">
+                      {/* Order Header */}
+                      <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
+                        <div className="flex items-center gap-4 mb-2 md:mb-0">
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-900">
+                              Order #{orderId}
+                            </h3>
+                            <p className="text-gray-600 text-sm flex items-center gap-1">
+                              <Calendar className="w-4 h-4" />
+                              {formatDate(orderDate)}
+                            </p>
+                          </div>
+                          <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-${statusColor}-100 text-${statusColor}-800`}>
+                            <StatusIcon className="w-4 h-4" />
+                            {status.charAt(0).toUpperCase() + status.slice(1)}
+                          </span>
                         </div>
-                        <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-${statusColor}-100 text-${statusColor}-800`}>
-                          <StatusIcon className="w-4 h-4" />
-                          {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                        </span>
-                      </div>
                       <div className="text-right">
                         <p className="text-xl font-bold text-purple-600">
                           {formatPrice(order.total)}
@@ -660,6 +836,10 @@ export default function OrderHistory() {
                   </div>
                 </div>
               );
+              } catch (error) {
+                console.error('Error rendering order:', error, order);
+                return null; // Skip orders that can't be rendered
+              }
             })}
           </div>
         )}

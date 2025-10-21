@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'react-hot-toast';
 import { formatPrice } from '../../utils/currency';
 import adminService from '../../services/adminService';
+import { orderService } from '../../services/api';
 import {
   Clock,
   Package,
@@ -98,57 +99,41 @@ const OrderManagement = () => {
     } catch (error) {
       console.warn('⚠️ [ADMIN] Backend API failed, using mock data:', error);
       // Fallback to mock data for demonstration
-      const mockOrders = generateMockOrders();
-      setOrders(mockOrders);
-      console.log('✅ [ADMIN] Successfully loaded mock orders:', { count: mockOrders.length });
-      toast.success(`Loaded ${mockOrders.length} orders (demo data)`);
+      try {
+        // Use our API's built-in mock data generator instead of local one
+        const response = await orderService.getOrders();
+        const mockOrdersData = response.data || [];
+        
+        const transformedOrders = mockOrdersData.map(order => ({
+          id: order.id,
+          userId: order.userId,
+          customerName: order.customerName,
+          status: order.status,
+          total: order.total,
+          items: order.items,
+          orderDate: new Date(order.orderDate),
+          estimatedDelivery: order.estimatedDelivery ? new Date(order.estimatedDelivery) : null,
+          paymentMethod: order.paymentMethod,
+          deliveryType: order.isPickup ? 'pickup' : 'delivery',
+          deliveryAddress: order.deliveryAddress,
+          customerPhone: order.customerPhone
+        }));
+        
+        setOrders(transformedOrders);
+        console.log('✅ [ADMIN] Successfully loaded mock orders from API:', { count: transformedOrders.length });
+        toast.success(`Loaded ${transformedOrders.length} orders (mock data from API)`);
+      } catch (mockError) {
+        // No mock data - only show real user-entered data
+        console.error('❌ [ADMIN] Failed to load orders:', mockError);
+        setOrders([]);
+        toast.error('Failed to load orders. No mock data will be generated.');
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  const generateMockOrders = () => {
-    const statuses = ['pending', 'confirmed', 'preparing', 'ready', 'out_for_delivery', 'delivered', 'cancelled'];
-    const customers = ['John Doe', 'Jane Smith', 'Mike Johnson', 'Sarah Wilson', 'David Brown', 'Lisa Davis'];
-    const orders = [];
-
-    for (let i = 1; i <= 25; i++) {
-      const status = statuses[Math.floor(Math.random() * statuses.length)];
-      const customer = customers[Math.floor(Math.random() * customers.length)];
-      const date = new Date();
-      date.setDate(date.getDate() - Math.floor(Math.random() * 30));
-      
-      orders.push({
-        id: i,
-        orderNumber: `ORD-${String(i).padStart(4, '0')}`,
-        customer: {
-          name: customer,
-          email: `${customer.toLowerCase().replace(' ', '.')}@example.com`,
-          phone: `+1-555-${String(Math.floor(Math.random() * 9000) + 1000)}`,
-          address: `${Math.floor(Math.random() * 999) + 1} Main St, City, State`
-        },
-        items: [
-          {
-            name: 'Margherita Pizza',
-            quantity: Math.floor(Math.random() * 3) + 1,
-            price: 12.99
-          },
-          {
-            name: 'Caesar Salad',
-            quantity: 1,
-            price: 8.99
-          }
-        ],
-        status,
-        total: Math.floor(Math.random() * 50) + 15,
-        orderDate: date,
-        estimatedDelivery: new Date(date.getTime() + (30 + Math.random() * 60) * 60 * 1000),
-        paymentMethod: Math.random() > 0.5 ? 'Credit Card' : 'Cash on Delivery',
-        deliveryType: Math.random() > 0.3 ? 'delivery' : 'pickup'
-      });
-    }
-    return orders.sort((a, b) => b.orderDate - a.orderDate);
-  };
+  // No mock data generation - removed as per requirements
 
   const filterOrders = () => {
     let filtered = [...orders];

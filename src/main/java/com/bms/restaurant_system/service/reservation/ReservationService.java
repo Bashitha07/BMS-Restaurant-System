@@ -1,4 +1,4 @@
-package com.bms.restaurant_system.service;
+package com.bms.restaurant_system.service.reservation;
 
 import com.bms.restaurant_system.dto.ReservationDTO;
 import com.bms.restaurant_system.entity.Reservation;
@@ -35,6 +35,13 @@ public class ReservationService {
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + id));
         return convertToDTO(reservation);
+    }
+
+    public List<ReservationDTO> getReservationsByUser(Long userId) {
+        return reservationRepository.findAll().stream()
+                .filter(r -> r.getUser() != null && r.getUser().getId().equals(userId))
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     public ReservationDTO createReservation(ReservationDTO reservationDTO) {

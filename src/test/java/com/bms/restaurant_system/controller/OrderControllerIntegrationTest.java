@@ -11,10 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureWebMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.util.Arrays;
@@ -25,7 +25,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureWebMvc
 @ActiveProfiles("test")
-@Transactional
 class OrderControllerIntegrationTest {
 
     @Autowired
@@ -54,11 +53,12 @@ class OrderControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = "customer", roles = {"USER"})
     void getOrderById_WithValidId_ShouldReturnOrder() throws Exception {
         // First create an order
         OrderCreateDTO.OrderItemCreateDTO item = new OrderCreateDTO.OrderItemCreateDTO(1L, 1, null);
         OrderCreateDTO orderCreateDTO = new OrderCreateDTO(
-            1L, // userId
+            null, // userId - will be derived from security context
             Arrays.asList(item), // items
             PaymentMethod.DEPOSIT_SLIP, // paymentMethod
             null, // deliveryAddress
@@ -82,16 +82,18 @@ class OrderControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = "customer", roles = {"USER"})
     void getOrderById_WithInvalidId_ShouldReturnNotFound() throws Exception {
         mockMvc.perform(get("/api/orders/99999"))
                 .andExpect(status().isNotFound());
     }
 
     @Test
+    @WithMockUser(username = "customer", roles = {"USER"})
     void createOrder_WithValidData_ShouldReturnCreatedOrder() throws Exception {
         OrderCreateDTO.OrderItemCreateDTO item = new OrderCreateDTO.OrderItemCreateDTO(1L, 1, "No onions please");
         OrderCreateDTO orderCreateDTO = new OrderCreateDTO(
-            1L, // userId
+            null, // userId - will be derived from security context
             Arrays.asList(item), // items
             PaymentMethod.DEPOSIT_SLIP, // paymentMethod
             null, // deliveryAddress
@@ -110,11 +112,12 @@ class OrderControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = "customer", roles = {"USER"})
     void createOrder_WithInvalidData_ShouldReturnBadRequest() throws Exception {
-        OrderCreateDTO.OrderItemCreateDTO item = new OrderCreateDTO.OrderItemCreateDTO(1L, 1, null);
+        // Empty items list should be invalid
         OrderCreateDTO orderCreateDTO = new OrderCreateDTO(
-            null, // invalid userId
-            Arrays.asList(item), // items
+            null, // userId - will be derived from security context
+            Arrays.asList(), // empty items - INVALID
             PaymentMethod.DEPOSIT_SLIP, // paymentMethod
             null, // deliveryAddress
             null, // deliveryPhone

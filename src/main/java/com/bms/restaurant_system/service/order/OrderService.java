@@ -1,9 +1,9 @@
-package com.bms.restaurant_system.service;
+package com.bms.restaurant_system.service.order;
 
 import com.bms.restaurant_system.dto.OrderDTO;
 import com.bms.restaurant_system.dto.OrderCreateDTO;
 import com.bms.restaurant_system.dto.OrderItemDTO;
-import com.bms.restaurant_system.dto.DeliveryDTO;
+import com.bms.restaurant_system.dto.driver.DeliveryDTO;
 import com.bms.restaurant_system.dto.PaymentDTO;
 import com.bms.restaurant_system.entity.*;
 import com.bms.restaurant_system.exception.ResourceNotFoundException;
@@ -46,6 +46,17 @@ public class OrderService {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
         return convertToDTO(order);
+    }
+    
+    public List<OrderDTO> getOrdersForCurrentUser() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User currentUser = userRepository.findByEmail(username)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+            
+        List<Order> userOrders = orderRepository.findByUserId(currentUser.getId());
+        return userOrders.stream()
+            .map(this::convertToDTO)
+            .collect(Collectors.toList());
     }
 
     public List<OrderDTO> getOrdersByUserId(Long userId) {

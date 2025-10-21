@@ -76,7 +76,7 @@ const PaymentSlipManagement = () => {
 
   const fetchStatistics = async () => {
     try {
-      const stats = await paymentService.getPaymentStatistics();
+      const stats = await adminService.getPaymentStatistics();
       setStatistics(stats);
     } catch (err) {
       console.error('Failed to fetch statistics:', err);

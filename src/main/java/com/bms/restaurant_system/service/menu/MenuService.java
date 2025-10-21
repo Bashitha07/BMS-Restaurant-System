@@ -1,7 +1,7 @@
-package com.bms.restaurant_system.service;
+package com.bms.restaurant_system.service.menu;
 
-import com.bms.restaurant_system.dto.MenuDTO;
-import com.bms.restaurant_system.dto.MenuItemUpdateDTO;
+import com.bms.restaurant_system.dto.menu.MenuDTO;
+import com.bms.restaurant_system.dto.menu.MenuItemUpdateDTO;
 import com.bms.restaurant_system.entity.Menu;
 import com.bms.restaurant_system.exception.ResourceNotFoundException;
 import com.bms.restaurant_system.repository.MenuRepository;
@@ -60,9 +60,8 @@ public class MenuService {
         menu.setIsAvailable(menuDTO.isAvailable() != null ? menuDTO.isAvailable() : true);
         menu.setImageUrl(menuDTO.imageUrl());
         menu.setPreparationTime(menuDTO.preparationTime());
-        menu.setCalories(menuDTO.calories());
+        // calories and allergens fields don't exist in Menu entity
         menu.setIngredients(menuDTO.ingredients());
-        menu.setAllergens(menuDTO.allergens());
         menu.setIsVegetarian(menuDTO.isVegetarian());
         menu.setIsVegan(menuDTO.isVegan());
         menu.setIsGlutenFree(menuDTO.isGlutenFree());
@@ -181,9 +180,9 @@ public class MenuService {
             menu.getIsAvailable(),
             menu.getImageUrl(),
             menu.getPreparationTime(),
-            menu.getCalories(),
+            null, // calories - not in Menu entity
             menu.getIngredients(),
-            menu.getAllergens(),
+            null, // allergens - not in Menu entity
             menu.getIsVegetarian(),
             menu.getIsVegan(),
             menu.getIsGlutenFree(),

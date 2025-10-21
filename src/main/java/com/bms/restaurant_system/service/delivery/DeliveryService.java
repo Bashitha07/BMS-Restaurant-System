@@ -1,6 +1,6 @@
-package com.bms.restaurant_system.service;
+package com.bms.restaurant_system.service.delivery;
 
-import com.bms.restaurant_system.dto.DeliveryDTO;
+import com.bms.restaurant_system.dto.driver.DeliveryDTO;
 import com.bms.restaurant_system.entity.Delivery;
 import com.bms.restaurant_system.entity.Driver;
 import com.bms.restaurant_system.entity.Order;

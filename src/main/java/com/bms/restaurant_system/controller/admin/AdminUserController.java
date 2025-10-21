@@ -1,8 +1,8 @@
-package com.bms.restaurant_system.controller;
+package com.bms.restaurant_system.controller.admin;
 
 import com.bms.restaurant_system.dto.UserResponseDTO;
 import com.bms.restaurant_system.dto.UserRoleUpdateDTO;
-import com.bms.restaurant_system.service.UserService;
+import com.bms.restaurant_system.service.user.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

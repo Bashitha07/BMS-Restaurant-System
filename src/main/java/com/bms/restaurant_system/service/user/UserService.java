@@ -1,7 +1,7 @@
-package com.bms.restaurant_system.service;
+package com.bms.restaurant_system.service.user;
 
 import com.bms.restaurant_system.dto.UserDTO;
-import com.bms.restaurant_system.dto.RegisterUserDTO;
+import com.bms.restaurant_system.dto.user.RegisterUserDTO;
 import com.bms.restaurant_system.entity.User;
 import com.bms.restaurant_system.entity.Role;
 import com.bms.restaurant_system.exception.ResourceNotFoundException;

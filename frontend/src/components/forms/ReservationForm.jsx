@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import axios from '../utils/axios';
+import axios from '../../utils/axios';
 
 export default function ReservationForm() {
   const [formData, setFormData] = useState({

@@ -4,8 +4,8 @@ import { SearchIcon, PlusIcon, StarIcon } from 'lucide-react';
 import { menuItems, menuCategories } from '../../data/menuData';
 import { useCart } from '../../contexts/CartContext';
 import { formatPrice } from '../../utils/currency';
-import CartSidebar from '../../components/CartSidebar';
-import FoodImage from '../../components/FoodImage';
+import CartSidebar from '../../components/common/CartSidebar';
+import FoodImage from '../../components/common/FoodImage';
 
 const Home = () => {
   const { addItem } = useCart();

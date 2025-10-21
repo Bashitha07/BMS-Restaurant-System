@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import Modal from './ui/Modal';
-import LoginForm from './LoginForm';
-import RegisterForm from './RegisterForm';
+import Modal from '../ui/Modal';
+import LoginForm from '../forms/LoginForm';
+import RegisterForm from '../forms/RegisterForm';
 
 const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
   const [mode, setMode] = useState(initialMode);
