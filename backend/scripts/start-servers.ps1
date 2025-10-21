@@ -71,7 +71,7 @@ Write-Host "Backend will be available at: http://localhost:8084" -ForegroundColo
 Write-Host ""
 
 # Start the backend process
-Start-Process -FilePath "cmd.exe" -ArgumentList "/k cd /d C:\SpringBoot\restaurant-system && mvnw.cmd spring-boot:run" -WindowStyle Normal
+Start-Process -FilePath "cmd.exe" -ArgumentList "/k cd /d C:\SpringBoot\restaurant-system\backend && mvnw.cmd spring-boot:run" -WindowStyle Normal
 
 Write-Host "Waiting for backend to initialize (15 seconds)..." -ForegroundColor Yellow
 Start-Sleep -Seconds 15

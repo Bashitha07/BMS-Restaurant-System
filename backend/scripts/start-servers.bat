@@ -14,7 +14,7 @@ echo Starting Backend Server (Spring Boot)...
 echo Backend will be available at: http://localhost:8084
 echo.
 
-start cmd /k "cd /d C:\SpringBoot\restaurant-system && echo Starting Spring Boot Backend... && mvn spring-boot:run"
+start cmd /k "cd /d C:\SpringBoot\restaurant-system\backend && echo Starting Spring Boot Backend... && mvn spring-boot:run"
 
 echo Waiting 15 seconds for backend to initialize...
 timeout /t 15 /nobreak > nul

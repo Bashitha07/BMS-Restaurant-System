@@ -16,7 +16,7 @@ echo.
 echo ========================================
 echo.
 
-cd /d "%~dp0"
+cd /d "%~dp0\.."
 echo Compiling and starting backend...
 echo.
 call mvnw.cmd clean package -DskipTests
