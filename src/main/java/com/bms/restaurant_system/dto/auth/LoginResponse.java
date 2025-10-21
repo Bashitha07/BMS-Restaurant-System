@@ -1,4 +1,4 @@
-package com.bms.restaurant_system.dto;
+package com.bms.restaurant_system.dto.auth;
 
 public class LoginResponse {
     private String token;

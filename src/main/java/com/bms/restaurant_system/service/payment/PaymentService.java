@@ -1,4 +1,4 @@
-package com.bms.restaurant_system.service;
+package com.bms.restaurant_system.service.payment;
 
 import com.bms.restaurant_system.dto.PaymentDTO;
 import com.bms.restaurant_system.entity.Order;

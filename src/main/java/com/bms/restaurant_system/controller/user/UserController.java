@@ -1,7 +1,8 @@
-package com.bms.restaurant_system.controller;
+package com.bms.restaurant_system.controller.user;
 
 import com.bms.restaurant_system.dto.UserResponseDTO;
-import com.bms.restaurant_system.service.UserService;
+import com.bms.restaurant_system.dto.user.RegisterUserDTO;
+import com.bms.restaurant_system.service.user.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +25,7 @@ public class UserController {
         // Accept UserDTO in request (tests send this shape) and convert to RegisterUserDTO
         logger.info("Registering user: {}", userDTO.username());
         try {
-            com.bms.restaurant_system.dto.RegisterUserDTO registerUserDTO = new com.bms.restaurant_system.dto.RegisterUserDTO(
+            RegisterUserDTO registerUserDTO = new RegisterUserDTO(
                     userDTO.username(), userDTO.email(), userDTO.phone(), userDTO.role(), userDTO.password()
             );
             UserResponseDTO createdUser = userService.registerUser(registerUserDTO);

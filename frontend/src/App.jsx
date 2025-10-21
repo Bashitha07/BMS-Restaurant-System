@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import AppRouter from './AppRouter';
 import { Toaster } from 'react-hot-toast';
 import { preloadCriticalImages } from './utils/enhancedImageUtils';
-import './index.css';
+import './styles/main.css';
 
 function App() {
   // Preload critical images for better performance

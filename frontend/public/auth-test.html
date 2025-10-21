@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .error {
+            color: #f44336;
+        }
+        .success {
+            color: #4CAF50;
+        }
+        .info {
+            color: #2196F3;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔐 Restaurant System - Authentication Test</h1>
+    
+    <div class="section">
+        <h2>1. LocalStorage Check</h2>
+        <button onclick="checkLocalStorage()">Check LocalStorage</button>
+        <pre id="localStorage-output">Click button to check...</pre>
+    </div>
+
+    <div class="section">
+        <h2>2. Backend Health Check</h2>
+        <button onclick="checkBackendHealth()">Check Backend (Port 8084)</button>
+        <pre id="backend-output">Click button to check...</pre>
+    </div>
+
+    <div class="section">
+        <h2>3. Test Admin API (with auth)</h2>
+        <button onclick="testAdminAPI()">GET /api/admin/users</button>
+        <pre id="admin-api-output">Click button to test...</pre>
+    </div>
+
+    <div class="section">
+        <h2>4. Test Public API (no auth)</h2>
+        <button onclick="testPublicAPI()">GET /api/menu</button>
+        <pre id="public-api-output">Click button to test...</pre>
+    </div>
+
+    <div class="section">
+        <h2>5. Current User Info</h2>
+        <button onclick="getCurrentUser()">GET /api/users/me</button>
+        <pre id="current-user-output">Click button to test...</pre>
+    </div>
+
+    <script>
+        function checkLocalStorage() {
+            const output = document.getElementById('localStorage-output');
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            
+            if (!token) {
+                output.innerHTML = '<span class="error">❌ NO TOKEN FOUND IN LOCALSTORAGE!</span>\n\n' +
+                    'This means you are NOT logged in.\n' +
+                    'Please go to http://localhost:5174 and login first.';
+                return;
+            }
+            
+            output.innerHTML = '<span class="success">✅ Token found!</span>\n\n' +
+                'Token: ' + token.substring(0, 50) + '...\n\n' +
+                'User Data:\n' + JSON.stringify(JSON.parse(user || '{}'), null, 2);
+        }
+
+        async function checkBackendHealth() {
+            const output = document.getElementById('backend-output');
+            output.innerHTML = '⏳ Checking backend...';
+            
+            try {
+                // Try actuator health endpoint (usually public)
+                const response = await fetch('http://localhost:8084/actuator/health', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                output.innerHTML = `<span class="success">✅ Backend is RUNNING!</span>\n\n` +
+                    `Status: ${response.status} ${response.statusText}\n` +
+                    `Response: ${await response.text()}`;
+            } catch (error) {
+                output.innerHTML = `<span class="error">❌ Backend NOT reachable!</span>\n\n` +
+                    `Error: ${error.message}\n\n` +
+                    'Make sure backend is running on port 8084';
+            }
+        }
+
+        async function testAdminAPI() {
+            const output = document.getElementById('admin-api-output');
+            const token = localStorage.getItem('token');
+            
+            if (!token) {
+                output.innerHTML = '<span class="error">❌ No token! Login first.</span>';
+                return;
+            }
+            
+            output.innerHTML = '⏳ Testing /api/admin/users...';
+            
+            try {
+                const response = await fetch('http://localhost:8084/api/admin/users', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                const data = await response.text();
+                
+                if (response.ok) {
+                    output.innerHTML = `<span class="success">✅ SUCCESS!</span>\n\n` +
+                        `Status: ${response.status}\n` +
+                        `Users:\n${JSON.stringify(JSON.parse(data), null, 2)}`;
+                } else {
+                    output.innerHTML = `<span class="error">❌ FAILED!</span>\n\n` +
+                        `Status: ${response.status} ${response.statusText}\n` +
+                        `Response: ${data}\n\n` +
+                        (response.status === 403 ? '⚠️ 403 Forbidden = You do not have ADMIN role!' :
+                         response.status === 401 ? '⚠️ 401 Unauthorized = Token invalid or expired!' : '');
+                }
+            } catch (error) {
+                output.innerHTML = `<span class="error">❌ ERROR!</span>\n\n${error.message}`;
+            }
+        }
+
+        async function testPublicAPI() {
+            const output = document.getElementById('public-api-output');
+            output.innerHTML = '⏳ Testing /api/menu...';
+            
+            try {
+                const response = await fetch('http://localhost:8084/api/menu', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                const data = await response.text();
+                
+                if (response.ok) {
+                    output.innerHTML = `<span class="success">✅ SUCCESS!</span>\n\n` +
+                        `Status: ${response.status}\n` +
+                        `Menu Items: ${JSON.parse(data).length}`;
+                } else {
+                    output.innerHTML = `<span class="error">❌ FAILED!</span>\n\n` +
+                        `Status: ${response.status}\n` +
+                        `Response: ${data}`;
+                }
+            } catch (error) {
+                output.innerHTML = `<span class="error">❌ ERROR!</span>\n\n${error.message}`;
+            }
+        }
+
+        async function getCurrentUser() {
+            const output = document.getElementById('current-user-output');
+            const token = localStorage.getItem('token');
+            
+            if (!token) {
+                output.innerHTML = '<span class="error">❌ No token! Login first.</span>';
+                return;
+            }
+            
+            output.innerHTML = '⏳ Getting current user...';
+            
+            try {
+                const response = await fetch('http://localhost:8084/api/users/me', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                const data = await response.text();
+                
+                if (response.ok) {
+                    const user = JSON.parse(data);
+                    output.innerHTML = `<span class="success">✅ SUCCESS!</span>\n\n` +
+                        `Username: ${user.username}\n` +
+                        `Email: ${user.email}\n` +
+                        `Role: ${user.role}\n` +
+                        `Enabled: ${user.enabled}\n\n` +
+                        `Full Data:\n${JSON.stringify(user, null, 2)}`;
+                } else {
+                    output.innerHTML = `<span class="error">❌ FAILED!</span>\n\n` +
+                        `Status: ${response.status}\n` +
+                        `Response: ${data}`;
+                }
+            } catch (error) {
+                output.innerHTML = `<span class="error">❌ ERROR!</span>\n\n${error.message}`;
+            }
+        }
+
+        // Auto-check on load
+        window.onload = function() {
+            checkLocalStorage();
+        };
+    </script>
+</body>
+</html>

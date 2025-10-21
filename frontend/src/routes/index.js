@@ -10,14 +10,14 @@ const DriverRegisterPage = lazy(() => import('../pages/driver/DriverRegisterPage
 const DriverDashboard = lazy(() => import('../components/driver/DriverDashboard'));
 
 // Lazy load page components
-const Home = lazy(() => import('../pages/Home'));
-const About = lazy(() => import('../pages/About'));
-const Menu = lazy(() => import('../pages/Menu'));
+const Home = lazy(() => import('../pages/public/Home'));
+const About = lazy(() => import('../pages/public/About'));
+const Menu = lazy(() => import('../pages/user/Menu'));
 const Cart = lazy(() => import('../pages/user/Cart'));
 const Checkout = lazy(() => import('../pages/user/Checkout'));
 const OrderHistory = lazy(() => import('../pages/user/OrderHistory'));
 const PaymentDetails = lazy(() => import('../pages/user/PaymentDetails'));
-const Reservations = lazy(() => import('../pages/Reservations'));
+const Reservations = lazy(() => import('../pages/user/Reservations'));
 const Profile = lazy(() => import('../pages/user/Profile'));
 const PaymentSlipManagement = lazy(() => import('../components/payment/PaymentSlipManagement'));
 

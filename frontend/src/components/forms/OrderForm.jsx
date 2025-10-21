@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import axios from '../utils/axios';
-import { useAuth } from '../context/AuthContext';
+import axios from '../../utils/axios';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function OrderForm() {
   const { menuItemId } = useParams();

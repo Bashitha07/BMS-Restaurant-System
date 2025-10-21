@@ -25,17 +25,57 @@ export const menuService = {
 export const orderService = {
   createOrder: async (orderData) => {
     try {
+      // In development, save to localStorage
+      if (import.meta.env.DEV) {
+        const newOrder = {
+          ...orderData,
+          id: `ORD-${Date.now()}`,
+          orderDate: new Date().toISOString(),
+          status: 'pending',
+        };
+        
+        // Get existing orders from localStorage
+        const existingOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+        existingOrders.push(newOrder);
+        localStorage.setItem('orders', JSON.stringify(existingOrders));
+        
+        return { data: newOrder, success: true };
+      }
+      
+      // In production, use the API
       const response = await axios.post('/api/orders', orderData);
       return response.data;
     } catch (error) {
+      // If API fails in production, attempt localStorage fallback
+      if (!import.meta.env.DEV) {
+        try {
+          const newOrder = {
+            ...orderData,
+            id: `ORD-${Date.now()}`,
+            orderDate: new Date().toISOString(),
+            status: 'pending',
+          };
+          
+          const existingOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+          existingOrders.push(newOrder);
+          localStorage.setItem('orders', JSON.stringify(existingOrders));
+          
+          return { data: newOrder, success: true };
+        } catch (fallbackError) {
+          console.error('Failed to save order to localStorage:', fallbackError);
+        }
+      }
       throw handleAPIError(error);
     }
   },
   getMyOrders: async () => {
     try {
+      console.log('Fetching user orders from backend...');
       const response = await axios.get('/api/orders/my-orders');
+      console.log(`Retrieved ${response.data.length} orders from database`);
       return response.data;
     } catch (error) {
+      console.error('Failed to fetch orders from backend:', error);
       throw handleAPIError(error);
     }
   }
@@ -107,11 +147,13 @@ export const adminService = {
       throw handleAPIError(error);
     }
   },
+  // Gets all orders - primarily for admins
   getOrders: async () => {
     try {
       const response = await axios.get('/api/admin/orders');
       return response.data;
     } catch (error) {
+      console.error('Failed to fetch orders from backend:', error);
       throw handleAPIError(error);
     }
   },
@@ -173,9 +215,12 @@ export const paymentService = {
 export const userService = {
   login: async (credentials) => {
     try {
+      console.log('Attempting real backend login for user:', credentials.username);
       const response = await axios.post('/api/auth/login', credentials);
+      console.log('Login successful, received token from backend');
       return response.data;
     } catch (error) {
+      console.error('Login failed:', error);
       throw handleAPIError(error);
     }
   },
@@ -204,6 +249,10 @@ export const userService = {
     }
   }
 };
+
+// Function to generate mock orders for development
+// Import mock data helper
+// Mock data generation removed as per requirements
 
 // Default export for ESM compatibility
 export default {

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { Eye, EyeOff } from 'lucide-react';
@@ -26,15 +26,26 @@ export default function LoginForm({ onClose, showRegister }) {
 
   const onSubmit = async (data) => {
     clearErrors();
+    console.log('Attempting login with:', data.username);
     
     try {
-      await login(data.username, data.password);
-      toast.success('Login successful!');
+      const result = await login(data.username, data.password);
+      console.log('Login result:', result);
+      toast.success(`Login successful! Welcome ${result.username}!`);
+      
       if (onClose) onClose();
+      
       // Navigate to the intended page or home page
       const from = location.state?.from?.pathname || '/';
-      navigate(from, { replace: true });
+      console.log("Login successful, navigating to:", from);
+      
+      // Increased timeout to ensure state updates are complete
+      setTimeout(() => {
+        console.log('Executing navigation to:', from);
+        navigate(from, { replace: true });
+      }, 300);
     } catch (err) {
+      console.error('Login error caught in form:', err);
       setFormError('root', { 
         type: 'manual',
         message: err.message || 'Invalid username or password'

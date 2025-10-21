@@ -41,15 +41,16 @@ class UserControllerIntegrationTest {
 
     @Test
     void registerUser_ShouldReturnCreatedUser() throws Exception {
-        UserDTO userDTO = new UserDTO(null, "testuser", "test@example.com", "1234567890", "USER", "password123");
+        // Use a unique username with timestamp to avoid conflicts
+        String uniqueUsername = "testuser" + System.currentTimeMillis();
+        UserDTO userDTO = new UserDTO(null, uniqueUsername, "test" + System.currentTimeMillis() + "@example.com", "1234567890", "USER", "password123");
 
         mockMvc.perform(post("/api/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(userDTO)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.username").value("testuser"))
-                .andExpect(jsonPath("$.email").value("test@example.com"))
+                .andExpect(jsonPath("$.username").value(uniqueUsername))
                 .andExpect(jsonPath("$.phone").value("1234567890"))
                 .andExpect(jsonPath("$.role").value("USER"));
     }

@@ -1,17 +1,57 @@
 import React, { useState, useEffect } from 'react';
-import { getBestMatchImage, validateImageWithRetry, getFallbackImage } from '../utils/specificFoodImages';
+import { getBestMatchImage, validateImageWithRetry, getFallbackImage } from '../../utils/specificFoodImages';
+
+// Try to dynamically import images from assets directory
+const getLocalAssetImage = (category, itemName) => {
+  let categoryFolder = '';
+  
+  // Determine category folder
+  switch (category?.toLowerCase()) {
+    case 'beverage':
+    case 'beverages':
+    case 'drinks':
+      categoryFolder = 'beverages';
+      break;
+    case 'dessert':
+    case 'desserts':
+    case 'sweets':
+      categoryFolder = 'desserts';
+      break;
+    case 'food':
+    case 'main':
+    case 'main dish':
+    case 'main course':
+    default:
+      categoryFolder = 'food';
+      break;
+  }
+  
+  // Check if the image path starts with /assets/images/ (locally uploaded)
+  // If it does, return as is since it's already a local asset path
+  if (itemName?.startsWith('/assets/images/')) {
+    return itemName;
+  }
+  
+  return null; // No local asset match found
+};
 
 const FoodImage = ({ 
   src, 
   alt, 
   category,
   itemName,
+  foodName, // Support for legacy prop
+  imageUrl, // Support for legacy prop
   className = '', 
   fallbackClassName = '',
   loading = 'lazy',
   ...props 
 }) => {
-  const [imageSrc, setImageSrc] = useState(src);
+  // Handle compatibility with both naming conventions
+  const effectiveItemName = itemName || foodName || '';
+  const effectiveSrc = src || imageUrl || '';
+  
+  const [imageSrc, setImageSrc] = useState(effectiveSrc);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
@@ -20,26 +60,41 @@ const FoodImage = ({
       setIsLoading(true);
       setHasError(false);
       
-      // First try the original image with enhanced validation
-      const isValid = await validateImageWithRetry(src);
+      // First check if the src is a local asset path
+      if (effectiveSrc && effectiveSrc.startsWith('/assets/images/')) {
+        setImageSrc(effectiveSrc);
+        setIsLoading(false);
+        return;
+      }
+      
+      // Otherwise try to get a local asset based on category and name
+      const localAsset = getLocalAssetImage(category, effectiveItemName);
+      if (localAsset) {
+        setImageSrc(localAsset);
+        setIsLoading(false);
+        return;
+      }
+      
+      // If no local asset, try the original image with enhanced validation
+      const isValid = await validateImageWithRetry(effectiveSrc);
       
       if (!isValid) {
         // If original fails, use best match (specific food or consistent category image)
-        const bestMatchImage = itemName && category ? 
-          getBestMatchImage(itemName, category) : 
+        const bestMatchImage = effectiveItemName && category ? 
+          getBestMatchImage(effectiveItemName, category) : 
           getFallbackImage(category);
         setImageSrc(bestMatchImage);
         setHasError(true);
-        console.warn(`Failed to load image: ${src}, using best match for ${itemName} in category: ${category}`);
+        console.warn(`Failed to load image: ${effectiveSrc}, using best match for ${effectiveItemName} in category: ${category}`);
       }
       
       setIsLoading(false);
     };
 
-    if (src) {
+    if (effectiveSrc) {
       checkImage();
     }
-  }, [src, category, itemName]);
+  }, [effectiveSrc, category, effectiveItemName]);
 
   const handleImageLoad = () => {
     setIsLoading(false);

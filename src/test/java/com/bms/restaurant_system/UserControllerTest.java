@@ -1,9 +1,9 @@
 package com.bms.restaurant_system;
 
-import com.bms.restaurant_system.dto.RegisterUserDTO;
+import com.bms.restaurant_system.dto.user.RegisterUserDTO;
 import com.bms.restaurant_system.dto.UserResponseDTO;
 import com.bms.restaurant_system.entity.Role;
-import com.bms.restaurant_system.service.UserService;
+import com.bms.restaurant_system.service.user.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

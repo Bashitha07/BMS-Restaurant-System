@@ -1,6 +1,7 @@
-package com.bms.restaurant_system.service;
+package com.bms.restaurant_system.service.database;
 
 import com.bms.restaurant_system.entity.Menu;
+import com.bms.restaurant_system.entity.Role;
 import com.bms.restaurant_system.entity.User;
 import com.bms.restaurant_system.entity.Order;
 import com.bms.restaurant_system.entity.Reservation;
@@ -327,5 +328,29 @@ public class DatabaseRetrievalService {
         }
 
         return allUsers.subList(startIndex, endIndex);
+    }
+
+    // ==================== USER MANAGEMENT METHODS ====================
+
+    /**
+     * Update user role
+     */
+    @Transactional
+    public User updateUserRole(Long userId, String role) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+        user.setRole(Role.valueOf(role.toUpperCase()));
+        return userRepository.save(user);
+    }
+
+    /**
+     * Update user status (enable/disable)
+     */
+    @Transactional
+    public User updateUserStatus(Long userId, Boolean enabled) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+        user.setEnabled(enabled);
+        return userRepository.save(user);
     }
 }

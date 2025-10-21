@@ -1,7 +1,7 @@
-package com.bms.restaurant_system.controller;
+package com.bms.restaurant_system.controller.driver;
 
-import com.bms.restaurant_system.dto.DeliveryDriverDTO;
-import com.bms.restaurant_system.service.DeliveryDriverService;
+import com.bms.restaurant_system.dto.driver.DeliveryDriverDTO;
+import com.bms.restaurant_system.service.delivery.DeliveryDriverService;
 import com.bms.restaurant_system.exception.ResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

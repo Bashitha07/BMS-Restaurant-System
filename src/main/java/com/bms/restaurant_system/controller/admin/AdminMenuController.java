@@ -1,8 +1,8 @@
-package com.bms.restaurant_system.controller;
+package com.bms.restaurant_system.controller.admin;
 
-import com.bms.restaurant_system.dto.MenuDTO;
-import com.bms.restaurant_system.dto.MenuItemUpdateDTO;
-import com.bms.restaurant_system.service.MenuService;
+import com.bms.restaurant_system.dto.menu.MenuDTO;
+import com.bms.restaurant_system.dto.menu.MenuItemUpdateDTO;
+import com.bms.restaurant_system.service.menu.MenuService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -134,8 +134,11 @@ public class AdminMenuController {
 
     // Upload menu item image
     @PostMapping("/upload-image")
-    public ResponseEntity<?> uploadMenuImage(@RequestParam("file") MultipartFile file) {
-        logger.info("Admin uploading menu image: {}", file.getOriginalFilename());
+    public ResponseEntity<?> uploadMenuImage(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "category", required = false, defaultValue = "food") String category) {
+        
+        logger.info("Admin uploading menu image: {}, category: {}", file.getOriginalFilename(), category);
 
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body("File is empty");
@@ -153,30 +156,66 @@ public class AdminMenuController {
         }
 
         try {
-            // Create upload directory if it doesn't exist
-            Path uploadDir = Paths.get("src/main/resources/static/images/menu");
-            if (!Files.exists(uploadDir)) {
-                Files.createDirectories(uploadDir);
+            // Determine the correct subdirectory based on category
+            String subDirectory;
+            switch (category.toLowerCase()) {
+                case "beverage":
+                case "beverages":
+                    subDirectory = "beverages";
+                    break;
+                case "dessert":
+                case "desserts":
+                    subDirectory = "desserts";
+                    break;
+                case "food":
+                default:
+                    subDirectory = "food";
+                    break;
+            }
+            
+            // Create frontend assets directory path - for local development
+            Path frontendDir = Paths.get("frontend/src/assets/images/" + subDirectory);
+            if (!Files.exists(frontendDir)) {
+                Files.createDirectories(frontendDir);
+            }
+            
+            // Create backend static resources path - for production
+            Path backendDir = Paths.get("src/main/resources/static/images/" + subDirectory);
+            if (!Files.exists(backendDir)) {
+                Files.createDirectories(backendDir);
             }
 
-            // Generate unique filename
+            // Generate unique filename with a slug from the original name for better SEO
             String originalFilename = file.getOriginalFilename();
+            String nameWithoutExtension = originalFilename != null && originalFilename.contains(".")
+                ? originalFilename.substring(0, originalFilename.lastIndexOf(".")).toLowerCase()
+                    .replaceAll("[^a-z0-9]", "-") // Replace non-alphanumeric with dash
+                    .replaceAll("-+", "-") // Replace multiple dashes with single dash
+                : "menu-item";
+                
             String fileExtension = originalFilename != null && originalFilename.contains(".")
                 ? originalFilename.substring(originalFilename.lastIndexOf("."))
                 : ".jpg";
-            String uniqueFilename = UUID.randomUUID().toString() + fileExtension;
+                
+            String uniqueFilename = nameWithoutExtension + "-" + 
+                UUID.randomUUID().toString().substring(0, 8) + fileExtension;
 
-            // Save file
-            Path filePath = uploadDir.resolve(uniqueFilename);
-            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+            // Save file to both locations
+            Path frontendFilePath = frontendDir.resolve(uniqueFilename);
+            Files.copy(file.getInputStream(), frontendFilePath, StandardCopyOption.REPLACE_EXISTING);
+            
+            // Save another copy to backend static resources
+            Path backendFilePath = backendDir.resolve(uniqueFilename);
+            Files.copy(frontendFilePath, backendFilePath, StandardCopyOption.REPLACE_EXISTING);
 
-            // Return the URL that can be accessed by frontend
-            String imageUrl = "/images/menu/" + uniqueFilename;
+            // Return the URL that can be accessed by frontend - use the assets relative path for development
+            String imageUrl = "/assets/images/" + subDirectory + "/" + uniqueFilename;
             logger.info("Menu image uploaded successfully: {}", imageUrl);
 
             return ResponseEntity.ok(Map.of(
                 "imageUrl", imageUrl,
                 "filename", uniqueFilename,
+                "category", subDirectory,
                 "message", "Image uploaded successfully"
             ));
 

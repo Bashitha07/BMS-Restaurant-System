@@ -4,7 +4,7 @@ import com.bms.restaurant_system.dto.UserResponseDTO;
 import com.bms.restaurant_system.entity.Role;
 import com.bms.restaurant_system.entity.User;
 import com.bms.restaurant_system.repository.UserRepository;
-import com.bms.restaurant_system.service.UserService;
+import com.bms.restaurant_system.service.user.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

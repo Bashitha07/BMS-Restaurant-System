@@ -48,14 +48,8 @@ public class Menu {
     @Column(name = "preparation_time")
     private Integer preparationTime; // in minutes
 
-    @Column(name = "calories")
-    private Integer calories;
-
     @Column(name = "ingredients", columnDefinition = "TEXT")
     private String ingredients;
-
-    @Column(name = "allergens")
-    private String allergens; // comma-separated list
 
     @Column(name = "is_vegetarian")
     private Boolean isVegetarian = false;

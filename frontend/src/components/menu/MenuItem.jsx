@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Star, Plus, Minus } from 'lucide-react';
-import { useCart } from '../contexts/CartContext';
-import FoodImage from './FoodImage';
+import { useCart } from '../../contexts/CartContext';
+import FoodImage from '../common/FoodImage';
 import toast from 'react-hot-toast';
 
 export default function MenuItem({ item }) {

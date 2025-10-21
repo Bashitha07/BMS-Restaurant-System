@@ -1,8 +1,8 @@
-package com.bms.restaurant_system.controller;
+package com.bms.restaurant_system.controller.user;
 
-import com.bms.restaurant_system.dto.MenuDTO;
+import com.bms.restaurant_system.dto.menu.MenuDTO;
 import com.bms.restaurant_system.entity.Menu;
-import com.bms.restaurant_system.service.MenuService;
+import com.bms.restaurant_system.service.menu.MenuService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

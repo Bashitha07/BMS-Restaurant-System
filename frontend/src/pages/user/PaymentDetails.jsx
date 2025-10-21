@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import PaymentPortal from '../../components/PaymentPortal';
+import PaymentPortal from '../../components/payment/PaymentPortal';
 
 const PaymentDetails = () => {
   const { orderId } = useParams();

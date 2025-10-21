@@ -20,15 +20,15 @@ const Cart = () => {
           <div className="mt-6 border-t pt-4">
             <div className="flex justify-between mb-2">
               <span>Subtotal</span>
-              <span>${subtotal.toFixed(2)}</span>
+              <span>LKR {subtotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between mb-2">
               <span>Tax</span>
-              <span>${tax.toFixed(2)}</span>
+              <span>LKR {tax.toFixed(2)}</span>
             </div>
             <div className="flex justify-between font-bold">
               <span>Total</span>
-              <span>${total.toFixed(2)}</span>
+              <span>LKR {total.toFixed(2)}</span>
             </div>
           </div>
         </div>

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <rect width="200" height="200" fill="#f0f0f0"/>
+  <path d="M100,70 L130,100 L100,130 L70,100 Z" fill="#cccccc"/>
+  <path d="M87.5,57.5 L112.5,57.5 L112.5,70 L87.5,70 Z" fill="#cccccc"/>
+  <path d="M57.5,87.5 L70,87.5 L70,112.5 L57.5,112.5 Z" fill="#cccccc"/>
+  <path d="M130,87.5 L142.5,87.5 L142.5,112.5 L130,112.5 Z" fill="#cccccc"/>
+  <path d="M87.5,130 L112.5,130 L112.5,142.5 L87.5,142.5 Z" fill="#cccccc"/>
+  <text x="100" y="110" font-family="Arial" font-size="12" text-anchor="middle" fill="#888888">No Image</text>
+</svg>

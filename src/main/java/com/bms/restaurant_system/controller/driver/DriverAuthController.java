@@ -1,8 +1,8 @@
-package com.bms.restaurant_system.controller;
+package com.bms.restaurant_system.controller.driver;
 
-import com.bms.restaurant_system.dto.DriverLoginRequest;
-import com.bms.restaurant_system.dto.DriverLoginResponse;
-import com.bms.restaurant_system.service.DeliveryDriverService;
+import com.bms.restaurant_system.dto.driver.DriverLoginRequest;
+import com.bms.restaurant_system.dto.driver.DriverLoginResponse;
+import com.bms.restaurant_system.service.delivery.DeliveryDriverService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

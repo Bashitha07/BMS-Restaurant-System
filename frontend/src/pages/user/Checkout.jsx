@@ -6,8 +6,8 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { downloadInvoice } from '../../utils/invoiceGenerator';
 import { orderService } from '../../services/api';
-import Invoice from '../../components/Invoice';
-import AuthModal from '../../components/AuthModal';
+import Invoice from '../../components/common/Invoice';
+import AuthModal from '../../components/auth/AuthModal';
 import { formatPrice } from '../../utils/currency';
 import { 
   CreditCard, 
@@ -192,7 +192,7 @@ const Checkout = () => {
 
       // Send notification to admin about new order
       addNotification(
-        `New order #${createdOrder.id} placed by ${user.username || user.email} - Total: $${total.toFixed(2)}`,
+        `New order #${createdOrder.id} placed by ${user.username || user.email} - Total: LKR ${total.toFixed(2)}`,
         'success',
         {
           title: 'New Order Received',

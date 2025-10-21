@@ -1,9 +1,9 @@
-package com.bms.restaurant_system.controller;
+package com.bms.restaurant_system.controller.auth;
 
-import com.bms.restaurant_system.dto.LoginRequest;
-import com.bms.restaurant_system.dto.LoginResponse;
+import com.bms.restaurant_system.dto.auth.LoginRequest;
+import com.bms.restaurant_system.dto.auth.LoginResponse;
 import com.bms.restaurant_system.entity.User;
-import com.bms.restaurant_system.service.UserService;
+import com.bms.restaurant_system.service.user.UserService;
 import com.bms.restaurant_system.util.JwtUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

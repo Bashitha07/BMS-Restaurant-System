@@ -31,19 +31,22 @@ instance.interceptors.request.use(
 instance.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Handle unauthorized access
-      localStorage.removeItem('token');
-      localStorage.removeItem('driverToken');
-      localStorage.removeItem('user');
-      localStorage.removeItem('driver');
+    // Only handle 401 unauthorized errors, not 500 or other server errors
+    if (error.response?.status === 401 && !error.config.url.includes('/api/auth/login')) {
+      // Handle unauthorized access, but only if not a login request
+      // This prevents clearing tokens during login attempts
+      console.error('Authentication error:', error);
       
-      // Redirect based on current path
-      const currentPath = window.location.pathname;
-      if (currentPath.startsWith('/driver')) {
-        window.location.href = '/driver/login';
-      } else {
-        window.location.href = '/login';
+      // Don't clear tokens and user data during login attempts to avoid issues
+      if (!window.location.pathname.includes('/login')) {
+        // Only remove tokens for actual authentication issues
+        // Don't remove user data to prevent being logged out on server errors
+        console.warn('Skipping token removal to prevent logout on server errors');
+        // Commented out to prevent logout on refresh
+        // localStorage.removeItem('token');
+        // localStorage.removeItem('driverToken');
+        // localStorage.removeItem('user');
+        // localStorage.removeItem('driver');
       }
     }
     return Promise.reject(error);

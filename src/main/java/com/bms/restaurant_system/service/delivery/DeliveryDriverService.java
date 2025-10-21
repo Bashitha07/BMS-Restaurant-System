@@ -1,9 +1,9 @@
-package com.bms.restaurant_system.service;
+package com.bms.restaurant_system.service.delivery;
 
-import com.bms.restaurant_system.dto.DeliveryDriverDTO;
-import com.bms.restaurant_system.dto.DriverLoginRequest;
-import com.bms.restaurant_system.dto.DriverLoginResponse;
-import com.bms.restaurant_system.dto.RegisterDriverDTO;
+import com.bms.restaurant_system.dto.driver.DeliveryDriverDTO;
+import com.bms.restaurant_system.dto.driver.DriverLoginRequest;
+import com.bms.restaurant_system.dto.driver.DriverLoginResponse;
+import com.bms.restaurant_system.dto.driver.RegisterDriverDTO;
 import com.bms.restaurant_system.entity.DeliveryDriver;
 import com.bms.restaurant_system.entity.DeliveryDriver.DriverStatus;
 import com.bms.restaurant_system.exception.ResourceNotFoundException;

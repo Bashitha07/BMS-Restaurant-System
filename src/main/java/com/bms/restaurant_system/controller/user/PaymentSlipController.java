@@ -1,7 +1,7 @@
-package com.bms.restaurant_system.controller;
+package com.bms.restaurant_system.controller.user;
 
 import com.bms.restaurant_system.dto.PaymentSlipDTO;
-import com.bms.restaurant_system.service.PaymentSlipService;
+import com.bms.restaurant_system.service.payment.PaymentSlipService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

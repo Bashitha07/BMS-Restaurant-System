@@ -1,7 +1,7 @@
-package com.bms.restaurant_system.controller;
+package com.bms.restaurant_system.controller.admin;
 
 import com.bms.restaurant_system.dto.ReservationDTO;
-import com.bms.restaurant_system.service.ReservationService;
+import com.bms.restaurant_system.service.reservation.ReservationService;
 import com.bms.restaurant_system.entity.Reservation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

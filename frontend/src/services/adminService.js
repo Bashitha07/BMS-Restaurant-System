@@ -51,30 +51,12 @@ const ADMIN_ENDPOINTS = {
 export const adminService = {
   // User Management
   getAllUsers: async () => {
-    console.log('🌐 [API] Sending GET request to fetch all users:', {
-      endpoint: ADMIN_ENDPOINTS.USERS,
-      timestamp: new Date().toISOString()
-    });
-    
     try {
       const response = await axios.get(ADMIN_ENDPOINTS.USERS);
-      
-      console.log('✅ [API] Successfully received users from backend:', {
-        endpoint: ADMIN_ENDPOINTS.USERS,
-        userCount: response.data?.length || 0,
-        data: response.data,
-        timestamp: new Date().toISOString()
-      });
-      
       return response.data;
     } catch (error) {
-      console.error('❌ [API] Failed to fetch users from backend:', {
-        endpoint: ADMIN_ENDPOINTS.USERS,
-        error: error.response?.data || error.message,
-        status: error.response?.status,
-        timestamp: new Date().toISOString()
-      });
-      throw error.response?.data || 'Failed to fetch users';
+      console.error('Failed to fetch users from backend:', error);
+      throw error;
     }
   },
 
@@ -456,7 +438,8 @@ export const adminService = {
       const response = await axios.get(ADMIN_ENDPOINTS.PENDING_DRIVERS);
       return response.data;
     } catch (error) {
-      throw error.response?.data || 'Failed to fetch pending drivers';
+      console.error('Failed to fetch pending drivers from backend:', error);
+      throw error;
     }
   },
 
@@ -465,7 +448,8 @@ export const adminService = {
       const response = await axios.post(ADMIN_ENDPOINTS.APPROVE_DRIVER(id));
       return response.data;
     } catch (error) {
-      throw error.response?.data || 'Failed to approve driver';
+      console.error('Failed to approve driver:', error);
+      throw error;
     }
   },
 
@@ -474,7 +458,8 @@ export const adminService = {
       const response = await axios.post(ADMIN_ENDPOINTS.REJECT_DRIVER(id));
       return response.data;
     } catch (error) {
-      throw error.response?.data || 'Failed to reject driver';
+      console.error('Failed to reject driver:', error);
+      throw error;
     }
   },
 

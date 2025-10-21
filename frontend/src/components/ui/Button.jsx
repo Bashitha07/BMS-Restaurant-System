@@ -23,7 +23,6 @@ export function Button({ onClick, variant = 'default', size = 'md', className = 
     <button 
       onClick={isLoading ? undefined : onClick} 
       className={combinedClassName} 
-      type="button" 
       disabled={isLoading}
       {...props}
     >

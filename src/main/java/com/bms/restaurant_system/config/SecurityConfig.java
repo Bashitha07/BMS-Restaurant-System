@@ -28,20 +28,32 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/orders", "/api/orders/**").permitAll()  // Ordering open to all
-                .requestMatchers("/api/menus", "/api/menus/**").permitAll()  // Menus open to all
-                .requestMatchers("/api/auth/**").permitAll()  // Authentication endpoints open
-                .requestMatchers("/api/users/register").permitAll()  // User registration open
-                // Admin-only endpoints
+                // Public endpoints - no authentication required
+                .requestMatchers("/api/auth/**").permitAll()  // Authentication endpoints
+                .requestMatchers("/api/menus","/api/menus/**").permitAll()  // Public menu viewing
+                .requestMatchers("/api/menus/available").permitAll()  // Available menus
+                .requestMatchers("/api/menus/{id}").permitAll()  // View specific menu item
+                .requestMatchers("/api/menus/category/**").permitAll()  // Menu by category
+                
+                // Admin-only endpoints - require ADMIN role
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                .requestMatchers("/api/delivery-drivers/**").hasRole("ADMIN")
+                .requestMatchers("/api/delivery-drivers/pending").permitAll()  // Public can view
+                .requestMatchers("/api/delivery-drivers/**").hasRole("ADMIN")  // Admin manages
                 .requestMatchers("/api/users/*/role").hasRole("ADMIN")
+                
                 // Kitchen staff endpoints
                 .requestMatchers("/api/kitchen/**").hasRole("KITCHEN")
+                
                 // Manager endpoints
                 .requestMatchers("/api/manager/**").hasRole("MANAGER")
-                // Other authenticated endpoints
+                
+                // Authenticated user endpoints - require login
+                .requestMatchers("/api/orders", "/api/orders/**").authenticated()  // Orders require auth
                 .requestMatchers("/api/reservations", "/api/reservations/**").authenticated()  // Reservations require auth
+                .requestMatchers("/api/payments", "/api/payments/**").authenticated()  // Payments require auth
+                .requestMatchers("/api/users/**").authenticated()  // User management requires auth
+                
+                // All other requests require authentication
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -74,7 +86,13 @@ public class SecurityConfig {
             "http://localhost:3000",
             "http://127.0.0.1:3000",
             "http://localhost:5173",  // Vite default port
-            "http://127.0.0.1:5173",  // Vite default port
+            "http://127.0.0.1:5173",
+            "http://localhost:5174",  // Vite alternate port
+            "http://127.0.0.1:5174",
+            "http://localhost:5175",  // Vite alternate port
+            "http://127.0.0.1:5175",
+            "http://localhost:5176",  // Vite current port
+            "http://127.0.0.1:5176",
             "file://",  // Allow file:// protocol for local testing
             "null"      // Allow null origin (for local files)
         ));

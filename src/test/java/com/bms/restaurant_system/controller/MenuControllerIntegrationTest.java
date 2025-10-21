@@ -9,7 +9,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -18,7 +17,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureWebMvc
 @ActiveProfiles("test")
-@Transactional
 class MenuControllerIntegrationTest {
 
     @Autowired
@@ -38,41 +36,41 @@ class MenuControllerIntegrationTest {
 
     @Test
     void getAllMenus_ShouldReturnMenuItems() throws Exception {
-        mockMvc.perform(get("/api/menu"))
+        mockMvc.perform(get("/api/menus"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
     @Test
     void getMenuById_WithValidId_ShouldReturnMenuItem() throws Exception {
-        mockMvc.perform(get("/api/menu/1"))
+        mockMvc.perform(get("/api/menus/{id}", 1L))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
     @Test
     void getMenuById_WithInvalidId_ShouldReturnNotFound() throws Exception {
-        mockMvc.perform(get("/api/menu/99999"))
+        mockMvc.perform(get("/api/menus/99999"))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void getMenusByCategory_WithValidCategory_ShouldReturnMenuItems() throws Exception {
-        mockMvc.perform(get("/api/menu/category/Main Course"))
+        mockMvc.perform(get("/api/menus/category/Main Course"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
     @Test
     void getMenusByCategory_WithInvalidCategory_ShouldReturnEmptyList() throws Exception {
-        mockMvc.perform(get("/api/menu/category/InvalidCategory"))
+        mockMvc.perform(get("/api/menus/category/InvalidCategory"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
     @Test
     void getAvailableMenus_ShouldReturnOnlyAvailableItems() throws Exception {
-        mockMvc.perform(get("/api/menu/available"))
+        mockMvc.perform(get("/api/menus/available"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }

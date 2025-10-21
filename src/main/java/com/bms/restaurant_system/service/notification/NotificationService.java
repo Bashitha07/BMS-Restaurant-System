@@ -1,6 +1,6 @@
-package com.bms.restaurant_system.service;
+package com.bms.restaurant_system.service.notification;
 
-import com.bms.restaurant_system.dto.NotificationDTO;
+import com.bms.restaurant_system.dto.user.NotificationDTO;
 import com.bms.restaurant_system.entity.Notification;
 import com.bms.restaurant_system.entity.User;
 import com.bms.restaurant_system.exception.ResourceNotFoundException;

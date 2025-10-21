@@ -83,6 +83,9 @@ export const getSpecificFoodImage = (itemName) => {
   return specificFoodImages[itemName] || null;
 };
 
+// Import from enhanced utils first so we can use the functions
+import { getConsistentImage, reliableImages, validateImageWithRetry, getFallbackImage, preloadCriticalImages } from './enhancedImageUtils';
+
 // Enhanced function that tries specific match first, then falls back to category
 export const getBestMatchImage = (itemName, category) => {
   // First try exact match
@@ -95,5 +98,5 @@ export const getBestMatchImage = (itemName, category) => {
   return getConsistentImage(itemName, category);
 };
 
-// Import from enhanced utils for backward compatibility
-export { getConsistentImage, reliableImages, validateImageWithRetry, getFallbackImage, preloadCriticalImages } from './enhancedImageUtils';
+// Re-export for backward compatibility
+export { getConsistentImage, reliableImages, validateImageWithRetry, getFallbackImage, preloadCriticalImages };

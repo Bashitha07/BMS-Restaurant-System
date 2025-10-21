@@ -18,7 +18,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.math.BigDecimal;
@@ -30,7 +29,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureWebMvc
 @ActiveProfiles("test")
-@Transactional
 class PaymentControllerIntegrationTest {
 
     @Autowired
@@ -298,9 +296,9 @@ class PaymentControllerIntegrationTest {
 
         PaymentDTO created = objectMapper.readValue(response, PaymentDTO.class);
 
-        // Delete the payment
+        // Delete the payment - returns 204 NO_CONTENT
         mockMvc.perform(delete("/api/payments/" + created.id()))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
     }
 
     @Test
@@ -419,10 +417,10 @@ class PaymentControllerIntegrationTest {
         mockMvc.perform(put("/api/payments/" + created.id() + "/approve"))
                 .andExpect(status().isOk());
 
-        // Process a full refund - expect 500 due to gateway failure in test environment
+        // Process a full refund - should succeed in test environment
         mockMvc.perform(post("/api/payments/" + created.id() + "/refund/full")
                 .param("reason", "Order cancelled"))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -475,6 +473,6 @@ class PaymentControllerIntegrationTest {
                 .param("orderId", order.getId().toString())
                 .param("refundType", "FULL"))
                 .andExpect(status().isOk())
-                .andExpect(content().string("100.00")); // Should return the full payment amount
+                .andExpect(content().string("100.00")); // Should return the full payment amount with 2 decimal places
     }
 }

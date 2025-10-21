@@ -1,14 +1,14 @@
-package com.bms.restaurant_system.controller;
+package com.bms.restaurant_system.controller.admin;
 
 import com.bms.restaurant_system.dto.OrderDTO;
-import com.bms.restaurant_system.dto.DeliveryDTO;
+import com.bms.restaurant_system.dto.driver.DeliveryDTO;
 import com.bms.restaurant_system.entity.Menu;
 import com.bms.restaurant_system.entity.User;
 import com.bms.restaurant_system.entity.Order;
 import com.bms.restaurant_system.entity.Reservation;
-import com.bms.restaurant_system.service.OrderService;
-import com.bms.restaurant_system.service.DeliveryService;
-import com.bms.restaurant_system.service.DatabaseRetrievalService;
+import com.bms.restaurant_system.service.order.OrderService;
+import com.bms.restaurant_system.service.delivery.DeliveryService;
+import com.bms.restaurant_system.service.database.DatabaseRetrievalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -42,7 +42,7 @@ public class AdminController {
         return ResponseEntity.ok(databaseRetrievalService.getAllMenus());
     }
 
-    // Removed duplicate getAllUsers method to fix duplicate method issue
+    // Note: GET /users endpoint moved to AdminUserController to avoid duplicate mapping
 
     @GetMapping("/database/orders")
     public ResponseEntity<List<Order>> getAllOrdersFromDB() {
@@ -104,5 +104,6 @@ public class AdminController {
         return ResponseEntity.ok(orderService.updateOrderStatus(id, status));
     }
 
-    // Additional admin functions
+    // Note: User management endpoints have been moved to AdminUserController
+    // to avoid duplicate mappings and provide better separation of concerns
 }

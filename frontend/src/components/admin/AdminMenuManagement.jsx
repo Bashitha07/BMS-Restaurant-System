@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Plus, Edit2, Trash2, Upload, Save, X, Search, Filter, Eye, ToggleLeft, ToggleRight, Camera, FileImage, Link2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import FoodImage from '../FoodImage';
+import FoodImage from '../common/FoodImage';
 import { getBestMatchImage } from '../../utils/specificFoodImages';
 import { menuItems as staticMenuItems } from '../../data/menuData';
 import adminService from '../../services/adminService';
@@ -28,7 +28,6 @@ const AdminMenuManagement = () => {
     prepTime: '',
     rating: 4.5,
     ingredients: '',
-    allergens: '',
     nutritionalInfo: '',
     preparationMethod: ''
   });
@@ -214,7 +213,6 @@ const AdminMenuManagement = () => {
       prepTime: '',
       rating: 4.5,
       ingredients: '',
-      allergens: '',
       nutritionalInfo: '',
       preparationMethod: ''
     });
@@ -793,19 +791,6 @@ const AdminMenuManagement = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Allergens
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.allergens}
-                    onChange={(e) => handleInputChange('allergens', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="e.g., Gluten, Dairy, Nuts"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Nutritional Info
                   </label>
                   <input
@@ -813,7 +798,7 @@ const AdminMenuManagement = () => {
                     value={formData.nutritionalInfo}
                     onChange={(e) => handleInputChange('nutritionalInfo', e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="e.g., 650 calories, 25g protein"
+                    placeholder="e.g., 25g protein, 30g carbs, 15g fat"
                   />
                 </div>
                 
