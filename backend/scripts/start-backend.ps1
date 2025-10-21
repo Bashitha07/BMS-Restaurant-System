@@ -1,6 +1,9 @@
 # Restaurant System Startup Script
 # This starts the backend server
 
+# Change to backend directory
+Set-Location -Path "$PSScriptRoot\.."
+
 Write-Host "=====================================" -ForegroundColor Cyan
 Write-Host "  Restaurant System - Backend Server" -ForegroundColor Cyan  
 Write-Host "=====================================" -ForegroundColor Cyan
