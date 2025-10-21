@@ -52,7 +52,7 @@ const Home = () => {
 
   return (
     <div className="bg-white min-h-screen">
-      <section className="relative overflow-hidden bg-gradient-to-r from-indigo-700 via-purple-600 to-pink-600 text-white py-20">
+  <section className="relative overflow-hidden bg-primary-500 text-white py-20">
         <div className="container mx-auto px-4 text-center relative z-10">
           <div
             className={`transition-all duration-1000 transform ${
@@ -81,8 +81,13 @@ const Home = () => {
             </button>
           </div>
         </div>
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10">
-          <div className="food-pattern"></div>
+        <div className="absolute inset-0 w-full h-full">
+          <img
+            src={require('../../assets/images/food/hero-restaurant.jpg')}
+            alt="Modern restaurant interior"
+            className="w-full h-full object-cover object-center opacity-60"
+            style={{ filter: 'brightness(0.85)' }}
+          />
         </div>
       </section>
       <section className="py-12 bg-white">
@@ -154,7 +159,7 @@ const Home = () => {
               {filteredItems.map((item) => (
                 <div
                   key={item.id}
-                  className={`bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl ${
+                  className={`bg-white rounded-2xl shadow-md overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl ${
                     !item.available ? 'opacity-60' : ''
                   }`}
                 >
@@ -198,7 +203,7 @@ const Home = () => {
             <div className="h-1 w-24 bg-purple-500 mx-auto mt-2"></div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white p-6 rounded-xl shadow-md text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+            <div className="bg-white p-6 rounded-2xl shadow-md text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
               <div className="w-16 h-16 mx-auto mb-4 bg-purple-100 rounded-full flex items-center justify-center">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -213,7 +218,7 @@ const Home = () => {
               <h3 className="text-xl font-bold mb-2">Fast Delivery</h3>
               <p className="text-gray-600">Hot and fresh food delivered to your doorstep in minutes</p>
             </div>
-            <div className="bg-white p-6 rounded-xl shadow-md text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+            <div className="bg-white p-6 rounded-2xl shadow-md text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
               <div className="w-16 h-16 mx-auto mb-4 bg-purple-100 rounded-full flex items-center justify-center">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -228,7 +233,7 @@ const Home = () => {
               <h3 className="text-xl font-bold mb-2">Quality Food</h3>
               <p className="text-gray-600">Made with fresh ingredients and authentic Sri Lankan spices</p>
             </div>
-            <div className="bg-white p-6 rounded-xl shadow-md text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+            <div className="bg-white p-6 rounded-2xl shadow-md text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
               <div className="w-16 h-16 mx-auto mb-4 bg-purple-100 rounded-full flex items-center justify-center">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -272,23 +277,6 @@ const Home = () => {
         }
         .text-shadow {
           text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-        }
-        .food-pattern {
-          background-image: url('https://www.transparenttextures.com/patterns/food.png');
-          width: 200%;
-          height: 200%;
-          animation: move 60s linear infinite;
-          position: absolute;
-          top: -50%;
-          left: -50%;
-        }
-        @keyframes move {
-          0% {
-            transform: translate(0, 0) rotate(0deg);
-          }
-          100% {
-            transform: translate(50px, 50px) rotate(10deg);
-          }
         }
         `
       }} />

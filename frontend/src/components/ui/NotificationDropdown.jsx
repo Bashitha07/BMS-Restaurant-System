@@ -68,7 +68,7 @@ const NotificationDropdown = () => {
       {isOpen && (
         <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-96 overflow-hidden">
           {/* Header */}
-          <div className="px-4 py-3 border-b border-gray-200 bg-gradient-to-r from-amber-50 to-orange-50">
+          <div className="px-4 py-3 border-b border-gray-200 bg-gradient-to-r from-primary-50 to-gray-100">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
               <div className="flex items-center space-x-2">

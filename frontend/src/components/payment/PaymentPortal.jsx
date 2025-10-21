@@ -215,7 +215,7 @@ export default function PaymentPortal({ orderId }) {
           </div>
 
           {/* Bank Details */}
-          <div className="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg p-4 border border-orange-100">
+          <div className="bg-gradient-to-r from-primary-500 via-gray-100 to-white rounded-lg p-4 border border-primary-100">
             <h3 className="font-semibold mb-3">Bank Details</h3>
             <div className="space-y-2 text-sm">
               <p><strong>Bank Name:</strong> HBL Bank Limited</p>
