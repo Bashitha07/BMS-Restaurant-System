@@ -21,14 +21,17 @@ const Menu = () => {
     const fetchMenuItems = async () => {
       setIsLoading(true);
       try {
-        const response = await menuService.getAllMenus();
-        setMenuItems(response.data || []);
+        const items = await menuService.getAllMenus();
+        // menuService.getAllMenus() returns the data array directly
+        setMenuItems(Array.isArray(items) ? items : []);
         
         // Initialize quantities after fetching items
         const initialQuantities = {};
-        response.data.forEach((item) => {
-          initialQuantities[item.id] = 1;
-        });
+        if (Array.isArray(items)) {
+          items.forEach((item) => {
+            initialQuantities[item.id] = 1;
+          });
+        }
         setItemQuantities(initialQuantities);
         
         setError(null);
