@@ -115,17 +115,17 @@ export default function Reservations() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-12 flex items-center justify-center">
+  <div className="min-h-screen bg-black py-12 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading reservations...</p>
+          <p className="mt-4 text-orange-400">Loading reservations...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
+  <div className="min-h-screen bg-black py-12">
       <div className="container mx-auto px-4">
         <h1 className="text-3xl font-bold mb-8 text-center">Table Reservations</h1>
         
@@ -145,15 +145,15 @@ export default function Reservations() {
         <div className="mb-12">
           <h2 className="text-2xl font-semibold mb-6">Your Reservations</h2>
           {reservations.length === 0 ? (
-            <div className="text-center py-8 bg-white rounded-lg shadow-sm">
-              <p className="text-gray-500">You don't have any reservations yet.</p>
+            <div className="text-center py-8 bg-black rounded-lg shadow-sm border-2 border-orange-500">
+              <p className="text-orange-400">You don't have any reservations yet.</p>
             </div>
           ) : (
             <div className="grid gap-6 md:grid-cols-2">
               {reservations
                 .filter((res) => res.status?.toLowerCase() !== 'cancelled')
                 .map((reservation) => (
-                  <div key={reservation.id} className="bg-white rounded-lg shadow-sm p-6">
+                  <div key={reservation.id} className="bg-black rounded-lg shadow-sm p-6 border-2 border-orange-500">
                     <div className="flex justify-between items-start mb-4">
                       <h3 className="font-medium text-lg">Reservation #{reservation.id}</h3>
                       <span
@@ -165,7 +165,7 @@ export default function Reservations() {
                       </span>
                     </div>
                     <div className="space-y-3 mb-6">
-                      <div className="flex items-center text-gray-700">
+                      <div className="flex items-center text-white">
                         <CalendarIcon size={18} className="mr-2 text-indigo-500" />
                         <span>
                           {new Date(reservation.reservationDate).toLocaleDateString('en-US', {
@@ -176,18 +176,18 @@ export default function Reservations() {
                           })}
                         </span>
                       </div>
-                      <div className="flex items-center text-gray-700">
+                      <div className="flex items-center text-white">
                         <ClockIcon size={18} className="mr-2 text-indigo-500" />
                         <span>{reservation.reservationTime || 'Not set'}</span>
                       </div>
-                      <div className="flex items-center text-gray-700">
+                      <div className="flex items-center text-white">
                         <UsersIcon size={18} className="mr-2 text-indigo-500" />
                         <span>
                           {reservation.partySize} {reservation.partySize === 1 ? 'Guest' : 'Guests'}
                         </span>
                       </div>
                       {reservation.specialRequests && (
-                        <div className="text-sm text-gray-600 mt-2">
+                        <div className="text-sm text-orange-400 mt-2">
                           <strong>Special Requests:</strong> {reservation.specialRequests}
                         </div>
                       )}
@@ -195,7 +195,7 @@ export default function Reservations() {
                     {reservation.status?.toLowerCase() === 'pending' && (
                       <button
                         onClick={() => cancelReservation(reservation.id)}
-                        className="flex items-center text-red-600 hover:text-red-800 transition-colors"
+                        className="flex items-center text-red-500 hover:text-orange-500 transition-colors"
                       >
                         <TrashIcon size={16} className="mr-1" />
                         <span>Cancel Reservation</span>
@@ -207,21 +207,21 @@ export default function Reservations() {
           )}
         </div>
         {/* New Reservation Form */}
-        <div className="bg-white rounded-lg shadow-sm p-6 md:p-8">
+  <div className="bg-black rounded-lg shadow-sm p-6 md:p-8 border-2 border-orange-500">
           <h2 className="text-2xl font-semibold mb-6 text-center">Book a New Reservation</h2>
           <form onSubmit={handleSubmit} className="max-w-md mx-auto">
             <div className="grid gap-6 mb-6">
               <div>
                 <label
                   htmlFor="resDate"
-                  className="block text-sm font-medium text-gray-700 mb-1"
+                  className="block text-sm font-medium text-orange-400 mb-1"
                 >
                   Date
                 </label>
                 <input
                   type="date"
                   id="resDate"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-orange-500 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 bg-black text-white"
                   required
                   min={new Date().toISOString().split('T')[0]}
                   value={formData.date}
@@ -231,13 +231,13 @@ export default function Reservations() {
               <div>
                 <label
                   htmlFor="resTime"
-                  className="block text-sm font-medium text-gray-700 mb-1"
+                  className="block text-sm font-medium text-orange-400 mb-1"
                 >
                   Time
                 </label>
                 <select
                   id="resTime"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-orange-500 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 bg-black text-white"
                   required
                   value={formData.time}
                   onChange={handleInputChange}
@@ -297,9 +297,9 @@ export default function Reservations() {
               </div>
             </div>
             <Button
-              type="submit"
-              fullWidth
-              className="bg-gradient-to-r from-indigo-500 to-purple-600"
+            type="submit"
+            fullWidth
+            className="bg-blue-600 text-white hover:bg-blue-700"
             >
               Book Reservation
             </Button>

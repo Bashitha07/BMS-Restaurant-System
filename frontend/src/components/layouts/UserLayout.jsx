@@ -55,33 +55,35 @@ const UserLayout = ({ children, onCartClick }) => {
   return (
   <div className="min-h-screen bg-white">
       {/* Header */}
-  <header className="bg-primary-500 shadow-lg border-b-4 border-accent-400">
+  <header className="bg-black shadow-lg relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-accent">🍽️ BMS Kingdom of taste</h1>
+              <Link to="/" className="text-2xl font-bold text-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-400 rounded transition-all">
+                BMS Kingdom of Taste
+              </Link>
             </div>
             <div className="flex items-center space-x-4">
               <button 
                 onClick={handleCartClick}
-                className="relative hover:bg-accent/20 p-2 rounded-lg transition-colors text-accent hover:text-primary"
+                className="relative p-2 rounded-lg transition-colors text-orange-500 hover:bg-orange-400 hover:text-black group"
+                aria-label="View cart"
               >
-                <ShoppingCart className="h-6 w-6" />
+                <ShoppingCart className="h-6 w-6 stroke-orange-500 group-hover:stroke-black group-hover:fill-none" />
                 {getTotalItems() > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-accent text-primary text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold shadow-lg border-2 border-primary">
+                  <span className="absolute -top-2 -right-2 bg-orange-500 text-black text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold shadow-lg border-2 border-black">
                     {getTotalItems()}
                   </span>
                 )}
               </button>
-              {user && <NotificationDropdown />}
-              
+              {user && <NotificationDropdown iconColor="orange-500" badgeColor="orange-500" />} 
               {/* Conditional User Info and Logout */}
               {user ? (
                 <>
-                  <span className="text-sm text-accent font-medium">Welcome, {user.username}</span>
+                  <span className="text-sm text-orange-500 font-medium">Welcome, {user.username}</span>
                   <button
                     onClick={handleLogout}
-                    className="text-sm text-primary bg-accent hover:bg-accent/80 px-3 py-1 rounded-md transition-colors font-medium"
+                    className="text-sm bg-orange-500 text-black hover:bg-orange-400 px-3 py-1 rounded-md transition-colors font-medium"
                   >
                     Logout
                   </button>
@@ -105,10 +107,11 @@ const UserLayout = ({ children, onCartClick }) => {
             </div>
           </div>
         </div>
+        <div className="absolute left-0 bottom-0 w-full h-1 bg-gradient-to-r from-transparent via-accent-400 to-transparent pointer-events-none" />
       </header>
 
       {/* Navigation */}
-  <nav className="bg-primary-500 shadow-md border-b border-accent-400">
+  <nav className="bg-black shadow-md relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex space-x-8">
             {allNavItems
@@ -134,8 +137,8 @@ const UserLayout = ({ children, onCartClick }) => {
                     to={item.path}
                     className={`flex items-center px-3 py-4 border-b-3 font-semibold text-sm transition-all duration-200 ${
                       isActive
-                        ? 'border-accent text-accent bg-accent/10'
-                        : 'border-transparent text-accent/80 hover:text-accent hover:border-accent/60 hover:bg-accent/10'
+                        ? 'border-orange-500 text-black bg-orange-500'
+                        : 'border-transparent text-orange-500 hover:text-black hover:border-orange-500 hover:bg-orange-500'
                     }`}
                   >
                     <Icon className="h-5 w-5 mr-2" />
@@ -145,6 +148,7 @@ const UserLayout = ({ children, onCartClick }) => {
               })}
           </div>
         </div>
+        <div className="absolute left-0 bottom-0 w-full h-1 bg-gradient-to-r from-transparent via-accent-400 to-transparent pointer-events-none" />
       </nav>
 
       {/* Main Content */}
@@ -153,16 +157,16 @@ const UserLayout = ({ children, onCartClick }) => {
       </main>
 
       {/* Footer */}
-  <footer className="bg-primary-500 border-t-4 border-accent mt-12">
+  <footer className="bg-black border-t-4 border-orange-500 mt-12">
         <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-          <div className="text-center text-sm text-white">
-            <p className="mb-2 text-lg font-semibold text-accent-400">🍽️ BMS Kingdom of taste</p>
-              <p className="mb-1">📞 +94 11 217 1944 | 📍 No 187/1/B, Hokandara 10230</p>
-              <p>
-                <a href="https://www.facebook.com/share/1749XW4KBV/" target="_blank" rel="noopener noreferrer" className="text-accent-400 hover:text-accent-200 font-medium transition-colors">
-                  Follow us on Facebook
-                </a>
-              </p>
+          <div className="text-center text-sm text-orange-500">
+            <p className="mb-2 text-lg font-semibold text-orange-500">BMS Kingdom of taste</p>
+            <p className="mb-1">📞 +94 11 217 1944 | 📍 No 187/1/B, Hokandara 10230</p>
+            <p>
+              <a href="https://www.facebook.com/share/1749XW4KBV/" target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:text-orange-400 font-medium transition-colors">
+                Follow us on Facebook
+              </a>
+            </p>
           </div>
         </div>
       </footer>
