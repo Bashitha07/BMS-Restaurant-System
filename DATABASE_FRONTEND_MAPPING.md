@@ -37,11 +37,18 @@ DESC users;
 ```
 
 **Frontend Endpoints:**
-- `GET /api/admin/users` - Get all users
-- `GET /api/admin/users/{id}` - Get user by ID
-- `PUT /api/admin/users/{id}/role` - Update user role
-- `PUT /api/admin/users/{id}/status?enabled={boolean}` - Update user status
-- `DELETE /api/admin/users/{id}` - Delete user
+- `GET /api/admin/users` - Get all users (admin)
+- `GET /api/admin/users/{id}` - Get user by ID (admin)
+- `GET /api/admin/users/by-role/{role}` - Get users by role (admin)
+- `GET /api/admin/users/statistics` - Get user statistics (admin)
+- `PUT /api/admin/users/{id}/role` - Update user role (admin)
+- `PUT /api/admin/users/{id}/status?enabled={boolean}` - Update user status (admin)
+- `DELETE /api/admin/users/{id}` - Delete user (admin)
+- `GET /api/users/profile` - Get current user profile
+- `PUT /api/users/profile` - Update current user profile
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+- `POST /api/auth/logout` - User logout
 
 **Frontend Expected Fields:**
 ```javascript
@@ -85,12 +92,17 @@ DESC menus;
 ```
 
 **Frontend Endpoints:**
-- `GET /api/menus` - Get all menu items
-- `GET /api/menus/{id}` - Get menu by ID
+- `GET /api/menus` - Get all menu items (public)
+- `GET /api/menus/available` - Get available menu items only
 - `GET /api/menus/category/{category}` - Get by category
-- `POST /api/admin/menus` - Create menu item
-- `PUT /api/admin/menus/{id}` - Update menu item
-- `DELETE /api/admin/menus/{id}` - Delete menu item
+- `GET /api/admin/menu` - Get all menus (admin)
+- `POST /api/admin/menu` - Create menu item (admin)
+- `PUT /api/admin/menu/{id}` - Update menu item (admin)
+- `DELETE /api/admin/menu/{id}` - Delete menu item (admin)
+- `PUT /api/admin/menu/{id}/availability` - Toggle availability (admin)
+- `GET /api/admin/menu/category/{category}` - Get by category (admin)
+- `GET /api/admin/menu/statistics` - Get menu statistics (admin)
+- `POST /api/admin/menu/upload-image` - Upload menu item image (admin)
 
 **Frontend Expected Fields:**
 ```javascript
@@ -137,9 +149,18 @@ DESC orders;
 **Frontend Endpoints:**
 - `GET /api/orders` - Get user's orders
 - `GET /api/orders/{id}` - Get order by ID
+- `GET /api/orders/my-orders` - Get authenticated user's orders
+- `GET /api/orders/{id}/invoice` - Get order invoice
 - `POST /api/orders` - Create new order
-- `PUT /api/admin/orders/{id}/status` - Update order status
+- `PUT /api/orders/{id}` - Update order
+- `DELETE /api/orders/{id}` - Cancel order
 - `GET /api/admin/orders` - Get all orders (admin)
+- `PUT /api/admin/orders/{id}/status` - Update order status (admin)
+- `GET /api/manager/orders` - Get orders (manager)
+- `PUT /api/manager/orders/{id}/status` - Update order status (manager)
+- `GET /api/kitchen/orders` - Get orders (kitchen)
+- `GET /api/kitchen/orders/pending` - Get pending orders (kitchen)
+- `PUT /api/kitchen/orders/{id}/status` - Update order status (kitchen)
 
 **Frontend Expected Fields:**
 ```javascript
@@ -215,10 +236,25 @@ DESC reservations;
 
 **Frontend Endpoints:**
 - `GET /api/reservations` - Get user reservations
+- `GET /api/reservations/{id}` - Get reservation by ID
 - `POST /api/reservations` - Create reservation
-- `GET /api/admin/reservations` - Get all reservations
-- `PUT /api/admin/reservations/{id}/status` - Update status
+- `PUT /api/reservations/{id}` - Update reservation
 - `DELETE /api/reservations/{id}` - Cancel reservation
+- `GET /api/admin/reservations` - Get all reservations (admin)
+- `GET /api/admin/reservations/{id}` - Get reservation by ID (admin)
+- `GET /api/admin/reservations/date-range` - Get by date range (admin)
+- `GET /api/admin/reservations/status/{status}` - Get by status (admin)
+- `GET /api/admin/reservations/today` - Get today's reservations (admin)
+- `GET /api/admin/reservations/upcoming` - Get upcoming reservations (admin)
+- `POST /api/admin/reservations` - Create reservation (admin)
+- `PUT /api/admin/reservations/{id}` - Update reservation (admin)
+- `POST /api/admin/reservations/{id}/confirm` - Confirm reservation (admin)
+- `POST /api/admin/reservations/{id}/cancel` - Cancel reservation (admin)
+- `POST /api/admin/reservations/{id}/seat` - Mark as seated (admin)
+- `POST /api/admin/reservations/{id}/complete` - Mark as completed (admin)
+- `POST /api/admin/reservations/{id}/no-show` - Mark as no-show (admin)
+- `DELETE /api/admin/reservations/{id}` - Delete reservation (admin)
+- `GET /api/admin/reservations/statistics` - Get reservation statistics (admin)
 
 **Frontend Expected Fields:**
 ```javascript
@@ -262,9 +298,11 @@ DESC payments;
 ```
 
 **Frontend Endpoints:**
+- `GET /api/payments` - Get user payments
+- `GET /api/payments/{orderId}` - Get payment by order ID
 - `POST /api/payments` - Create payment
-- `GET /api/payments/{orderId}` - Get payment by order
-- `GET /api/admin/payments` - Get all payments
+- `PUT /api/payments/{id}` - Update payment
+- `GET /api/admin/payments` - Get all payments (admin)
 
 **Frontend Expected Fields:**
 ```javascript
@@ -305,10 +343,16 @@ DESC payment_slips;
 ```
 
 **Frontend Endpoints:**
-- `POST /api/payment-slips` - Upload payment slip
-- `GET /api/admin/payment-slips` - Get all slips
-- `PUT /api/admin/payment-slips/{id}/confirm` - Confirm slip
-- `PUT /api/admin/payment-slips/{id}/reject` - Reject slip
+- `POST /api/payment-slips` - Upload payment slip (user)
+- `GET /api/payment-slips/{orderId}` - Get payment slip by order (user)
+- `GET /api/admin/payment-slips` - Get all payment slips (admin)
+- `GET /api/admin/payment-slips/{id}` - Get payment slip by ID (admin)
+- `GET /api/admin/payment-slips/pending` - Get pending slips (admin)
+- `GET /api/admin/payment-slips/status/{status}` - Get slips by status (admin)
+- `POST /api/admin/payment-slips/{id}/confirm` - Confirm payment slip (admin)
+- `POST /api/admin/payment-slips/{id}/reject` - Reject payment slip (admin)
+- `DELETE /api/admin/payment-slips/{id}` - Delete payment slip (admin)
+- `GET /api/admin/payment-slips/statistics` - Get statistics (admin)
 
 **Frontend Expected Fields:**
 ```javascript
@@ -362,11 +406,27 @@ DESC delivery_drivers;
 ```
 
 **Frontend Endpoints:**
-- `GET /api/admin/drivers` - Get all drivers
-- `GET /api/delivery-drivers/pending` - Get pending drivers
-- `PUT /api/delivery-drivers/{id}/approve` - Approve driver
-- `PUT /api/delivery-drivers/{id}/reject` - Reject driver
-- `POST /api/auth/driver/register` - Driver registration
+- `GET /api/admin/drivers` - Get all drivers (admin)
+- `GET /api/admin/drivers/{id}` - Get driver by ID (admin)
+- `GET /api/admin/drivers/available` - Get available drivers (admin)
+- `GET /api/admin/drivers/{id}/performance` - Get driver performance (admin)
+- `GET /api/admin/drivers/statistics` - Get driver statistics (admin)
+- `POST /api/admin/drivers/register` - Register new driver (admin)
+- `PUT /api/admin/drivers/{id}` - Update driver (admin)
+- `PUT /api/admin/drivers/{id}/status` - Update driver status (admin)
+- `POST /api/admin/drivers/{id}/rating` - Rate driver (admin)
+- `DELETE /api/admin/drivers/{id}` - Delete driver (admin)
+- `GET /api/delivery-drivers` - Get all delivery drivers
+- `GET /api/delivery-drivers/{id}` - Get delivery driver by ID
+- `GET /api/delivery-drivers/pending` - Get pending driver applications
+- `POST /api/delivery-drivers` - Register as delivery driver
+- `PUT /api/delivery-drivers/{id}` - Update delivery driver
+- `POST /api/delivery-drivers/{id}/approve` - Approve driver application
+- `POST /api/delivery-drivers/{id}/reject` - Reject driver application
+- `DELETE /api/delivery-drivers/{id}` - Delete delivery driver
+- `POST /api/driver/auth/login` - Driver login
+- `POST /api/driver/auth/logout/{driverId}` - Driver logout
+- `GET /api/driver/auth/profile/{driverId}` - Get driver profile
 
 **Frontend Expected Fields:**
 ```javascript
@@ -442,9 +502,17 @@ DESC deliveries;
 ```
 
 **Frontend Endpoints:**
-- `GET /api/deliveries/{orderId}` - Get delivery by order
-- `PUT /api/deliveries/{id}/status` - Update delivery status
-- `POST /api/deliveries` - Create delivery
+- `GET /api/admin/deliveries` - Get all deliveries (admin)
+- `POST /api/admin/deliveries` - Create delivery (admin)
+- `PUT /api/admin/deliveries/{id}` - Update delivery (admin)
+- `DELETE /api/admin/deliveries/{id}` - Delete delivery (admin)
+- `GET /api/driver/{driverId}/available-deliveries` - Get available deliveries for driver
+- `GET /api/driver/{driverId}/my-deliveries` - Get driver's assigned deliveries
+- `POST /api/driver/{driverId}/accept-delivery/{deliveryId}` - Accept delivery assignment
+- `PUT /api/driver/{driverId}/delivery/{deliveryId}/status` - Update delivery status
+- `PUT /api/driver/{driverId}/location` - Update driver current location
+- `POST /api/driver/{driverId}/delivery/{deliveryId}/complete` - Complete delivery
+- `PUT /api/driver/{driverId}/status` - Update driver availability status
 
 **Frontend Expected Fields:**
 ```javascript
@@ -463,7 +531,41 @@ DESC deliveries;
 
 ---
 
-## 11. NOTIFICATIONS Table
+## 11. ORDER_TRACKING Table
+**Database Table:** `order_tracking`
+```sql
+DESC order_tracking;
+- id (BIGINT, PK)
+- order_id (BIGINT, FK → orders.id)
+- status (VARCHAR(50))
+- title (VARCHAR(200))
+- description (TEXT)
+- timestamp (DATETIME)
+- completed (BOOLEAN)
+- actor (VARCHAR(100))
+```
+
+**Frontend Endpoints:**
+- `GET /api/orders/tracking/{orderId}` - Get order tracking timeline
+- `POST /api/orders/tracking/{orderId}` - Add tracking event
+
+**Frontend Expected Fields:**
+```javascript
+{
+  id: number,
+  orderId: number,
+  status: string,
+  title: string,
+  description: string,
+  timestamp: string,
+  completed: boolean,
+  actor: string
+}
+```
+
+---
+
+## 12. NOTIFICATIONS Table
 **Database Table:** `notifications`
 ```sql
 DESC notifications;
@@ -482,8 +584,12 @@ DESC notifications;
 
 **Frontend Endpoints:**
 - `GET /api/notifications` - Get user notifications
-- `PUT /api/notifications/{id}/read` - Mark as read
+- `GET /api/notifications/{id}` - Get notification by ID
+- `POST /api/notifications` - Create notification
+- `PUT /api/notifications/{id}/read` - Mark notification as read
+- `PUT /api/notifications/{id}/dismiss` - Dismiss notification
 - `DELETE /api/notifications/{id}` - Delete notification
+- `GET /api/notifications/unread` - Get unread notifications count
 
 **Frontend Expected Fields:**
 ```javascript
@@ -500,7 +606,7 @@ DESC notifications;
 
 ---
 
-## 12. FEEDBACKS Table
+## 13. FEEDBACKS Table
 **Database Table:** `feedbacks`
 ```sql
 DESC feedbacks;
@@ -513,8 +619,10 @@ DESC feedbacks;
 ```
 
 **Frontend Endpoints:**
-- `POST /api/feedbacks` - Submit feedback
-- `GET /api/feedbacks/menu/{menuId}` - Get menu feedbacks
+- `POST /api/feedbacks` - Submit feedback for menu item
+- `GET /api/feedbacks/menu/{menuId}` - Get all feedbacks for a menu item
+- `GET /api/feedbacks/user/{userId}` - Get all feedbacks by user
+- `DELETE /api/feedbacks/{id}` - Delete feedback (user/admin)
 
 **Frontend Expected Fields:**
 ```javascript
@@ -529,7 +637,7 @@ DESC feedbacks;
 
 ---
 
-## 13. REVIEWS Table
+## 14. REVIEWS Table
 **Database Table:** `reviews`
 ```sql
 DESC reviews;
@@ -543,8 +651,12 @@ DESC reviews;
 ```
 
 **Frontend Endpoints:**
-- `POST /api/reviews` - Submit review
-- `GET /api/reviews/menu/{menuId}` - Get menu reviews
+- `POST /api/reviews` - Submit review and rating for menu item
+- `GET /api/reviews/menu/{menuId}` - Get all reviews for a menu item
+- `GET /api/reviews/user/{userId}` - Get all reviews by user
+- `PUT /api/reviews/{id}` - Update review
+- `DELETE /api/reviews/{id}` - Delete review (user/admin)
+- `GET /api/reviews/menu/{menuId}/average` - Get average rating for menu item
 
 **Frontend Expected Fields:**
 ```javascript
@@ -586,21 +698,73 @@ DESC reviews;
 
 ## Common Endpoint Patterns:
 
+### Authentication Operations:
+- `POST /api/auth/register` → Register new user
+- `POST /api/auth/login` → Login (returns JWT token)
+- `POST /api/auth/logout` → Logout
+- `POST /api/driver/auth/login` → Driver login
+- `POST /api/driver/auth/logout/{driverId}` → Driver logout
+
 ### User Operations:
 - `GET /api/admin/users` → Returns UserResponseDTO[]
+- `GET /api/admin/users/{id}` → Returns UserResponseDTO
 - `PUT /api/admin/users/{id}/status?enabled={boolean}` → Returns UserResponseDTO
+- `PUT /api/admin/users/{id}/role` → Accepts {role: string}, Returns UserResponseDTO
+- `GET /api/admin/users/by-role/{role}` → Returns UserResponseDTO[]
+- `GET /api/admin/users/statistics` → Returns user statistics
 
 ### Menu Operations:
-- `GET /api/menus` → Returns MenuDTO[]
-- `POST /api/admin/menus` → Accepts MenuDTO, Returns MenuDTO
+- `GET /api/menus` → Returns MenuDTO[] (public)
+- `GET /api/menus/available` → Returns available MenuDTO[]
+- `GET /api/menus/category/{category}` → Returns MenuDTO[]
+- `GET /api/admin/menu` → Returns MenuDTO[] (admin)
+- `POST /api/admin/menu` → Accepts MenuDTO, Returns MenuDTO
+- `PUT /api/admin/menu/{id}` → Accepts MenuDTO, Returns MenuDTO
+- `DELETE /api/admin/menu/{id}` → Returns success message
+- `PUT /api/admin/menu/{id}/availability` → Toggle, Returns MenuDTO
+- `POST /api/admin/menu/upload-image` → Multipart file upload
 
 ### Order Operations:
+- `GET /api/orders` → Returns OrderDTO[]
+- `GET /api/orders/my-orders` → Returns current user's OrderDTO[]
 - `POST /api/orders` → Accepts OrderCreateDTO, Returns OrderDTO
 - `GET /api/orders/{id}` → Returns OrderDTO with OrderItemDTO[]
+- `GET /api/orders/{id}/invoice` → Returns invoice data
+- `PUT /api/admin/orders/{id}/status` → Update status, Returns OrderDTO
+- `GET /api/orders/tracking/{orderId}` → Returns OrderTrackingDTO[]
+
+### Reservation Operations:
+- `GET /api/reservations` → Returns user's ReservationDTO[]
+- `POST /api/reservations` → Accepts ReservationDTO, Returns ReservationDTO
+- `GET /api/admin/reservations` → Returns all ReservationDTO[]
+- `GET /api/admin/reservations/today` → Returns today's reservations
+- `POST /api/admin/reservations/{id}/confirm` → Confirm reservation
+- `POST /api/admin/reservations/{id}/cancel` → Cancel with reason
+- `GET /api/admin/reservations/statistics` → Returns statistics
 
 ### Payment Operations:
 - `POST /api/payments` → Accepts PaymentDTO, Returns PaymentDTO
-- `POST /api/payment-slips` → Accepts multipart/form-data with file
+- `GET /api/payments/{orderId}` → Returns PaymentDTO
+- `POST /api/payment-slips` → Multipart file upload
+- `GET /api/admin/payment-slips/pending` → Returns pending PaymentSlipDTO[]
+- `POST /api/admin/payment-slips/{id}/confirm` → Confirm payment slip
+- `POST /api/admin/payment-slips/{id}/reject` → Reject with reason
+
+### Driver & Delivery Operations:
+- `GET /api/admin/drivers` → Returns DeliveryDriverDTO[]
+- `GET /api/delivery-drivers/pending` → Returns pending driver applications
+- `POST /api/delivery-drivers/{id}/approve` → Approve driver
+- `POST /api/delivery-drivers/{id}/reject` → Reject driver
+- `GET /api/driver/{driverId}/available-deliveries` → Returns available deliveries
+- `POST /api/driver/{driverId}/accept-delivery/{deliveryId}` → Accept delivery
+- `PUT /api/driver/{driverId}/delivery/{deliveryId}/status` → Update status
+- `POST /api/driver/{driverId}/delivery/{deliveryId}/complete` → Complete delivery
+
+### Notification Operations:
+- `GET /api/notifications` → Returns user's NotificationDTO[]
+- `GET /api/notifications/unread` → Returns unread count
+- `PUT /api/notifications/{id}/read` → Mark as read
+- `DELETE /api/notifications/{id}` → Delete notification
 
 ---
 
