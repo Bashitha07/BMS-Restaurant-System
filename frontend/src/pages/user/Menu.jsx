@@ -74,7 +74,7 @@ const Menu = () => {
 
   return (
     <div className="bg-white min-h-screen">
-      <div className="bg-gradient-to-r from-indigo-700 via-purple-600 to-pink-600 text-white py-12">
+      <div className="bg-primary-600 text-white py-12 rounded-2xl">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl font-bold mb-4">Our Menu</h1>
           <p className="text-indigo-200 max-w-2xl mx-auto">

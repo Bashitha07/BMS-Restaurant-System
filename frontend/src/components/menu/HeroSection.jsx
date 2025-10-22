@@ -9,7 +9,7 @@ const HeroSection = ({
 }) => {
   return (
     <div 
-      className={`relative bg-gradient-to-r from-orange-600 to-orange-500 text-white py-16 px-4 ${className}`}
+  className={`relative bg-gradient-to-r from-primary-500 via-gray-100 to-white text-white py-16 px-4 ${className}`}
       style={backgroundImage ? {
         backgroundImage: `linear-gradient(rgba(234, 88, 12, 0.8), rgba(234, 88, 12, 0.8)), url(${backgroundImage})`,
         backgroundSize: 'cover',

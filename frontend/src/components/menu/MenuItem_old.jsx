@@ -4,7 +4,7 @@ import { toast } from "react-hot-toast";
 
 const MenuItem = ({ item, quantity, onQuantityChange, onAddToCart }) => {
   return (
-    <div className="card hover:shadow-lg transition-all duration-200 overflow-hidden">
+  <div className="card hover:shadow-lg transition-all duration-200 overflow-hidden rounded-2xl">
       {/* Image Container */}
       <div className="relative h-48 overflow-hidden">
         <img 
@@ -12,8 +12,7 @@ const MenuItem = ({ item, quantity, onQuantityChange, onAddToCart }) => {
           alt={item.name}
           className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-        
+        <div className="absolute inset-0 bg-gradient-to-t from-primary-700/40 to-transparent"></div>
         {/* Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-1">
           {item.featured && (
@@ -31,9 +30,8 @@ const MenuItem = ({ item, quantity, onQuantityChange, onAddToCart }) => {
               Sold Out
             </span>
           )}
-        )}
+        </div>
       </div>
-
       {/* Content */}
       <div className="p-4">
         {/* Header */}
@@ -64,7 +62,7 @@ const MenuItem = ({ item, quantity, onQuantityChange, onAddToCart }) => {
         {item.available ? (
           <div className="flex items-center justify-between">
             {/* Quantity Controls */}
-            <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
+            <div className="flex items-center border border-gray-200 rounded-2xl overflow-hidden">
               <button
                 onClick={() => onQuantityChange(quantity - 1)}
                 className="p-2 hover:bg-gray-50 text-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -102,6 +100,6 @@ const MenuItem = ({ item, quantity, onQuantityChange, onAddToCart }) => {
       </div>
     </div>
   );
-};
+}
 
 export default MenuItem;
