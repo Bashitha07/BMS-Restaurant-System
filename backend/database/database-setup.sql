@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS users (
     username VARCHAR(50) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
-    full_name VARCHAR(100) NOT NULL,
+    full_name VARCHAR(100) NOT NULL DEFAULT ' ',
     phone VARCHAR(20),
     address TEXT,
     role VARCHAR(20) NOT NULL DEFAULT 'USER',
@@ -21,6 +21,8 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+
+ALTER TABLE users MODIFY full_name VARCHAR(100) NOT NULL DEFAULT ' ';
 
 -- Menu Categories Table
 CREATE TABLE IF NOT EXISTS menu_categories (
@@ -80,6 +82,22 @@ CREATE TABLE IF NOT EXISTS orders (
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
+CREATE TABLE IF NOT EXISTS menus (
+id BIGINT AUTO_INCREMENT PRIMARY KEY,
+name VARCHAR(100) NOT NULL,
+description TEXT,
+category VARCHAR(50) NOT NULL,
+price DECIMAL(10, 2) NOT NULL,
+is_available BOOLEAN DEFAULT TRUE,
+image_url VARCHAR(255),
+ingredients TEXT,
+preparation_time INT DEFAULT 0,
+discount_percentage DECIMAL(5,2) DEFAULT 0.00,
+discounted_price DECIMAL(10,2) DEFAULT 0.00,
+created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
 -- Order Items Table
 CREATE TABLE IF NOT EXISTS order_items (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -94,7 +112,6 @@ CREATE TABLE IF NOT EXISTS order_items (
     FOREIGN KEY (menu_item_id) REFERENCES menu_items(id)
 );
 
--- Payments Table
 CREATE TABLE IF NOT EXISTS payments (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     order_id BIGINT NOT NULL,
@@ -107,10 +124,42 @@ CREATE TABLE IF NOT EXISTS payments (
     FOREIGN KEY (order_id) REFERENCES orders(id)
 );
 
+-- Payment Slips Table
+CREATE TABLE IF NOT EXISTS payment_slips (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    slip_url VARCHAR(255),
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+-- Menus Table
+CREATE TABLE IF NOT EXISTS menus (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    image_url VARCHAR(255),
+    active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Reviews Table (if not present)
+CREATE TABLE IF NOT EXISTS reviews (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    menu_id BIGINT NOT NULL,
+    rating INT NOT NULL,
+    comment TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (menu_id) REFERENCES menus(id)
+);
+
 -- Initial admin user (password: admin123)
 INSERT INTO users (username, password, email, full_name, role)
 VALUES ('admin', '$2a$10$6UVHQoHhpoHVVLAtXdYw.eYZ1/Vh4BTUt5CwHzz6oqW3kCXS8s7Zu', 'admin@restaurant.com', 'Admin User', 'ADMIN')
-ON DUPLICATE KEY UPDATE username = VALUES(username);
+ON DUPLICATE KEY UPDATE full_name = VALUES(full_name), username = VALUES(username);
 
 -- Initial menu categories
 INSERT INTO menu_categories (name, description) VALUES 

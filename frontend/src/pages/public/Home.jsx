@@ -16,13 +16,13 @@ function Home() {
             "url('https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80')",
         }}
       >
-        <div className="absolute inset-0 bg-black opacity-50"></div>
+  <div className="absolute inset-0 bg-black opacity-70"></div>
         <div className="container mx-auto px-4 h-full flex items-center relative z-10">
           <div className="max-w-xl">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-orange-500 mb-4 drop-shadow-lg">
               Delicious Food For Every Mood
             </h1>
-            <p className="text-xl text-white mb-6">
+            <p className="text-xl text-white mb-6 drop-shadow">
               Experience the finest cuisine with fresh ingredients and
               exceptional service.
             </p>
@@ -35,7 +35,7 @@ function Home() {
                   <Button
                     variant="outline"
                     size="lg"
-                    className="bg-transparent text-white border-white hover:bg-white hover:text-gray-900"
+                    className="bg-transparent text-orange-500 border-orange-500 hover:bg-orange-500 hover:text-white"
                   >
                     Book a Table
                   </Button>
@@ -45,7 +45,7 @@ function Home() {
                   <Button
                     variant="outline"
                     size="lg"
-                    className="bg-transparent text-white border-white hover:bg-white hover:text-gray-900"
+                    className="bg-transparent text-red-500 border-red-500 hover:bg-red-500 hover:text-white"
                   >
                     Join Us Today
                   </Button>
@@ -56,10 +56,10 @@ function Home() {
             {/* Quick Login/Register for non-authenticated users */}
             {!user && (
               <div className="mt-6 flex items-center space-x-4 text-sm">
-                <span className="text-white/80">Already have an account?</span>
+                <span className="text-orange-400">Already have an account?</span>
                 <Link 
                   to="/login" 
-                  className="text-white font-medium hover:text-orange-200 underline"
+                  className="text-orange-500 font-medium hover:text-red-500 underline"
                 >
                   Sign In
                 </Link>
@@ -69,9 +69,9 @@ function Home() {
         </div>
       </section>
       {/* Featured Categories */}
-      <section className="py-16 bg-gray-50">
+  <section className="py-16 bg-black">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">
+          <h2 className="text-3xl font-bold text-center mb-12 text-orange-500">
             Our Menu Categories
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -185,39 +185,42 @@ function Home() {
 
       {/* Welcome Back Section - Only show if user is logged in */}
       {user && (
-  <section className="py-16 bg-white text-primary-900">
-          <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Welcome Back, {user.username}! 👋
-            </h2>
-            <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto">
-              Ready to explore our delicious menu or make a reservation? 
-              Your culinary adventure awaits!
-            </p>
-            <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-              <Link to="/menu">
-                <Button 
-                  size="lg"
-                  className="bg-white !text-green-600 hover:bg-gray-100 font-bold"
-                >
-                  Browse Menu
-                </Button>
-              </Link>
-              <Link to="/reservations">
-                <Button 
-                  size="lg"
-                  variant="outline"
-                  className="border-white text-white hover:bg-white hover:text-green-600"
-                >
-                  Make Reservation
-                </Button>
-              </Link>
-              <Link to="/order-history">
-                <Button 
-                  size="lg"
-                  variant="outline"
-                  className="border-white text-white hover:bg-white hover:text-green-600"
-                >
+  <section className="py-16 bg-white">
+    <div className="container mx-auto px-4 text-center">
+      <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ color: '#000' }}>
+        Welcome Back, {user.username}! 👋
+      </h2>
+      <p className="text-lg md:text-xl mb-2 max-w-2xl mx-auto" style={{ color: '#000' }}>
+        Ready to explore our delicious menu or make a reservation? Your culinary adventure awaits!
+      </p>
+      <div style={{ marginTop: '3rem' }}>
+        <h3 className="text-2xl font-bold mb-4" style={{ color: '#000' }}>Ready for Your Next Meal?</h3>
+        <p className="text-lg mb-10 max-w-2xl mx-auto" style={{ color: '#000' }}>
+          Choose your favorite dishes or book a table for a special dining experience.
+        </p>
+      </div>
+      <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+        <Link to="/menu">
+          <Button 
+            size="lg"
+            className="bg-white !text-[#ff6600] hover:bg-[#ffe5cc] font-bold border-2 border-[#ff6600]"
+          >
+            Browse Menu
+          </Button>
+        </Link>
+        <Link to="/reservations">
+          <Button 
+            size="lg"
+            className="bg-white !text-[#ff6600] hover:bg-[#ffe5cc] font-bold border-2 border-[#ff6600]"
+          >
+            Make Reservation
+          </Button>
+        </Link>
+        <Link to="/order-history">
+          <Button 
+            size="lg"
+            className="bg-white !text-[#ff6600] hover:bg-[#ffe5cc] font-bold border-2 border-[#ff6600]"
+          >
                   View Orders
                 </Button>
               </Link>
@@ -226,63 +229,23 @@ function Home() {
         </section>
       )}
       
-      {/* Call to Action */}
-  <section className="py-16 bg-primary-600 text-white rounded-2xl">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-6">
-            {user ? "Ready for Your Next Meal?" : "Ready to Experience Our Delicious Food?"}
-          </h2>
-          <p className="text-xl mb-8 max-w-2xl mx-auto">
-            {user 
-              ? "Choose your favorite dishes or book a table for a special dining experience."
-              : "Join us for a memorable dining experience or order online for pickup or delivery."
-            }
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-            {user ? (
-              <>
-                <Link to="/menu">
-                  <Button
-                    size="lg"
-                    className="bg-white !text-orange-600 hover:bg-gray-100 font-bold"
-                  >
-                    Order Now
-                  </Button>
-                </Link>
-                <Link to="/reservations">
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="border-white text-white hover:bg-white hover:text-orange-600"
-                  >
-                    Book a Table
-                  </Button>
-                </Link>
-              </>
-            ) : (
-              <>
-                <Link to="/register">
-                  <Button
-                    size="lg"
-                    className="bg-white !text-orange-600 hover:bg-gray-100 font-bold"
-                  >
-                    Sign Up & Order
-                  </Button>
-                </Link>
-                <Link to="/menu">
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="border-white text-white hover:bg-white hover:text-orange-600"
-                  >
-                    Browse Menu
-                  </Button>
-                </Link>
-              </>
-            )}
+      {/* Call to Action block is now only visible for non-logged-in users */}
+      {!user && (
+        <section className="py-16 bg-primary-600 text-white rounded-2xl">
+          <div className="container mx-auto px-4 text-center">
+            <h2 className="text-3xl font-bold mb-6">Ready to Experience Our Delicious Food?</h2>
+            <p className="text-xl mb-8 max-w-2xl mx-auto">Join us for a memorable dining experience or order online for pickup or delivery.</p>
+            <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+              <Link to="/register">
+                <Button size="lg" className="bg-white !text-[#ff6600] hover:bg-[#ffe5cc] font-bold border-2 border-[#ff6600]">Sign Up & Order</Button>
+              </Link>
+              <Link to="/menu">
+                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-[#ff6600]">Browse Menu</Button>
+              </Link>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
     </div>
   )
 }

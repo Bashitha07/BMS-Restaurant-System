@@ -1,6 +1,6 @@
-      <footer className="bg-primary-500 border-t mt-12">
+      <footer className="bg-black border-t border-orange-500 mt-12">
         <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
-          <div className="text-center text-sm text-white">
+          <div className="text-center text-sm text-orange-500">
             <p>Manager Panel Footer</p>
           </div>
         </div>
@@ -35,7 +35,7 @@ const ManagerLayout = ({ children }) => {
   return (
   <div className="min-h-screen bg-white">
       {/* Header */}
-  <header className="bg-primary-500 shadow-sm border-b border-accent-400">
+  <header className="bg-black shadow-sm border-b border-orange-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
