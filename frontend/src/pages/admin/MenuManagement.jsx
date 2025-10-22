@@ -170,9 +170,8 @@ const MenuManagement = () => {
   // Toggle item availability
   const toggleAvailability = async (id, currentStatus) => {
     try {
-      await apiService.put(`/api/admin/menu/${id}/availability`, {
-        available: !currentStatus
-      });
+      // Backend expects 'available' as query parameter, not body
+      await apiService.put(`/api/admin/menu/${id}/availability?available=${!currentStatus}`);
       fetchMenuItems();
     } catch (error) {
       console.error("Error updating availability:", error);

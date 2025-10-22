@@ -138,7 +138,7 @@ const AdminMenuManagement = () => {
       description: item.description || '',
       price: item.price?.toString() || '',
       category: item.category || 'Pasta',
-      available: item.available ?? true,
+      available: item.isAvailable ?? true,
       image: item.image || '',
       portion: item.portion || '',
       prepTime: item.prepTime || '',
@@ -185,19 +185,24 @@ const AdminMenuManagement = () => {
 
   const toggleAvailability = async (id) => {
     const item = menuItems.find(item => item.id === id);
-    const updatedItem = { ...item, available: !item.available };
+    const newAvailability = !item.isAvailable;
     
+    // Optimistically update UI
     setMenuItems(prev => prev.map(item => 
-      item.id === id ? updatedItem : item
+      item.id === id ? { ...item, isAvailable: newAvailability } : item
     ));
-    
-    toast.success(`Menu item ${updatedItem.available ? 'enabled' : 'disabled'}`);
     
     // Try to update via API
     try {
-      await adminService.updateMenuItem(id, updatedItem);
+      await adminService.updateMenuAvailability(id, newAvailability);
+      toast.success(`Menu item ${newAvailability ? 'enabled' : 'disabled'}`);
     } catch (apiError) {
       console.log('API update failed, using local update only');
+      // Revert on failure
+      setMenuItems(prev => prev.map(item => 
+        item.id === id ? { ...item, isAvailable: !newAvailability } : item
+      ));
+      toast.error('Failed to update menu availability');
     }
   };
 
@@ -394,7 +399,7 @@ const AdminMenuManagement = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Available</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {menuItems.filter(item => item.available).length}
+                {menuItems.filter(item => item.isAvailable).length}
               </p>
             </div>
           </div>
@@ -451,11 +456,11 @@ const AdminMenuManagement = () => {
                   />
                   <div className="absolute top-2 right-2">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      item.available 
+                      item.isAvailable 
                         ? 'bg-green-100 text-green-800' 
                         : 'bg-red-100 text-red-800'
                     }`}>
-                      {item.available ? 'Available' : 'Unavailable'}
+                      {item.isAvailable ? 'Available' : 'Unavailable'}
                     </span>
                   </div>
                 </div>
@@ -498,12 +503,12 @@ const AdminMenuManagement = () => {
                     <button
                       onClick={() => toggleAvailability(item.id)}
                       className={`flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        item.available
+                        item.isAvailable
                           ? 'bg-orange-50 hover:bg-orange-100 text-orange-700'
                           : 'bg-green-50 hover:bg-green-100 text-green-700'
                       }`}
                     >
-                      {item.available ? 'Disable' : 'Enable'}
+                      {item.isAvailable ? 'Disable' : 'Enable'}
                     </button>
                     
                     <button
