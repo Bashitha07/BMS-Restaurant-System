@@ -1,12 +1,12 @@
 # Restaurant Management System
 
-A comprehensive full-stack restaurant management system built with Spring Boot and React, featuring simplified database schema, order management, reservations, payments, and delivery tracking.
+A comprehensive full-stack restaurant management system built with Spring Boot and React, featuring multi-user platform for customers, delivery drivers, managers, kitchen staff, and administrators with complete order management, reservations, payments, and delivery tracking.
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 - **Java 24** (or JDK 17+)
-- **MySQL 8.0+**
+- **MySQL 8.0+** via XAMPP
 - **Node.js 18+** and npm
 - **Maven 3.9+**
 
@@ -20,26 +20,28 @@ A comprehensive full-stack restaurant management system built with Spring Boot a
 
 2. **Setup Database**
    ```bash
-   # Login to MySQL
-   mysql -u root -p
+   # Start XAMPP and ensure MySQL is running on port 3306
    
-   # Run setup script
-   source database/database-setup.sql
-   # Or: mysql -u root -p < database/database-setup.sql
+   # Login to MySQL
+   mysql -u root
+   
+   # Run complete setup script
+   source backend/database/database-schema-corrected.sql
    ```
 
 3. **Configure Backend**
    ```bash
-   # Edit src/main/resources/application.properties
+   # Edit backend/src/main/resources/application.properties
    spring.datasource.url=jdbc:mysql://localhost:3306/restaurant_db
    spring.datasource.username=root
-   spring.datasource.password=YOUR_PASSWORD
+   spring.datasource.password=
    ```
 
 4. **Start Backend** (Terminal 1)
    ```bash
+   cd backend
    mvn spring-boot:run
-   # Or use: .\scripts\start-backend.ps1
+   # Or use: .\backend\scripts\start-backend.bat
    ```
 
 5. **Start Frontend** (Terminal 2)
@@ -47,11 +49,10 @@ A comprehensive full-stack restaurant management system built with Spring Boot a
    cd frontend
    npm install
    npm run dev
-   # Or use: .\scripts\start-frontend.ps1
    ```
 
 6. **Access Application**
-   - Frontend: http://localhost:5176
+   - Frontend: http://localhost:5174
    - Backend API: http://localhost:8084
    - Login: `admin` / `admin123`
 
@@ -59,45 +60,34 @@ A comprehensive full-stack restaurant management system built with Spring Boot a
 
 ## 📊 Database Architecture
 
-### Simplified Schema (10 Tables, 93 Fields)
+### Complete Schema (14 Tables)
 
-**Key Simplifications:**
-- ✅ 38% field reduction (from 150 to 93 fields)
-- ✅ Menus: 21 fields (NO calories, NO allergens)
-- ✅ Users: 9 fields (USER/ADMIN roles only)
-- ✅ Orders: 10 fields (removed calculated fields)
-- ✅ Deliveries: 9 fields (removed GPS tracking)
+**Database Tables:**
+1. **users** - User accounts with roles (USER, ADMIN, MANAGER, KITCHEN, DRIVER)
+2. **menus** - Menu items with pricing, categories, and inventory
+3. **orders** - Customer orders with status tracking
+4. **order_items** - Individual items in each order
+5. **order_tracking** - Order status history and timeline
+6. **reservations** - Table reservations with confirmation
+7. **delivery_drivers** - Delivery driver accounts and performance metrics
+8. **drivers** - Simplified driver records
+9. **deliveries** - Delivery tracking with GPS and status updates
+10. **payments** - Payment transactions and methods
+11. **payment_slips** - Uploaded payment receipt images
+12. **notifications** - User notifications and alerts
+13. **feedbacks** - Menu item feedback from customers
+14. **reviews** - Menu item ratings and reviews
 
-**Tables:**
-1. **users** (9 fields) - User accounts and authentication
-2. **menus** (21 fields) - Menu items and inventory
-3. **orders** (10 fields) - Customer orders
-4. **order_items** (6 fields) - Order line items
-5. **reservations** (12 fields) - Table reservations
-6. **drivers** (7 fields) - Delivery drivers
-7. **deliveries** (9 fields) - Delivery tracking
-8. **payments** (8 fields) - Payment records
-9. **payment_slips** (5 fields) - Payment slip uploads
-10. **reviews** (6 fields) - Customer reviews
-
-### View ER Diagram
-```bash
-# Option 1: VS Code PlantUML Extension
-# 1. Install "PlantUML" extension by jebbs
-# 2. Open docs/diagrams/Database_ER_Diagram.puml
-# 3. Press Alt+D to preview
-
-# Option 2: Online Viewer
-# 1. Open docs/diagrams/Database_ER_Diagram_Simple.puml
-# 2. Copy content
-# 3. Paste at: http://www.plantuml.com/plantuml/uml/
-```
+### View Database Documentation
+- **Complete Mapping:** See `DATABASE_FRONTEND_MAPPING.md` for detailed table structures
+- **ER Diagrams:** Available in `backend/docs/diagrams/`
 
 ### Database Management
 
 **Daily Operations:**
 ```sql
--- Add menu item
+-- View all users
+SELECT id, username, email, role, enabled FROM users;
 INSERT INTO menus (name, description, category, price, is_available, preparation_time, ingredients)
 VALUES ('Pizza Margherita', 'Classic Italian pizza', 'MAIN_COURSE', 12.99, TRUE, 20, 'Tomato, Mozzarella, Basil');
 
@@ -148,56 +138,74 @@ mysql -u root -p restaurant_db -e "SELECT COUNT(*) FROM information_schema.COLUM
 
 ### Security
 - **JWT (JSON Web Tokens)** - Stateless authentication
-- **BCrypt** - Password hashing
-- **CORS** - Cross-origin resource sharing
-- **Role-based access control** (USER, ADMIN)
+- **BCrypt** - Password hashing (strength 10)
+- **CORS** - Cross-origin resource sharing configured
+- **Role-based access control** (USER, ADMIN, MANAGER, KITCHEN, DRIVER)
+- **Spring Security 6.5.5** - Latest security framework
 
 ---
 
 ## 📋 Features
 
 ### User Management
-- User registration and login
-- JWT-based authentication
-- Role management (USER, ADMIN)
-- Profile management
-- User enable/disable (admin only)
+- User registration and login (customers, drivers, staff)
+- JWT-based authentication with refresh tokens
+- Role management (USER, ADMIN, MANAGER, KITCHEN, DRIVER)
+- Profile management with phone and address
+- User enable/disable by admin
+- Promo code and discount management
 
 ### Menu Management
 - Create, read, update, delete menu items
 - Category filtering (APPETIZER, MAIN_COURSE, DESSERT, BEVERAGE, etc.)
-- Image upload and storage
-- Stock quantity tracking
-- Low stock alerts
-- Dietary flags (vegetarian, vegan, gluten-free, spicy)
-- Discount support
-- Featured items
+- Image upload with validation
+- Stock quantity tracking with low stock alerts
+- Dietary flags (vegetarian, vegan, gluten-free, spicy with levels)
+- Discount pricing support
+- Featured items promotion
+- Preparation time tracking
+- Ingredients listing
 
 ### Order Management
-- Place orders with multiple items
-- Order status tracking (PENDING, CONFIRMED, PREPARING, READY, DELIVERED, CANCELLED)
-- Payment method selection
-- Delivery address management
-- Special instructions
-- Order history
+- Place orders with multiple items and quantities
+- Order status tracking (PENDING, CONFIRMED, PREPARING, READY_FOR_PICKUP, OUT_FOR_DELIVERY, DELIVERED, CANCELLED, REFUNDED)
+- Order type selection (DELIVERY, PICKUP, DINE_IN)
+- Payment method selection (CASH, CREDIT_CARD, DEBIT_CARD, ONLINE, BANK_TRANSFER, DIGITAL_WALLET)
+- Payment status tracking
+- Delivery address and phone management
+- Special instructions per item and order
+- Order history with filtering
+- Real-time order tracking timeline
+- Tax and delivery fee calculation
 
 ### Reservation Management
-- Create table reservations
-- Date and time selection
-- Party size management
-- Status tracking (PENDING, CONFIRMED, CANCELLED)
-- Special requests
+- Create table reservations with date/time
+- Party size and customer details
+- Status tracking (PENDING, CONFIRMED, SEATED, CANCELLED, NO_SHOW, COMPLETED)
+- Special requests handling
+- Table number assignment
+- Confirmation and cancellation with reasons
+- Admin notes and reminder system
 
 ### Delivery Management
-- Driver assignment
-- Delivery status tracking
-- Estimated delivery time
-- Actual delivery time recording
+- Driver registration and approval workflow
+- Driver assignment to orders
+- Delivery status tracking (PENDING, ASSIGNED, PICKED_UP, IN_TRANSIT, DELIVERED, FAILED, CANCELLED)
+- GPS location tracking
+- Estimated vs actual delivery time
+- Driver performance metrics (ratings, total deliveries, earnings)
+- Proof of delivery with images
+- Customer feedback and ratings
+- Distance calculation
 
 ### Payment Processing
-- Multiple payment methods (CASH, CARD, ONLINE, DEPOSIT_SLIP)
-- Payment slip upload
-- Transaction tracking
+- Multiple payment methods support
+- Payment slip upload with image validation
+- Admin approval/rejection workflow
+- Transaction ID tracking
+- Payment gateway integration ready
+- Refund management
+- Payment status history
 - Payment status management
 
 ### Review System
@@ -732,25 +740,24 @@ For issues or questions:
 ## 📚 Additional Resources
 
 ### Project Organization
-- **`database/`** - All SQL scripts and database documentation
-  - `database-setup.sql` - Complete MySQL schema
-  - `setup-postgresql.sql` - PostgreSQL alternative
-  - `verify-database.sql` - Database validation
-- **`docs/diagrams/`** - All PlantUML diagrams
-  - `Database_ER_Diagram.puml` - Detailed ER diagram
-  - `Database_ER_Diagram_Simple.puml` - Simple ER diagram
-  - System, Login, Menu, Order, Payment diagrams
-- **`scripts/`** - Executable scripts
-  - `start-backend.ps1` - Backend startup (Windows)
-  - `start-frontend.ps1` - Frontend startup (Windows)
-  - `test-jwt-config.ps1` - JWT authentication test
-  - `run-all-tests.ps1` - Complete test suite
-  - Cross-platform shell scripts (.sh, .bat)
+- **`backend/`** - Spring Boot application
+  - `backend/database/` - All SQL scripts and schema files
+  - `backend/docs/diagrams/` - PlantUML diagrams (ER, Use Case, Activity)
+  - `backend/scripts/` - Startup and utility scripts
+  - `backend/src/main/java/` - Java source code
+  - `backend/src/main/resources/` - Configuration files
+- **`frontend/`** - React application
+  - `frontend/src/components/` - Reusable React components
+  - `frontend/src/pages/` - Page components by role
+  - `frontend/src/services/` - API service layer
+  - `frontend/src/assets/` - Images and static files
+- **`DATABASE_FRONTEND_MAPPING.md`** - Complete table-to-endpoint mapping
+- **`.vscode/`** - VS Code configuration with launch.json for debugging
 
 ### Key Endpoints for Testing
 ```bash
 # Health check
-curl http://localhost:8084/api/menu
+curl http://localhost:8084/api/menus
 
 # Login
 curl -X POST http://localhost:8084/api/auth/login \
@@ -758,13 +765,17 @@ curl -X POST http://localhost:8084/api/auth/login \
   -d '{"username":"admin","password":"admin123"}'
 
 # Get menus with JWT
-curl http://localhost:8084/api/menu \
+curl http://localhost:8084/api/menus \
+  -H "Authorization: Bearer YOUR_TOKEN"
+
+# Update user status (admin only)
+curl -X PUT "http://localhost:8084/api/admin/users/3/status?enabled=false" \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
 ---
 
-**Last Updated:** October 19, 2025  
-**Version:** 1.0.0  
-**Database Schema:** Simplified (93 fields, 10 tables)  
+**Last Updated:** October 22, 2025  
+**Version:** 2.0.0  
+**Database Schema:** Complete (14 tables with full feature set)  
 **Status:** ✅ Production Ready

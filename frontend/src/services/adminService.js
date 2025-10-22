@@ -104,17 +104,18 @@ export const adminService = {
 
   updateUserStatus: async (id, enabled) => {
     console.log('🌐 [API] Sending PUT request to update user status:', {
-      endpoint: ADMIN_ENDPOINTS.UPDATE_STATUS(id),
+      endpoint: `${ADMIN_ENDPOINTS.UPDATE_STATUS(id)}?enabled=${enabled}`,
       userId: id,
       newStatus: enabled ? 'ENABLED' : 'DISABLED',
       timestamp: new Date().toISOString()
     });
     
     try {
-      const response = await axios.put(ADMIN_ENDPOINTS.UPDATE_STATUS(id), { enabled });
+      // Send enabled as query parameter, not in body
+      const response = await axios.put(`${ADMIN_ENDPOINTS.UPDATE_STATUS(id)}?enabled=${enabled}`);
       
       console.log('✅ [API] Successfully updated user status in backend:', {
-        endpoint: ADMIN_ENDPOINTS.UPDATE_STATUS(id),
+        endpoint: `${ADMIN_ENDPOINTS.UPDATE_STATUS(id)}?enabled=${enabled}`,
         userId: id,
         newStatus: enabled ? 'ENABLED' : 'DISABLED',
         response: response.data,
@@ -124,7 +125,7 @@ export const adminService = {
       return response.data;
     } catch (error) {
       console.error('❌ [API] Failed to update user status in backend:', {
-        endpoint: ADMIN_ENDPOINTS.UPDATE_STATUS(id),
+        endpoint: `${ADMIN_ENDPOINTS.UPDATE_STATUS(id)}?enabled=${enabled}`,
         userId: id,
         attemptedStatus: enabled ? 'ENABLED' : 'DISABLED',
         error: error.response?.data || error.message,

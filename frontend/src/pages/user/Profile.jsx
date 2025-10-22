@@ -70,29 +70,8 @@ export default function Profile() {
       setUsers(allUsers);
     } catch (error) {
       console.error('❌ [DB] Failed to fetch users from database:', error);
-      notifyError('Failed to load users');
-      // Enhanced fallback data with comprehensive user information
-      const fallbackUsers = [
-        // Customers
-        { id: 1, username: 'john_doe', email: 'john@example.com', phone: '+94771234567', role: 'user', enabled: true, createdAt: '2024-01-15', lastLogin: '2024-10-04', orderCount: 12, totalSpent: 18500 },
-        { id: 2, username: 'alice_smith', email: 'alice.smith@email.com', phone: '+94772345678', role: 'user', enabled: true, createdAt: '2024-02-20', lastLogin: '2024-10-05', orderCount: 8, totalSpent: 12300 },
-        { id: 3, username: 'bob_wilson', email: 'bob.wilson@email.com', phone: '+94773456789', role: 'user', enabled: false, createdAt: '2024-03-10', lastLogin: '2024-09-28', orderCount: 3, totalSpent: 4200 },
-        { id: 4, username: 'carol_brown', email: 'carol.brown@email.com', phone: '+94774567890', role: 'user', enabled: true, createdAt: '2024-01-05', lastLogin: '2024-10-03', orderCount: 25, totalSpent: 35600 },
-        { id: 5, username: 'david_lee', email: 'david.lee@email.com', phone: '+94775678901', role: 'user', enabled: true, createdAt: '2024-04-12', lastLogin: '2024-10-05', orderCount: 6, totalSpent: 8900 },
-        
-        // Delivery Drivers
-        { id: 6, username: 'mike_driver', email: 'mike.driver@email.com', phone: '+94776789012', role: 'delivery_driver', enabled: true, createdAt: '2024-01-20', lastLogin: '2024-10-05', deliveryCount: 156, rating: 4.8, vehicleType: 'Motorcycle' },
-        { id: 7, username: 'sara_delivery', email: 'sara.delivery@email.com', phone: '+94777890123', role: 'delivery_driver', enabled: true, createdAt: '2024-02-15', lastLogin: '2024-10-05', deliveryCount: 89, rating: 4.6, vehicleType: 'Scooter' },
-        { id: 8, username: 'tom_courier', email: 'tom.courier@email.com', phone: '+94778901234', role: 'delivery_driver', enabled: false, createdAt: '2024-03-22', lastLogin: '2024-09-30', deliveryCount: 23, rating: 4.2, vehicleType: 'Bicycle' },
-        { id: 9, username: 'lisa_express', email: 'lisa.express@email.com', phone: '+94779012345', role: 'delivery_driver', enabled: true, createdAt: '2024-04-08', lastLogin: '2024-10-05', deliveryCount: 134, rating: 4.9, vehicleType: 'Car' },
-        
-        // Managers and Admins
-        { id: 10, username: 'jane_admin', email: 'jane.admin@restaurant.com', phone: '+94771122334', role: 'admin', enabled: true, createdAt: '2024-01-01', lastLogin: '2024-10-05', department: 'Operations' },
-        { id: 11, username: 'sarah_manager', email: 'sarah.manager@restaurant.com', phone: '+94772233445', role: 'manager', enabled: true, createdAt: '2024-01-10', lastLogin: '2024-10-04', department: 'Kitchen' },
-        { id: 12, username: 'alex_supervisor', email: 'alex.supervisor@restaurant.com', phone: '+94773344556', role: 'manager', enabled: true, createdAt: '2024-02-01', lastLogin: '2024-10-05', department: 'Customer Service' }
-      ];
-      
-      setUsers(fallbackUsers);
+      notifyError('Failed to load users from database');
+      setUsers([]); // Show empty list if database fetch fails
     } finally {
       setUsersLoading(false);
     }
@@ -210,21 +189,7 @@ export default function Profile() {
         error: error.message,
         timestamp: new Date().toISOString()
       });
-      notifyError('Failed to update user role');
-      
-      // Fallback for demonstration
-      console.log('⚠️ [DB] Using fallback role update (demo mode):', {
-        operation: 'FALLBACK_UPDATE_USER_ROLE',
-        userId: userId,
-        username: user?.username,
-        roleChange: `${oldRole} → ${role}`,
-        timestamp: new Date().toISOString()
-      });
-      
-      setUsers(prev => prev.map(u => u.id === userId ? { ...u, role } : u));
-      setEditingUserId(null);
-      setNewRole('');
-      notifySuccess(`User role updated to ${roleLabels[role]} (demo mode)`);
+      notifyError('Failed to update user role in database');
     }
   };
 
@@ -265,19 +230,7 @@ export default function Profile() {
         error: error.message,
         timestamp: new Date().toISOString()
       });
-      notifyError('Failed to update user status');
-      
-      // Fallback for demonstration
-      console.log('⚠️ [DB] Using fallback status update (demo mode):', {
-        operation: 'FALLBACK_UPDATE_USER_STATUS',
-        userId: userId,
-        username: user?.username,
-        statusChange: `${oldStatus ? 'ENABLED' : 'DISABLED'} → ${enabled ? 'ENABLED' : 'DISABLED'}`,
-        timestamp: new Date().toISOString()
-      });
-      
-      setUsers(prev => prev.map(u => u.id === userId ? { ...u, enabled } : u));
-      notifySuccess(`User ${enabled ? 'enabled' : 'disabled'} (demo mode)`);
+      notifyError('Failed to update user status in database');
     }
   };
 
