@@ -71,7 +71,8 @@ const Menu = () => {
     const matchesCategory = selectedCategory
       ? item.category === selectedCategory
       : true;
-    const matchesAvailability = showAvailableOnly ? item.available : true;
+    // Backend uses 'isAvailable' field
+    const matchesAvailability = showAvailableOnly ? item.isAvailable : true;
     return matchesSearch && matchesCategory && matchesAvailability;
   });
 
@@ -173,7 +174,7 @@ const Menu = () => {
               <div
                 key={item.id}
                 className={`bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 ${
-                  !item.available ? 'opacity-70' : ''
+                  !item.isAvailable ? 'opacity-70' : ''
                 }`}
               >
                 <div className="h-48 overflow-hidden">
@@ -202,7 +203,7 @@ const Menu = () => {
                           )
                         }
                         className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full text-gray-700 hover:bg-gray-300"
-                        disabled={!item.available}
+                        disabled={!item.isAvailable}
                       >
                         <MinusIcon size={16} />
                       </button>
@@ -215,7 +216,7 @@ const Menu = () => {
                           )
                         }
                         className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full text-gray-700 hover:bg-gray-300"
-                        disabled={!item.available}
+                        disabled={!item.isAvailable}
                       >
                         <PlusIcon size={16} />
                       </button>
@@ -223,16 +224,16 @@ const Menu = () => {
                     <button
                       onClick={() => handleAddToCart(item.id)}
                       className={`px-4 py-2 rounded-md text-white ${
-                        item.available
+                        item.isAvailable
                           ? 'bg-purple-600 hover:bg-purple-700'
                           : 'bg-gray-400 cursor-not-allowed'
                       }`}
-                      disabled={!item.available}
+                      disabled={!item.isAvailable}
                     >
-                      {item.available ? 'Add to Cart' : 'Unavailable'}
+                      {item.isAvailable ? 'Add to Cart' : 'Unavailable'}
                     </button>
                   </div>
-                  {!item.available && (
+                  {!item.isAvailable && (
                     <p className="mt-2 text-red-500 text-sm">
                       Currently unavailable
                     </p>
