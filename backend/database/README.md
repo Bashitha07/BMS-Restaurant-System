@@ -1,127 +1,251 @@
-# Database
+# Restaurant Database Schema# Database
 
-This directory contains all database-related SQL scripts for the Restaurant Management System.
+
+
+## OverviewThis directory contains all database-related SQL scripts for the Restaurant Management System.
+
+This directory contains the complete database schema for the Restaurant Management System.
 
 ## SQL Scripts
 
+## Files
+
 ### `database-setup.sql`
-**Purpose:** Main database installation and setup script
+
+### RESTAURANT_DB_COMPLETE.sql**Purpose:** Main database installation and setup script
+
+**Complete database schema with all tables, indexes, and useful queries.**
 
 **Description:**
-- Creates all 10 tables required for the restaurant system
+
+This is the **ONLY** SQL file you need. It includes:- Creates all 10 tables required for the restaurant system
+
 - Includes simplified schema with 93 fields (38% reduction from original)
-- Sets up relationships with foreign keys
-- Creates indexes for performance optimization
-- Includes sample data for testing
 
-**Tables Created:**
+- ✅ Complete schema for 14 tables- Sets up relationships with foreign keys
+
+- ✅ All foreign keys and indexes- Creates indexes for performance optimization
+
+- ✅ Comprehensive comments and documentation- Includes sample data for testing
+
+- ✅ 10+ useful pre-written queries
+
+- ✅ Maintenance and diagnostic queries**Tables Created:**
+
 1. `users` - User accounts (customers and admins)
-2. `menus` - Menu items with 21 fields (simplified)
+
+## Database Structure2. `menus` - Menu items with 21 fields (simplified)
+
 3. `orders` - Customer orders
-4. `order_items` - Individual items in orders
-5. `reservations` - Table reservations
-6. `payments` - Payment records
-7. `payment_slips` - Payment slip details
-8. `reviews` - Customer reviews
-9. `categories` - Menu categories
-10. `tables` - Restaurant table information
 
-**Usage:**
-```bash
-# MySQL
-mysql -u root -p < database-setup.sql
+### Core Tables (14)4. `order_items` - Individual items in orders
 
-# Or using MySQL Workbench:
-# File > Run SQL Script > Select database-setup.sql
+1. **users** - User accounts with promo codes5. `reservations` - Table reservations
+
+2. **menus** - Menu items with dietary info and stock management6. `payments` - Payment records
+
+3. **orders** - Customer orders with payment details7. `payment_slips` - Payment slip details
+
+4. **order_items** - Individual items in orders8. `reviews` - Customer reviews
+
+5. **order_tracking** - Order status history9. `categories` - Menu categories
+
+6. **reservations** - Table reservations with time slots10. `tables` - Restaurant table information
+
+7. **payments** - Payment transactions with refunds
+
+8. **payment_slips** - Payment proof uploads**Usage:**
+
+9. **drivers** - Delivery driver information```bash
+
+10. **deliveries** - Delivery tracking# MySQL
+
+11. **delivery_drivers** - Driver-delivery assignmentsmysql -u root -p < database-setup.sql
+
+12. **notifications** - User notifications
+
+13. **feedbacks** - Customer feedback# Or using MySQL Workbench:
+
+14. **reviews** - Product/service reviews# File > Run SQL Script > Select database-setup.sql
+
 ```
+
+## Setup Instructions
 
 ### `setup-postgresql.sql`
-**Purpose:** PostgreSQL-specific database setup
 
-**Description:**
-- Alternative database setup for PostgreSQL users
+### First Time Setup**Purpose:** PostgreSQL-specific database setup
+
+```bash
+
+# Login to MySQL (no password)**Description:**
+
+mysql -u root- Alternative database setup for PostgreSQL users
+
 - Contains same schema as MySQL version with PostgreSQL-specific syntax
-- Includes PostgreSQL data types and constraints
 
-**Usage:**
+# Run the complete schema- Includes PostgreSQL data types and constraints
+
+mysql -u root < RESTAURANT_DB_COMPLETE.sql
+
+```**Usage:**
+
 ```bash
-# PostgreSQL
-psql -U postgres -d restaurant_db < setup-postgresql.sql
 
-# Or using pgAdmin:
+### Verify Installation# PostgreSQL
+
+```bashpsql -U postgres -d restaurant_db < setup-postgresql.sql
+
+mysql -u root restaurant_db -e "SHOW TABLES;"
+
+```# Or using pgAdmin:
+
 # Tools > Query Tool > Open File > Select setup-postgresql.sql > Execute
-```
 
-### `verify-database.sql`
-**Purpose:** Database verification and health check
+You should see 14 tables.```
 
-**Description:**
-- Checks if all tables are created correctly
+
+
+### Check Data### `verify-database.sql`
+
+```bash**Purpose:** Database verification and health check
+
+mysql -u root restaurant_db -e "SELECT COUNT(*) FROM users;"
+
+mysql -u root restaurant_db -e "SELECT COUNT(*) FROM menus;"**Description:**
+
+```- Checks if all tables are created correctly
+
 - Verifies table structure and constraints
-- Counts records in each table
+
+## Configuration- Counts records in each table
+
 - Validates foreign key relationships
-- Tests data integrity
+
+### Backend Connection- Tests data integrity
+
+Update `backend/src/main/resources/application.properties`:
 
 **Usage:**
-```bash
-# MySQL
-mysql -u root -p restaurant_db < verify-database.sql
 
-# PostgreSQL
-psql -U postgres -d restaurant_db < verify-database.sql
+```properties```bash
+
+spring.datasource.url=jdbc:mysql://localhost:3306/restaurant_db# MySQL
+
+spring.datasource.username=rootmysql -u root -p restaurant_db < verify-database.sql
+
+spring.datasource.password=
+
+spring.jpa.hibernate.ddl-auto=none# PostgreSQL
+
+```psql -U postgres -d restaurant_db < verify-database.sql
+
 ```
+
+**Note:** `ddl-auto=none` prevents Hibernate from modifying the schema.
 
 **Expected Output:**
-- Table counts for all 10 tables
+
+## Useful Queries- Table counts for all 10 tables
+
 - Confirmation of indexes
-- Validation of foreign keys
+
+All queries are included in the SQL file with examples for:- Validation of foreign keys
+
 - Sample data verification
 
-## Database Configuration
+- 📊 Sales summaries
 
-### MySQL (Default)
-**Connection Details:**
-- Host: `localhost`
-- Port: `3306`
+- 📈 Popular menu items## Database Configuration
+
+- 🚚 Driver availability
+
+- 💰 Payment statistics### MySQL (Default)
+
+- 📅 Reservation analytics**Connection Details:**
+
+- 📦 Low stock alerts- Host: `localhost`
+
+- 👤 User activity tracking- Port: `3306`
+
 - Database: `restaurant_db`
-- Username: `root`
+
+## Maintenance- Username: `root`
+
 - Password: (set in `application.properties`)
 
-**Requirements:**
-- MySQL 8.0 or higher
-- InnoDB storage engine
+### Backup Database
 
-### PostgreSQL (Alternative)
-**Connection Details:**
-- Host: `localhost`
-- Port: `5432`
+```bash**Requirements:**
+
+mysqldump -u root restaurant_db > backup_$(date +%Y%m%d).sql- MySQL 8.0 or higher
+
+```- InnoDB storage engine
+
+
+
+### Restore Database### PostgreSQL (Alternative)
+
+```bash**Connection Details:**
+
+mysql -u root restaurant_db < backup_YYYYMMDD.sql- Host: `localhost`
+
+```- Port: `5432`
+
 - Database: `restaurant_db`
-- Username: `postgres`
-- Password: (set in `application-postgresql.properties`)
 
-**Requirements:**
-- PostgreSQL 12 or higher
+### Check Database Size- Username: `postgres`
 
-## Database Schema Overview
+```sql- Password: (set in `application-postgresql.properties`)
 
-### Simplified Schema (93 fields across 10 tables)
+SELECT 
 
-**Key Simplifications:**
+    table_name AS 'Table',**Requirements:**
+
+    ROUND(((data_length + index_length) / 1024 / 1024), 2) AS 'Size (MB)'- PostgreSQL 12 or higher
+
+FROM information_schema.TABLES
+
+WHERE table_schema = 'restaurant_db'## Database Schema Overview
+
+ORDER BY (data_length + index_length) DESC;
+
+```### Simplified Schema (93 fields across 10 tables)
+
+
+
+## Schema Version**Key Simplifications:**
+
 - Removed unnecessary fields from menus (calories, allergens)
-- Streamlined user roles to USER and ADMIN only
-- Eliminated redundant timestamp fields
-- Optimized foreign key relationships
 
-### Important Notes
+- **Version**: 2.0- Streamlined user roles to USER and ADMIN only
 
-1. **No Notification Table:** The system does not include a notification table. This was never part of the original design.
+- **Last Updated**: October 23, 2025- Eliminated redundant timestamp fields
+
+- **Changes**: - Optimized foreign key relationships
+
+  - Consolidated all SQL files into one
+
+  - Added comprehensive indexes### Important Notes
+
+  - Added delivery driver notes field
+
+  - Updated all ENUMs to match backend1. **No Notification Table:** The system does not include a notification table. This was never part of the original design.
+
+  - Added useful queries section
 
 2. **Menus Table:** Contains 21 fields (reduced from 24):
-   - Removed: `calories`, `allergens`, `rating`, `total_reviews`
+
+## Support   - Removed: `calories`, `allergens`, `rating`, `total_reviews`
+
    - Kept: Essential menu item information
 
-3. **Users Table:** Contains 9 fields (reduced from 14):
-   - Simplified roles: USER, ADMIN (removed STAFF, CUSTOMER, MANAGER)
+For issues or questions, refer to the main project README or check:
+
+- Backend entities in `backend/src/main/java/com/bms/restaurant_system/entity/`3. **Users Table:** Contains 9 fields (reduced from 14):
+
+- API documentation in `backend/API_DOCUMENTATION.md`   - Simplified roles: USER, ADMIN (removed STAFF, CUSTOMER, MANAGER)
+
    - Streamlined authentication fields
 
 ## Backup and Restore
