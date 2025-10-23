@@ -331,10 +331,10 @@ const AdminMenuManagement = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-3xl font-bold text-gray-900">Menu Management</h1>
+        <h1 className="text-3xl font-bold text-orange-500">Menu Management</h1>
         <button
           onClick={handleAdd}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+          className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-black px-4 py-2 rounded-full text-sm font-bold border border-orange-500 shadow-md transition-colors"
         >
           <Plus className="h-4 w-4" />
           Add Menu Item
@@ -351,7 +351,7 @@ const AdminMenuManagement = () => {
               placeholder="Search menu items..."
               value={searchTerm}
               onChange={(e) => handleSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-orange-500 rounded-full focus:ring-2 focus:ring-orange-500 focus:border-transparent text-black bg-white"
             />
           </div>
           <div className="flex items-center gap-2">
@@ -359,7 +359,7 @@ const AdminMenuManagement = () => {
             <select
               value={selectedCategory}
               onChange={(e) => handleCategoryFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-3 py-2 border border-orange-500 rounded-full focus:ring-2 focus:ring-orange-500 focus:border-transparent text-black bg-white"
             >
               {availableCategories.map(category => (
                 <option key={category} value={category}>{category}</option>
@@ -369,7 +369,7 @@ const AdminMenuManagement = () => {
           {(searchTerm || selectedCategory !== 'All') && (
             <button
               onClick={clearFilters}
-              className="px-3 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="px-3 py-2 text-orange-500 hover:text-black border border-orange-500 rounded-full hover:bg-orange-100 font-bold"
             >
               Clear
             </button>
@@ -381,40 +381,40 @@ const AdminMenuManagement = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <div className="text-blue-600 text-xl">🍽️</div>
+              <div className="p-2 bg-orange-100 rounded-full">
+                <div className="text-orange-500 text-xl">🍽️</div>
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-bold text-orange-500">Total Items</p>
+                <p className="text-2xl font-bold text-black">{menuItems.length}</p>
+              </div>
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Items</p>
-              <p className="text-2xl font-semibold text-gray-900">{menuItems.length}</p>
-            </div>
-          </div>
         </div>
         
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <div className="text-green-600 text-xl">✅</div>
+              <div className="p-2 bg-orange-100 rounded-full">
+                <div className="text-orange-500 text-xl">✅</div>
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-bold text-orange-500">Available</p>
+                <p className="text-2xl font-bold text-black">
+                  {menuItems.filter(item => item.isAvailable).length}
+                </p>
+              </div>
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Available</p>
-              <p className="text-2xl font-semibold text-gray-900">
-                {menuItems.filter(item => item.isAvailable).length}
-              </p>
-            </div>
-          </div>
         </div>
         
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
-            <div className="p-2 bg-orange-100 rounded-lg">
-              <div className="text-orange-600 text-xl">📊</div>
+              <div className="p-2 bg-orange-100 rounded-full">
+                <div className="text-orange-500 text-xl">📊</div>
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-bold text-orange-500">Categories</p>
+                <p className="text-2xl font-bold text-black">{availableCategories.length - 1}</p>
+              </div>
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Categories</p>
-              <p className="text-2xl font-semibold text-gray-900">{availableCategories.length - 1}</p>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -528,14 +528,14 @@ const AdminMenuManagement = () => {
       {/* Form Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
-          <div className="relative bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h3 className="text-xl font-semibold text-gray-900">
+          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border-2 border-orange-500">
+            <div className="flex items-center justify-between p-6 border-b border-orange-200">
+              <h3 className="text-xl font-bold text-orange-500">
                 {editingItem ? 'Edit Menu Item' : 'Add New Menu Item'}
               </h3>
               <button
                 onClick={resetForm}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-orange-400 hover:text-orange-600 transition-colors"
               >
                 <X className="h-6 w-6" />
               </button>
@@ -551,7 +551,7 @@ const AdminMenuManagement = () => {
                     type="text"
                     value={formData.name}
                     onChange={(e) => handleInputChange('name', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-orange-500 rounded-full focus:ring-2 focus:ring-orange-500 focus:border-transparent text-black bg-white"
                     placeholder="e.g., Creamy Chicken Alfredo"
                     required
                   />
@@ -564,7 +564,7 @@ const AdminMenuManagement = () => {
                   <select
                     value={formData.category}
                     onChange={(e) => handleInputChange('category', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-orange-500 rounded-full focus:ring-2 focus:ring-orange-500 focus:border-transparent text-black bg-white"
                     required
                   >
                     <option value="">Select Category</option>
@@ -601,7 +601,7 @@ const AdminMenuManagement = () => {
                     type="text"
                     value={formData.portion}
                     onChange={(e) => handleInputChange('portion', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-orange-500 rounded-full focus:ring-2 focus:ring-orange-500 focus:border-transparent text-black bg-white"
                     placeholder="Serves 1-2"
                   />
                 </div>
@@ -614,7 +614,7 @@ const AdminMenuManagement = () => {
                     type="text"
                     value={formData.prepTime}
                     onChange={(e) => handleInputChange('prepTime', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-orange-500 rounded-full focus:ring-2 focus:ring-orange-500 focus:border-transparent text-black bg-white"
                     placeholder="15-20 minutes"
                   />
                 </div>
@@ -630,7 +630,7 @@ const AdminMenuManagement = () => {
                     max="5"
                     value={formData.rating}
                     onChange={(e) => handleInputChange('rating', parseFloat(e.target.value))}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-orange-500 rounded-full focus:ring-2 focus:ring-orange-500 focus:border-transparent text-black bg-white"
                   />
                 </div>
                 
@@ -644,10 +644,10 @@ const AdminMenuManagement = () => {
                     <button
                       type="button"
                       onClick={() => setImageUploadMethod('url')}
-                      className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${
+                      className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 font-bold ${
                         imageUploadMethod === 'url' 
-                          ? 'bg-blue-50 border-blue-200 text-blue-700' 
-                          : 'bg-gray-50 border-gray-200 text-gray-600'
+                          ? 'bg-orange-100 border-orange-500 text-orange-700' 
+                          : 'bg-white border-black text-black'
                       }`}
                     >
                       <Link2 className="h-4 w-4" />
@@ -656,10 +656,10 @@ const AdminMenuManagement = () => {
                     <button
                       type="button"
                       onClick={() => setImageUploadMethod('file')}
-                      className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${
+                      className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 font-bold ${
                         imageUploadMethod === 'file' 
-                          ? 'bg-blue-50 border-blue-200 text-blue-700' 
-                          : 'bg-gray-50 border-gray-200 text-gray-600'
+                          ? 'bg-orange-100 border-orange-500 text-orange-700' 
+                          : 'bg-white border-black text-black'
                       }`}
                     >
                       <Camera className="h-4 w-4" />
@@ -675,7 +675,7 @@ const AdminMenuManagement = () => {
                           type="url"
                           value={formData.image}
                           onChange={(e) => handleImageUrlChange(e.target.value)}
-                          className="w-full px-4 py-2 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full px-4 py-2 pr-12 border border-orange-500 rounded-full focus:ring-2 focus:ring-orange-500 focus:border-transparent text-black bg-white"
                           placeholder="https://example.com/image.jpg or leave empty for auto-suggestion"
                         />
                         <Link2 className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -745,7 +745,7 @@ const AdminMenuManagement = () => {
                   {(formData.image || imagePreview) && (
                     <div className="mt-4 p-3 bg-gray-50 rounded-lg">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-700">Image Preview</span>
+                        <span className="text-sm font-bold text-orange-500">Image Preview</span>
                         <button
                           type="button"
                           onClick={clearImage}
@@ -757,7 +757,7 @@ const AdminMenuManagement = () => {
                       <img 
                         src={formData.image || imagePreview} 
                         alt="Food preview" 
-                        className="w-full h-32 object-cover rounded-lg border border-gray-200"
+                        className="w-full h-32 object-cover rounded-lg border-2 border-orange-500"
                         onError={(e) => {
                           e.target.src = getBestMatchImage(formData.name, formData.category);
                         }}
@@ -774,7 +774,7 @@ const AdminMenuManagement = () => {
                     value={formData.description}
                     onChange={(e) => handleInputChange('description', e.target.value)}
                     rows={3}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-orange-500 rounded-full focus:ring-2 focus:ring-orange-500 focus:border-transparent text-black bg-white"
                     placeholder="Describe the dish, ingredients, and what makes it special..."
                     required
                   />
@@ -789,7 +789,7 @@ const AdminMenuManagement = () => {
                     value={formData.ingredients}
                     onChange={(e) => handleInputChange('ingredients', e.target.value)}
                     rows={2}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-orange-500 rounded-full focus:ring-2 focus:ring-orange-500 focus:border-transparent text-black bg-white"
                     placeholder="List main ingredients (e.g., Chicken breast, Pasta, Garlic, Cream, Parmesan cheese)"
                   />
                 </div>
@@ -802,7 +802,7 @@ const AdminMenuManagement = () => {
                     type="text"
                     value={formData.nutritionalInfo}
                     onChange={(e) => handleInputChange('nutritionalInfo', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-orange-500 rounded-full focus:ring-2 focus:ring-orange-500 focus:border-transparent text-black bg-white"
                     placeholder="e.g., 25g protein, 30g carbs, 15g fat"
                   />
                 </div>
@@ -813,7 +813,7 @@ const AdminMenuManagement = () => {
                       type="checkbox"
                       checked={formData.available}
                       onChange={(e) => handleInputChange('available', e.target.checked)}
-                      className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      className="mr-3 h-4 w-4 text-orange-500 focus:ring-orange-500 border-orange-500 rounded-full"
                     />
                     <span className="text-sm font-medium text-gray-700">Available for orders</span>
                   </label>
@@ -824,14 +824,14 @@ const AdminMenuManagement = () => {
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition-colors"
+                  className="px-6 py-2 border border-orange-500 rounded-full text-black hover:bg-orange-100 font-bold transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+                  className="flex items-center gap-2 px-6 py-2 bg-orange-500 hover:bg-orange-600 text-black rounded-full font-bold transition-colors disabled:opacity-50 border border-orange-500 shadow-md"
                 >
                   {loading ? (
                     <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

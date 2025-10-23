@@ -33,68 +33,68 @@ const DeliveryManagement = () => {
   }, []);
 
   return (
-    <div className="space-y-6">
+  <div className="space-y-6 bg-white min-h-screen">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-black">Delivery Driver Management</h1>
+          <h1 className="text-3xl font-bold text-orange-500">Delivery Driver Management</h1>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-lg shadow p-4 flex items-center">
-          <div className="rounded-full bg-yellow-100 p-3 mr-4">
+            <div className="rounded-full bg-orange-100 p-3 mr-4 border border-orange-500">
             <Clock className="h-6 w-6 text-yellow-600" />
           </div>
           <div>
-            <p className="text-sm font-medium text-black">Pending Applications</p>
+              <p className="text-sm font-bold text-orange-500">Pending Applications</p>
             <p className="text-2xl font-bold text-black">{stats.pendingCount}</p>
           </div>
         </div>
         
         <div className="bg-white rounded-lg shadow p-4 flex items-center">
-          <div className="rounded-full bg-green-100 p-3 mr-4">
+            <div className="rounded-full bg-orange-100 p-3 mr-4 border border-orange-500">
             <Truck className="h-6 w-6 text-green-600" />
           </div>
           <div>
-            <p className="text-sm font-medium text-black">Active Drivers</p>
+              <p className="text-sm font-bold text-orange-500">Rejected Applications</p>
             <p className="text-2xl font-bold text-black">{stats.activeCount}</p>
           </div>
         </div>
         
         <div className="bg-white rounded-lg shadow p-4 flex items-center">
           <div className="rounded-full bg-blue-100 p-3 mr-4">
-            <CheckCircle className="h-6 w-6 text-blue-600" />
+              <CheckCircle className="h-6 w-6 text-orange-600" />
           </div>
           <div>
-            <p className="text-sm font-medium text-black">Completed Deliveries</p>
+              <p className="text-sm font-bold text-orange-500">Completed Deliveries</p>
             <p className="text-2xl font-bold text-black">{stats.completedCount}</p>
           </div>
         </div>
         
         <div className="bg-white rounded-lg shadow p-4 flex items-center">
-          <div className="rounded-full bg-red-100 p-3 mr-4">
+            <div className="rounded-full bg-orange-100 p-3 mr-4 border border-orange-500">
             <XCircle className="h-6 w-6 text-red-600" />
           </div>
           <div>
-            <p className="text-sm font-medium text-black">Rejected Applications</p>
+              <p className="text-sm font-bold text-orange-500">Active Drivers</p>
             <p className="text-2xl font-bold text-black">{stats.rejectedCount}</p>
           </div>
         </div>
       </div>
 
       {/* Tabs for different driver management sections */}
-      <div className="bg-white rounded-lg shadow">
+  <div className="bg-white rounded-lg shadow border border-orange-200">
         <Tabs defaultValue="pending" value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="border-b px-6 py-2">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="pending" className="text-center py-2">
-                Pending Applications
-              </TabsTrigger>
-              <TabsTrigger value="active" className="text-center py-2">
-                Active Drivers
-              </TabsTrigger>
-              <TabsTrigger value="history" className="text-center py-2">
-                Delivery History
-              </TabsTrigger>
+            <div className="border-b border-orange-200 px-6 py-2">
+            <TabsList className="grid w-full grid-cols-3 gap-2">
+                <TabsTrigger value="pending" className="text-center py-2 bg-orange-500 text-white rounded-lg font-bold focus:outline-none focus:ring-2 focus:ring-orange-400">
+                  Pending Applications
+                </TabsTrigger>
+                <TabsTrigger value="active" className="text-center py-2 bg-orange-500 text-white rounded-lg font-bold focus:outline-none focus:ring-2 focus:ring-orange-400">
+                  Active Drivers
+                </TabsTrigger>
+                <TabsTrigger value="history" className="text-center py-2 bg-orange-500 text-white rounded-lg font-bold focus:outline-none focus:ring-2 focus:ring-orange-400">
+                  Delivery History
+                </TabsTrigger>
             </TabsList>
           </div>
           

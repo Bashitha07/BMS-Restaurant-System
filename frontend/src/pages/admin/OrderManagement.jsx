@@ -251,14 +251,14 @@ const OrderManagement = () => {
     <div className="p-6 bg-gray-50 min-h-screen">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Order Management</h1>
+  <h1 className="text-3xl font-bold text-orange-500 mb-2">Order Management</h1>
         <p className="text-gray-600">Manage and track all customer orders</p>
       </div>
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
-        <div className="bg-white p-4 rounded-lg shadow">
-          <div className="flex items-center">
+  <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
+  <div className="flex items-center">
             <ClipboardList className="w-8 h-8 text-blue-500" />
             <div className="ml-3">
               <p className="text-sm font-medium text-gray-500">Total Orders</p>
@@ -319,7 +319,7 @@ const OrderManagement = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white p-6 rounded-lg shadow mb-6">
+  <div className="bg-white p-6 rounded-lg shadow mb-6 border border-orange-200">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Search */}
           <div className="relative">
@@ -329,7 +329,7 @@ const OrderManagement = () => {
               placeholder="Search orders, customers..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-orange-500 rounded-full focus:ring-2 focus:ring-orange-500 focus:border-transparent text-black bg-white"
             />
           </div>
 
@@ -339,7 +339,7 @@ const OrderManagement = () => {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none bg-white"
+              className="w-full pl-10 pr-4 py-2 border border-orange-500 rounded-full focus:ring-2 focus:ring-orange-500 focus:border-transparent appearance-none text-black bg-white"
             >
               {orderStatuses.map(status => (
                 <option key={status.value} value={status.value}>{status.label}</option>
@@ -353,7 +353,7 @@ const OrderManagement = () => {
             <select
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent appearance-none bg-white"
+              className="w-full pl-10 pr-4 py-2 border border-orange-500 rounded-full focus:ring-2 focus:ring-orange-500 focus:border-transparent appearance-none text-black bg-white"
             >
               {dateFilters.map(filter => (
                 <option key={filter.value} value={filter.value}>{filter.label}</option>
@@ -365,7 +365,7 @@ const OrderManagement = () => {
           <button
             onClick={loadAllOrders}
             disabled={loading}
-            className="flex items-center justify-center px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors disabled:opacity-50"
+            className="flex items-center justify-center px-4 py-2 bg-orange-500 text-black rounded-full font-bold border border-orange-500 shadow-md hover:bg-orange-600 transition-colors disabled:opacity-50"
           >
             <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh
@@ -374,8 +374,8 @@ const OrderManagement = () => {
       </div>
 
       {/* Orders List */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
+  <div className="bg-white rounded-lg shadow overflow-hidden border border-orange-200">
+  <div className="px-6 py-4 border-b border-orange-200">
           <h2 className="text-lg font-semibold text-gray-900">
             Orders ({filteredOrders.length})
           </h2>
@@ -388,9 +388,9 @@ const OrderManagement = () => {
             <p className="text-gray-600">No orders match your current filters.</p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-200">
+          <div className="divide-y divide-orange-100">
             {filteredOrders.map((order) => (
-              <div key={order.id} className="p-6 hover:bg-gray-50">
+              <div key={order.id} className="p-6 hover:bg-orange-50 border border-orange-200 rounded-lg">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
                     <div>
@@ -402,7 +402,7 @@ const OrderManagement = () => {
                       </p>
                     </div>
                     
-                    <div className={`px-3 py-1 rounded-full text-xs font-medium bg-${getStatusColor(order.status)}-100 text-${getStatusColor(order.status)}-800 flex items-center`}>
+                    <div className={`px-3 py-1 rounded-full text-xs font-bold border ${order.status === 'preparing' ? 'bg-orange-100 text-orange-800 border-orange-500' : order.status === 'pending' ? 'bg-yellow-100 text-yellow-800 border-yellow-500' : order.status === 'confirmed' ? 'bg-blue-100 text-blue-800 border-blue-500' : order.status === 'delivered' ? 'bg-green-100 text-green-800 border-green-500' : order.status === 'cancelled' ? 'bg-red-100 text-red-800 border-red-500' : 'bg-gray-100 text-gray-800 border-gray-300'} flex items-center`}>
                       {getStatusIcon(order.status)}
                       <span className="ml-1 capitalize">{order.status.replace('_', ' ')}</span>
                     </div>
@@ -425,7 +425,7 @@ const OrderManagement = () => {
 
                 {/* Expanded Details */}
                 {expandedOrder === order.id && (
-                  <div className="mt-6 pt-6 border-t border-gray-200">
+                  <div className="mt-6 pt-6 border-t border-orange-100">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {/* Customer Info */}
                       <div>
@@ -484,7 +484,7 @@ const OrderManagement = () => {
                               value={order.status}
                               onChange={(e) => updateOrderStatus(order.id, e.target.value)}
                               disabled={updating}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm"
+                              className="w-full px-3 py-2 border border-orange-500 rounded-full focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm text-black bg-white"
                             >
                               {orderStatuses.filter(s => s.value !== 'all').map(status => (
                                 <option key={status.value} value={status.value}>

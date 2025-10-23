@@ -231,12 +231,12 @@ const PaymentSlipManagement = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900">
+        <h1 className="text-3xl font-bold text-orange-500">
           {userRole === 'ADMIN' ? 'Payment Slip Management' : 'My Payment Slips'}
         </h1>
         <button
           onClick={() => setShowUploadForm(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+          className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow border border-orange-300"
         >
           Upload Payment Slip
         </button>
@@ -256,11 +256,11 @@ const PaymentSlipManagement = () => {
 
       {/* Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white overflow-hidden shadow rounded-lg">
+    <div className="bg-white overflow-hidden shadow rounded-lg border border-orange-200">
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
+                <div className="w-8 h-8 bg-orange-500 rounded-md flex items-center justify-center border border-orange-300">
                   <span className="text-white text-sm">📄</span>
                 </div>
               </div>
@@ -278,7 +278,7 @@ const PaymentSlipManagement = () => {
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-yellow-500 rounded-md flex items-center justify-center">
+                <div className="w-8 h-8 bg-orange-400 rounded-md flex items-center justify-center border border-orange-300">
                   <span className="text-white text-sm">⏳</span>
                 </div>
               </div>
@@ -296,7 +296,7 @@ const PaymentSlipManagement = () => {
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
+                <div className="w-8 h-8 bg-orange-300 rounded-md flex items-center justify-center border border-orange-300">
                   <span className="text-white text-sm">✅</span>
                 </div>
               </div>
@@ -314,7 +314,7 @@ const PaymentSlipManagement = () => {
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-red-500 rounded-md flex items-center justify-center">
+                <div className="w-8 h-8 bg-orange-100 rounded-md flex items-center justify-center border border-orange-300">
                   <span className="text-white text-sm">❌</span>
                 </div>
               </div>
@@ -330,7 +330,7 @@ const PaymentSlipManagement = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white p-6 rounded-lg shadow">
+  <div className="bg-white p-6 rounded-lg shadow border border-orange-200">
         <h3 className="text-lg font-medium text-gray-900 mb-4">Filters</h3>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
@@ -373,7 +373,7 @@ const PaymentSlipManagement = () => {
 
       {/* Bulk Actions - Admin Only */}
       {userRole === 'ADMIN' && selectedSlips.length > 0 && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+  <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <span className="text-sm text-blue-700">
               {selectedSlips.length} payment slip(s) selected
@@ -381,7 +381,7 @@ const PaymentSlipManagement = () => {
             <div className="space-x-2">
               <button
                 onClick={() => handleBulkStatusUpdate('VERIFIED')}
-                className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm"
+                className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded-full text-sm font-bold border border-orange-300"
               >
                 Verify
               </button>
@@ -393,7 +393,7 @@ const PaymentSlipManagement = () => {
               </button>
               <button
                 onClick={() => handleBulkStatusUpdate('PROCESSING')}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
+                className="bg-orange-400 hover:bg-orange-500 text-white px-3 py-1 rounded-full text-sm font-bold border border-orange-300"
               >
                 Mark Processing
               </button>
@@ -409,9 +409,9 @@ const PaymentSlipManagement = () => {
       )}
 
       {/* Payment Slips Table */}
-      <div className="bg-white shadow overflow-hidden sm:rounded-md">
+  <div className="bg-white shadow overflow-hidden sm:rounded-md border border-orange-200">
         <div className="px-4 py-5 sm:px-6">
-          <h3 className="text-lg leading-6 font-medium text-gray-900">Payment Slips</h3>
+          <h3 className="text-lg leading-6 font-medium text-orange-500">Payment Slips</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">

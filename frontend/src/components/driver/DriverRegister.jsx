@@ -83,10 +83,10 @@ const DriverRegister = ({ onRegister, showLogin }) => {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl w-full space-y-8">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-black">
             Join Our Delivery Team
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          <p className="mt-2 text-center text-sm text-black">
             Apply to become a delivery driver and start earning today
           </p>
         </div>
@@ -100,10 +100,10 @@ const DriverRegister = ({ onRegister, showLogin }) => {
 
           {/* Personal Information */}
           <div className="bg-white p-6 rounded-lg shadow-sm border">
-            <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-              <User className="h-5 w-5 mr-2 text-blue-600" />
-              Personal Information
-            </h3>
+              <h3 className="text-lg font-medium text-black mb-4 flex items-center">
+                <User className="h-5 w-5 mr-2 text-orange-500" />
+                Personal Information
+              </h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -117,7 +117,7 @@ const DriverRegister = ({ onRegister, showLogin }) => {
                   value={formData.firstName}
                   onChange={handleChange}
                   required
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="mt-1 block w-full px-3 py-2 border border-orange-500 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-black bg-white"
                 />
               </div>
               
@@ -132,7 +132,7 @@ const DriverRegister = ({ onRegister, showLogin }) => {
                   value={formData.lastName}
                   onChange={handleChange}
                   required
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="mt-1 block w-full px-3 py-2 border border-orange-500 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-black bg-white"
                 />
               </div>
               
@@ -148,7 +148,7 @@ const DriverRegister = ({ onRegister, showLogin }) => {
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    className="block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      className="block w-full px-3 py-2 pl-10 border border-orange-500 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-black bg-white"
                   />
                   <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 </div>
@@ -166,7 +166,7 @@ const DriverRegister = ({ onRegister, showLogin }) => {
                     value={formData.phone}
                     onChange={handleChange}
                     required
-                    className="block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      className="block w-full px-3 py-2 pl-10 border border-orange-500 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-black bg-white"
                   />
                   <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 </div>
@@ -176,10 +176,10 @@ const DriverRegister = ({ onRegister, showLogin }) => {
 
           {/* Account Information */}
           <div className="bg-white p-6 rounded-lg shadow-sm border">
-            <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-              <User className="h-5 w-5 mr-2 text-blue-600" />
-              Account Information
-            </h3>
+              <h3 className="text-lg font-medium text-black mb-4 flex items-center">
+                <User className="h-5 w-5 mr-2 text-orange-500" />
+                Account Information
+              </h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -193,7 +193,7 @@ const DriverRegister = ({ onRegister, showLogin }) => {
                   value={formData.username}
                   onChange={handleChange}
                   required
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full px-3 py-2 border border-orange-500 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-black bg-white"
                 />
               </div>
               
@@ -209,7 +209,7 @@ const DriverRegister = ({ onRegister, showLogin }) => {
                     value={formData.licenseNumber}
                     onChange={handleChange}
                     required
-                    className="block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="block w-full px-3 py-2 pl-10 border border-orange-500 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-black bg-white"
                   />
                   <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 </div>
@@ -227,7 +227,7 @@ const DriverRegister = ({ onRegister, showLogin }) => {
                     value={formData.password}
                     onChange={handleChange}
                     required
-                    className="block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="block w-full px-3 py-2 pr-10 border border-orange-500 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-black bg-white"
                   />
                   <button
                     type="button"
@@ -251,7 +251,7 @@ const DriverRegister = ({ onRegister, showLogin }) => {
                     value={formData.confirmPassword}
                     onChange={handleChange}
                     required
-                    className="block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="block w-full px-3 py-2 pr-10 border border-orange-500 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-black bg-white"
                   />
                   <button
                     type="button"
@@ -267,10 +267,10 @@ const DriverRegister = ({ onRegister, showLogin }) => {
 
           {/* Vehicle Information */}
           <div className="bg-white p-6 rounded-lg shadow-sm border">
-            <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-              <Car className="h-5 w-5 mr-2 text-blue-600" />
-              Vehicle Information
-            </h3>
+              <h3 className="text-lg font-medium text-black mb-4 flex items-center">
+                <Car className="h-5 w-5 mr-2 text-orange-500" />
+                Vehicle Information
+              </h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -283,7 +283,7 @@ const DriverRegister = ({ onRegister, showLogin }) => {
                   value={formData.vehicleType}
                   onChange={handleChange}
                   required
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full px-3 py-2 border border-orange-500 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-black bg-white"
                 >
                   <option value="">Select vehicle type</option>
                   <option value="motorcycle">Motorcycle</option>
@@ -305,7 +305,7 @@ const DriverRegister = ({ onRegister, showLogin }) => {
                   onChange={handleChange}
                   required
                   placeholder="e.g., Honda CB125F"
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full px-3 py-2 border border-orange-500 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-black bg-white"
                 />
               </div>
               
@@ -322,23 +322,7 @@ const DriverRegister = ({ onRegister, showLogin }) => {
                   required
                   min="1990"
                   max={new Date().getFullYear()}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-              
-              <div>
-                <label htmlFor="licensePlate" className="block text-sm font-medium text-gray-700">
-                  License Plate Number *
-                </label>
-                <input
-                  type="text"
-                  id="licensePlate"
-                  name="licensePlate"
-                  value={formData.licensePlate}
-                  onChange={handleChange}
-                  required
-                  placeholder="e.g., ABC-1234"
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full px-3 py-2 border border-orange-500 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-black bg-white"
                 />
               </div>
             </div>
@@ -346,8 +330,8 @@ const DriverRegister = ({ onRegister, showLogin }) => {
 
           {/* Emergency Contact */}
           <div className="bg-white p-6 rounded-lg shadow-sm border">
-            <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-              <Phone className="h-5 w-5 mr-2 text-blue-600" />
+            <h3 className="text-lg font-medium text-black mb-4 flex items-center">
+              <Phone className="h-5 w-5 mr-2 text-orange-500" />
               Emergency Contact
             </h3>
             
@@ -363,7 +347,7 @@ const DriverRegister = ({ onRegister, showLogin }) => {
                   value={formData.emergencyContact}
                   onChange={handleChange}
                   required
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full px-3 py-2 border border-orange-500 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-black bg-white"
                 />
               </div>
               
@@ -378,7 +362,7 @@ const DriverRegister = ({ onRegister, showLogin }) => {
                   value={formData.emergencyPhone}
                   onChange={handleChange}
                   required
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full px-3 py-2 border border-orange-500 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-black bg-white"
                 />
               </div>
             </div>
@@ -389,7 +373,7 @@ const DriverRegister = ({ onRegister, showLogin }) => {
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50"
             >
               {loading ? (
                 <>
@@ -407,26 +391,26 @@ const DriverRegister = ({ onRegister, showLogin }) => {
 
           {/* Back to Login */}
           <div className="text-center">
-            <p className="text-sm text-gray-600">
-              Already have an account?{' '}
-              {showLogin ? (
-                <button
-                  type="button"
-                  onClick={showLogin}
-                  className="font-medium text-blue-600 hover:text-blue-500 focus:outline-none focus:underline"
-                >
-                  Sign in here
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => navigate('/driver/login')}
-                  className="font-medium text-blue-600 hover:text-blue-500 focus:outline-none focus:underline"
-                >
-                  Sign in here
-                </button>
-              )}
-            </p>
+              <p className="text-sm text-black">
+                Already have an account?{' '}
+                {showLogin ? (
+                  <button
+                    type="button"
+                    onClick={showLogin}
+                    className="font-bold text-orange-500 hover:text-black focus:outline-none focus:underline"
+                  >
+                    Sign in here
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => navigate('/driver/login')}
+                    className="font-bold text-orange-500 hover:text-black focus:outline-none focus:underline"
+                  >
+                    Sign in here
+                  </button>
+                )}
+              </p>
           </div>
         </form>
       </div>

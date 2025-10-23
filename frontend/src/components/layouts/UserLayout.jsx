@@ -41,9 +41,7 @@ const UserLayout = ({ children, onCartClick }) => {
 
   // Add admin-specific navigation items for admin users
   const adminNavItems = [
-    { path: '/admin/orders', icon: ClipboardList, label: 'Order Management', public: false, adminOnly: true },
-    { path: '/profile?tab=users', icon: Users, label: 'User Management', public: false, adminOnly: true },
-    { path: '/profile?tab=menu', icon: ChefHat, label: 'Menu Management', public: false, adminOnly: true },
+    { path: '/admin', icon:ClipboardList, label: 'Admin Panel', public: false, adminOnly: true },
   ];
 
   // Check if user is admin (case-insensitive)
@@ -92,13 +90,13 @@ const UserLayout = ({ children, onCartClick }) => {
                 <div className="flex items-center space-x-2">
                   <Link
                     to="/login"
-                    className="text-sm text-primary bg-accent hover:bg-accent/80 px-3 py-1 rounded-md transition-colors font-medium"
+                    className="text-sm text-orange-500 bg-transparent hover:bg-orange-500 hover:text-black px-3 py-1 rounded-md transition-colors font-medium border border-orange-500"
                   >
                     Sign In
                   </Link>
                   <Link
                     to="/register"
-                    className="text-sm text-accent bg-primary border border-accent hover:bg-accent hover:text-primary px-3 py-1 rounded-md transition-colors font-medium"
+                    className="text-sm bg-orange-500 text-black hover:bg-orange-400 px-3 py-1 rounded-md transition-colors font-medium border border-orange-500"
                   >
                     Sign Up
                   </Link>
@@ -112,8 +110,8 @@ const UserLayout = ({ children, onCartClick }) => {
 
       {/* Navigation */}
   <nav className="bg-black shadow-md relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-x-hidden">
+          <div className="flex justify-start items-center space-x-8 w-full">
             {allNavItems
               .filter(item => {
                 // Show public items to everyone
@@ -135,14 +133,17 @@ const UserLayout = ({ children, onCartClick }) => {
                   <Link
                     key={item.path}
                     to={item.path}
-                    className={`flex items-center px-3 py-4 border-b-3 font-semibold text-sm transition-all duration-200 ${
+                    className={`flex items-center px-5 py-2 my-2 rounded-full font-semibold text-sm transition-all duration-200 relative ${
                       isActive
-                        ? 'border-orange-500 text-black bg-orange-500'
-                        : 'border-transparent text-orange-500 hover:text-black hover:border-orange-500 hover:bg-orange-500'
+                        ? 'text-black bg-orange-500 shadow-md'
+                        : 'text-orange-500 hover:text-black hover:bg-orange-500 hover:shadow-md'
                     }`}
+                    style={{ maxWidth: 'fit-content', minWidth: '120px' }}
                   >
-                    <Icon className="h-5 w-5 mr-2" />
-                    {item.label}
+                    <span className="flex items-center justify-center w-full">
+                      <Icon className="h-5 w-5 mr-2" />
+                      {item.label}
+                    </span>
                   </Link>
                 );
               })}

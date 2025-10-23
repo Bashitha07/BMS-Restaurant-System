@@ -134,25 +134,25 @@ function Home() {
       
       {/* Login/Register Section - Only show if user is not logged in */}
       {!user && (
-  <section className="py-16 bg-primary-500 text-white rounded-2xl">
+  <section className="py-16 bg-primary-500 rounded-2xl border-4 border-orange-500 shadow-lg">
           <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-black">
               Join BMS Kingdom of Taste Today!
             </h2>
-            <p className="text-lg md:text-xl mb-8 max-w-3xl mx-auto">
+            <p className="text-lg md:text-xl mb-8 max-w-3xl mx-auto text-black">
               Sign up to unlock exclusive features: track your orders, save your favorite dishes, 
               make reservations, and enjoy personalized recommendations just for you.
             </p>
             <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6">
               <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 max-w-md">
-                <h3 className="text-xl font-semibold mb-3">New Customer?</h3>
-                <p className="text-sm mb-4 opacity-90">
+                <h3 className="text-xl font-semibold mb-3 text-black">New Customer?</h3>
+                <p className="text-sm mb-4 opacity-90 text-black">
                   Create an account to start ordering and enjoy member benefits
                 </p>
                 <Link to="/register">
                   <Button 
                     size="lg"
-                    className="bg-white !text-orange-600 hover:bg-gray-100 w-full font-bold"
+                    className="bg-orange-500 text-black hover:bg-orange-400 w-full font-bold border border-orange-500"
                   >
                     Sign Up Free
                   </Button>
@@ -160,15 +160,14 @@ function Home() {
               </div>
               
               <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 max-w-md">
-                <h3 className="text-xl font-semibold mb-3">Already a Member?</h3>
-                <p className="text-sm mb-4 opacity-90">
+                <h3 className="text-xl font-semibold mb-3 text-black">Already a Member?</h3>
+                <p className="text-sm mb-4 opacity-90 text-black">
                   Sign in to access your account and continue where you left off
                 </p>
                 <Link to="/login">
                   <Button 
                     size="lg"
-                    variant="outline"
-                    className="border-white text-white hover:bg-white hover:text-orange-600 w-full"
+                    className="bg-orange-500 text-black hover:bg-orange-400 w-full font-bold border border-orange-500"
                   >
                     Sign In
                   </Button>
@@ -177,7 +176,7 @@ function Home() {
             </div>
             
             <div className="mt-8 text-sm opacity-80">
-              <p>🎉 Member Benefits: Order Tracking • Favorite Dishes • Priority Reservations • Special Offers</p>
+              <p className="text-black">🎉 Member Benefits: Order Tracking • Favorite Dishes • Priority Reservations • Special Offers</p>
             </div>
           </div>
         </section>
@@ -231,16 +230,16 @@ function Home() {
       
       {/* Call to Action block is now only visible for non-logged-in users */}
       {!user && (
-        <section className="py-16 bg-primary-600 text-white rounded-2xl">
+  <section className="py-16 bg-primary-600 rounded-2xl border-4 border-black shadow-lg">
           <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl font-bold mb-6">Ready to Experience Our Delicious Food?</h2>
-            <p className="text-xl mb-8 max-w-2xl mx-auto">Join us for a memorable dining experience or order online for pickup or delivery.</p>
+            <h2 className="text-3xl font-bold mb-6 text-black">Ready to Experience Our Delicious Food?</h2>
+            <p className="text-xl mb-8 max-w-2xl mx-auto text-black">Join us for a memorable dining experience or order online for pickup or delivery.</p>
             <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
               <Link to="/register">
-                <Button size="lg" className="bg-white !text-[#ff6600] hover:bg-[#ffe5cc] font-bold border-2 border-[#ff6600]">Sign Up & Order</Button>
+                <Button size="lg" className="bg-orange-500 text-black hover:bg-orange-400 font-bold border-2 border-orange-500">Sign Up & Order</Button>
               </Link>
               <Link to="/menu">
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-[#ff6600]">Browse Menu</Button>
+                <Button size="lg" className="bg-orange-500 text-black hover:bg-orange-400 font-bold border-2 border-orange-500">Browse Menu</Button>
               </Link>
             </div>
           </div>

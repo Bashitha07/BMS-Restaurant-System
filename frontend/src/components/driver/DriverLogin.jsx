@@ -39,15 +39,15 @@ const DriverLogin = ({ onLogin, showRegister }) => {
       <div className="max-w-md w-full space-y-8">
         <button
           onClick={() => navigate('/')}
-          className="text-sm text-blue-600 hover:text-blue-500 underline mb-4 text-left"
+          className="text-sm text-orange-500 hover:text-black underline mb-4 text-left font-bold"
         >
           ← Back to Home
         </button>
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-black">
             Driver Sign In
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          <p className="mt-2 text-center text-sm text-black">
             Access your delivery dashboard
           </p>
         </div>
@@ -62,7 +62,7 @@ const DriverLogin = ({ onLogin, showRegister }) => {
                 name="username"
                 type="text"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-orange-500 placeholder-black text-black rounded-t-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm bg-white"
                 placeholder="Username"
                 value={formData.username}
                 onChange={handleChange}
@@ -77,7 +77,7 @@ const DriverLogin = ({ onLogin, showRegister }) => {
                 name="password"
                 type="password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-orange-500 placeholder-black text-black rounded-b-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm bg-white"
                 placeholder="Password"
                 value={formData.password}
                 onChange={handleChange}
@@ -95,7 +95,7 @@ const DriverLogin = ({ onLogin, showRegister }) => {
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+              className="group relative w-full flex justify-center py-2 px-4 border border-orange-500 text-sm font-bold rounded-md text-black bg-orange-500 hover:bg-orange-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50"
             >
               {loading ? 'Signing in...' : 'Sign in'}
             </button>
@@ -103,13 +103,13 @@ const DriverLogin = ({ onLogin, showRegister }) => {
 
           {/* Sign-up link for drivers */}
           <div className="text-center">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-black">
               New driver?{' '}
               {showRegister ? (
                 <button
                   type="button"
                   onClick={showRegister}
-                  className="font-medium text-blue-600 hover:text-blue-500 focus:outline-none focus:underline"
+                  className="font-bold text-orange-500 hover:text-black focus:outline-none focus:underline"
                 >
                   Apply to join our delivery team
                 </button>
@@ -117,14 +117,14 @@ const DriverLogin = ({ onLogin, showRegister }) => {
                 <button
                   type="button"
                   onClick={() => navigate('/driver/register')}
-                  className="font-medium text-blue-600 hover:text-blue-500 focus:outline-none focus:underline"
+                  className="font-bold text-orange-500 hover:text-black focus:outline-none focus:underline"
                 >
                   Apply to join our delivery team
                 </button>
               )}
             </p>
             <p className="mt-2 text-xs text-gray-500">
-              Need help? <a href="/contact" className="text-blue-600 hover:text-blue-500">Contact support</a>
+              {/* Need help? <a href="/contact" className="text-blue-600 hover:text-blue-500">Contact support</a> */}
             </p>
           </div>
         </form>

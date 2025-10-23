@@ -131,17 +131,17 @@ const AdminUserManagement = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
+        <h1 className="text-3xl font-bold text-orange-500">User Management</h1>
         <button
           onClick={() => setShowDriverForm(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+          className="bg-orange-500 hover:bg-orange-600 text-black px-4 py-2 rounded-full text-sm font-bold border border-orange-500 shadow-md transition-colors"
         >
           Register Driver
         </button>
       </div>
 
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+  <div className="bg-orange-100 border border-orange-400 text-orange-700 px-4 py-3 rounded-lg">
           {error}
           <button
             onClick={() => setError('')}
@@ -154,12 +154,12 @@ const AdminUserManagement = () => {
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white overflow-hidden shadow rounded-lg">
+  <div className="bg-white overflow-hidden shadow rounded-xl border-2 border-orange-500">
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <div className="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
-                  <span className="text-white text-sm">👥</span>
+                  <span className="text-orange-500 text-sm">👥</span>
                 </div>
               </div>
               <div className="ml-5 w-0 flex-1">
@@ -177,7 +177,7 @@ const AdminUserManagement = () => {
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <div className="w-8 h-8 bg-red-500 rounded-md flex items-center justify-center">
-                  <span className="text-white text-sm">👑</span>
+                  <span className="text-orange-500 text-sm">👑</span>
                 </div>
               </div>
               <div className="ml-5 w-0 flex-1">
@@ -195,7 +195,7 @@ const AdminUserManagement = () => {
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <div className="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
-                  <span className="text-white text-sm">🚗</span>
+                  <span className="text-orange-500 text-sm">🚗</span>
                 </div>
               </div>
               <div className="ml-5 w-0 flex-1">
@@ -213,7 +213,7 @@ const AdminUserManagement = () => {
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <div className="w-8 h-8 bg-yellow-500 rounded-md flex items-center justify-center">
-                  <span className="text-white text-sm">✅</span>
+                  <span className="text-orange-500 text-sm">✅</span>
                 </div>
               </div>
               <div className="ml-5 w-0 flex-1">
@@ -229,23 +229,23 @@ const AdminUserManagement = () => {
 
       {/* Tabs */}
       <div className="border-b border-gray-200">
-        <nav className="-mb-px flex space-x-8">
+  <nav className="-mb-px flex space-x-8">
           <button
             onClick={() => setActiveTab('users')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+            className={`py-2 px-4 border-b-4 font-bold text-sm rounded-t-lg transition-colors duration-200 ${
               activeTab === 'users'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-orange-500 text-orange-500 bg-white'
+                : 'border-transparent text-orange-500 hover:text-black hover:border-orange-500 hover:bg-orange-100'
             }`}
           >
             Users ({users.length})
           </button>
           <button
             onClick={() => setActiveTab('drivers')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+            className={`py-2 px-4 border-b-4 font-bold text-sm rounded-t-lg transition-colors duration-200 ${
               activeTab === 'drivers'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-orange-500 text-orange-500 bg-white'
+                : 'border-transparent text-orange-500 hover:text-black hover:border-orange-500 hover:bg-orange-100'
             }`}
           >
             Drivers ({drivers.length})
@@ -255,7 +255,7 @@ const AdminUserManagement = () => {
 
       {/* Users Table */}
       {activeTab === 'users' && (
-        <div className="bg-white shadow overflow-hidden sm:rounded-md">
+  <div className="bg-white shadow overflow-hidden sm:rounded-xl border-2 border-orange-500">
           <div className="px-4 py-5 sm:px-6">
             <h3 className="text-lg leading-6 font-medium text-gray-900">Users</h3>
             <p className="mt-1 max-w-2xl text-sm text-gray-500">
@@ -265,37 +265,37 @@ const AdminUserManagement = () => {
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
-                <tr>
+                <tr className="bg-orange-100">
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    User
+                    <span className="text-orange-500">User</span>
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Role
+                    <span className="text-orange-500">Role</span>
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
+                    <span className="text-orange-500">Status</span>
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
+                    <span className="text-orange-500">Actions</span>
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {users.map((user) => (
-                  <tr key={user.id}>
+                  <tr key={user.id} className="hover:bg-orange-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
-                        <div className="text-sm font-medium text-gray-900">{user.username}</div>
-                        <div className="text-sm text-gray-500">{user.email}</div>
+                        <div className="text-sm font-bold text-black">{user.username}</div>
+                        <div className="text-sm text-orange-500">{user.email}</div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(user.role)}`}>
+                      <span className={`px-2 py-1 rounded-full text-xs font-bold border border-orange-500 ${getRoleColor(user.role)}`}>
                         {user.role}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(user.enabled)}`}>
+                      <span className={`px-2 py-1 rounded-full text-xs font-bold border border-orange-500 ${getStatusColor(user.enabled)}`}>
                         {user.enabled ? 'Active' : 'Disabled'}
                       </span>
                     </td>
@@ -303,7 +303,7 @@ const AdminUserManagement = () => {
                       <select
                         value={user.role}
                         onChange={(e) => handleUpdateUserRole(user.id, e.target.value)}
-                        className="text-xs border border-gray-300 rounded px-2 py-1"
+                        className="text-xs border border-orange-500 rounded-full px-2 py-1 bg-white text-black font-bold"
                       >
                         <option value="USER">USER</option>
                         <option value="ADMIN">ADMIN</option>
@@ -311,17 +311,17 @@ const AdminUserManagement = () => {
                       </select>
                       <button
                         onClick={() => handleUpdateUserStatus(user.id, !user.enabled)}
-                        className={`px-2 py-1 text-xs rounded ${
+                        className={`px-2 py-1 text-xs rounded-full font-bold border ${
                           user.enabled
-                            ? 'bg-red-100 text-red-700 hover:bg-red-200'
-                            : 'bg-green-100 text-green-700 hover:bg-green-200'
+                            ? 'bg-orange-100 text-orange-700 border-orange-500 hover:bg-orange-200'
+                            : 'bg-orange-100 text-orange-700 border-orange-500 hover:bg-orange-200'
                         }`}
                       >
                         {user.enabled ? 'Disable' : 'Enable'}
                       </button>
                       <button
                         onClick={() => handleDeleteUser(user.id)}
-                        className="bg-red-100 text-red-700 hover:bg-red-200 px-2 py-1 text-xs rounded"
+                        className="bg-orange-100 text-orange-700 hover:bg-orange-200 px-2 py-1 text-xs rounded-full font-bold border border-orange-500"
                       >
                         Delete
                       </button>
@@ -336,7 +336,7 @@ const AdminUserManagement = () => {
 
       {/* Drivers Table */}
       {activeTab === 'drivers' && (
-        <div className="bg-white shadow overflow-hidden sm:rounded-md">
+  <div className="bg-white shadow overflow-hidden sm:rounded-xl border-2 border-orange-500">
           <div className="px-4 py-5 sm:px-6">
             <h3 className="text-lg leading-6 font-medium text-gray-900">Drivers</h3>
             <p className="mt-1 max-w-2xl text-sm text-gray-500">
@@ -346,18 +346,18 @@ const AdminUserManagement = () => {
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
-                <tr>
+                <tr className="bg-orange-100">
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Driver
+                    <span className="text-orange-500">Driver</span>
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Vehicle
+                    <span className="text-orange-500">Vehicle</span>
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
+                    <span className="text-orange-500">Status</span>
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Stats
+                    <span className="text-orange-500">Stats</span>
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
