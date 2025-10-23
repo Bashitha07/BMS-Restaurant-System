@@ -28,7 +28,7 @@ export default function MenuItem({ item }) {
   const decrementQuantity = () => setQuantity(prev => prev > 1 ? prev - 1 : 1);
 
   return (
-    <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-200 hover:-translate-y-1 group">
+  <div className="bg-black rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-200 hover:-translate-y-1 group border-2 border-orange-500">
       <div className="relative overflow-hidden">
         <FoodImage
           src={item.imageUrl || item.image}

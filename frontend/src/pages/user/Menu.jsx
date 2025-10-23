@@ -78,12 +78,11 @@ const Menu = () => {
 
   return (
     <div className="bg-white min-h-screen">
-      <div className="bg-primary-600 text-white py-12 rounded-2xl">
+      <div className="bg-black py-12 rounded-2xl">
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl font-bold mb-4">Our Menu</h1>
-          <p className="text-indigo-200 max-w-2xl mx-auto">
-            Explore our wide selection of delicious dishes prepared with the
-            freshest ingredients
+          <h1 className="text-4xl font-bold mb-4 text-orange-500">Our Menu</h1>
+          <p className="text-lg max-w-2xl mx-auto text-orange-500">
+            Explore our wide selection of delicious dishes prepared with the freshest ingredients
           </p>
         </div>
       </div>
@@ -138,10 +137,10 @@ const Menu = () => {
         {/* Menu Categories */}
         <div className="flex flex-wrap gap-2 mb-8">
           <button
-            className={`px-4 py-2 rounded-full text-sm ${
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
               selectedCategory === null
-                ? 'bg-purple-600 text-white'
-                : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                ? 'bg-orange-500 text-black shadow-md border-2 border-black'
+                : 'bg-white text-black border-2 border-orange-500 hover:bg-orange-500 hover:text-black'
             }`}
             onClick={() => setSelectedCategory(null)}
           >
@@ -150,10 +149,10 @@ const Menu = () => {
           {menuCategories.map((category) => (
             <button
               key={category}
-              className={`px-4 py-2 rounded-full text-sm ${
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                 selectedCategory === category
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                  ? 'bg-orange-500 text-black shadow-md border-2 border-black'
+                  : 'bg-white text-black border-2 border-orange-500 hover:bg-orange-500 hover:text-black'
               }`}
               onClick={() => setSelectedCategory(category)}
             >

@@ -13,8 +13,8 @@ const CategoryFilter = ({
           onClick={() => onCategorySelect(null)}
           className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
             selectedCategory === null
-              ? 'bg-orange-600 text-white shadow-md'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              ? 'bg-orange-500 text-black shadow-md border-2 border-black'
+              : 'bg-white text-black border-2 border-orange-500 hover:bg-orange-500 hover:text-black'
           }`}
         >
           All Categories
@@ -25,8 +25,8 @@ const CategoryFilter = ({
             onClick={() => onCategorySelect(category)}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
               selectedCategory === category
-                ? 'bg-orange-600 text-white shadow-md'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                ? 'bg-orange-500 text-black shadow-md border-2 border-black'
+                : 'bg-white text-black border-2 border-orange-500 hover:bg-orange-500 hover:text-black'
             }`}
           >
             {category}
