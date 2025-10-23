@@ -38,9 +38,9 @@ export const TabsTrigger = ({ value, className, children, ...props }) => {
       aria-selected={isActive}
       data-state={isActive ? 'active' : 'inactive'}
       onClick={() => onValueChange(value)}
-      className={`tabs-trigger text-sm px-4 py-2 
+      className={`tabs-trigger text-sm px-4 py-2 transition-all duration-200 
         ${isActive 
-          ? 'bg-white border-b-2 border-blue-600 text-blue-600 font-medium' 
+          ? 'bg-blue-800 text-white font-semibold rounded-lg shadow border-none' 
           : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'} 
         ${className || ''}`}
       {...props}

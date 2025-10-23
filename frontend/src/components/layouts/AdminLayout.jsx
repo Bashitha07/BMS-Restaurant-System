@@ -34,18 +34,24 @@ const AdminLayout = ({ children }) => {
   return (
   <div className="min-h-screen bg-white">
       {/* Header */}
-  <header className="bg-primary-500 shadow-sm border-b border-accent-400">
+  <header className="bg-black shadow-sm border-b border-orange-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-accent-400">BMS <span className='text-white'>Kingdom of Taste</span> - Admin Panel</h1>
+              <h1 className="text-2xl font-bold text-orange-500">BMS Kingdom of Taste - Admin Panel</h1>
             </div>
             <div className="flex items-center space-x-4">
               <NotificationDropdown />
-              <span className="text-sm text-gray-800">Welcome, {user?.username}</span>
+              <span className="text-sm text-orange-500 font-semibold">Welcome, {user?.username}</span>
+              <button
+                onClick={() => navigate('/')}
+                className="text-sm bg-black text-orange-500 hover:bg-orange-500 hover:text-black px-3 py-1 rounded-md transition-colors font-medium border border-orange-500"
+              >
+                Exit Admin Panel
+              </button>
               <button
                 onClick={handleLogout}
-                className="text-sm text-white bg-accent-500 hover:bg-accent-400 px-3 py-1 rounded-md transition-colors font-medium"
+                className="text-sm bg-orange-500 text-black hover:bg-orange-400 px-3 py-1 rounded-md transition-colors font-medium"
               >
                 Logout
               </button>
@@ -65,13 +71,9 @@ const AdminLayout = ({ children }) => {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`flex items-center px-1 py-4 border-b-2 font-medium text-sm ${
-                    isActive
-                      ? 'border-accent-400 text-accent-400 bg-white'
-                      : 'border-transparent text-white hover:text-accent-400 hover:border-accent-400 hover:bg-primary-400/60'
-                  }`}
+                  className={`flex items-center px-1 py-4 border-b-2 font-medium text-sm border-transparent text-black bg-white hover:text-orange-500 hover:border-orange-500 hover:bg-orange-100`}
                 >
-                  <Icon className="h-5 w-5 mr-2" />
+                  <Icon className="h-5 w-5 mr-2 text-black" />
                   {item.label}
                 </Link>
               );
@@ -86,12 +88,12 @@ const AdminLayout = ({ children }) => {
       </main>
 
       {/* Footer */}
-      <footer className="bg-primary-500 border-t mt-12">
+  <footer className="bg-black border-t border-orange-500 mt-12">
         <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
-          <div className="text-center text-sm text-white">
+          <div className="text-center text-sm text-orange-500">
             <p>Contact: +94 11 217 1944 | Address: No 187/1/B, Hokandara 10230</p>
             <p>
-              <a href="https://www.facebook.com/share/1749XW4KBV/" target="_blank" rel="noopener noreferrer" className="text-accent-400 underline hover:text-accent-700">
+              <a href="https://www.facebook.com/share/1749XW4KBV/" target="_blank" rel="noopener noreferrer" className="text-orange-500 underline hover:text-orange-400">
                 Facebook
               </a>
             </p>

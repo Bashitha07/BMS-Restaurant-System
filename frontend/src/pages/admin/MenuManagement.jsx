@@ -199,20 +199,20 @@ const MenuManagement = () => {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Menu Management</h1>
+        <h1 className="text-2xl font-bold text-black">Menu Management</h1>
         <button
           onClick={() => setShowForm(!showForm)}
           className="bg-blue-600 text-white px-4 py-2 rounded-md flex items-center"
         >
           {showForm ? (
             <>
-              <XIcon size={16} className="mr-2" />
-              Cancel
+              <XIcon size={16} className="mr-2 text-white" />
+              <span className="text-white">Cancel</span>
             </>
           ) : (
             <>
-              <PlusIcon size={16} className="mr-2" />
-              Add Menu Item
+              <PlusIcon size={16} className="mr-2 text-white" />
+              <span className="text-white">Add Menu Item</span>
             </>
           )}
         </button>
@@ -228,7 +228,7 @@ const MenuManagement = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-black mb-1">
                     Name
                   </label>
                   <input
@@ -246,7 +246,7 @@ const MenuManagement = () => {
                 </div>
 
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-black mb-1">
                     Description
                   </label>
                   <textarea
@@ -265,7 +265,7 @@ const MenuManagement = () => {
 
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-black mb-1">
                       Price (Rs.)
                     </label>
                     <input
@@ -285,7 +285,7 @@ const MenuManagement = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-black mb-1">
                       Category
                     </label>
                     <select
@@ -318,7 +318,7 @@ const MenuManagement = () => {
                     onChange={handleInputChange}
                     className="mr-2"
                   />
-                  <label htmlFor="available" className="text-sm font-medium text-gray-700">
+                  <label htmlFor="available" className="text-sm font-medium text-black">
                     Available for ordering
                   </label>
                 </div>
@@ -326,7 +326,7 @@ const MenuManagement = () => {
 
               <div>
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-black mb-1">
                     Image
                   </label>
                   <div className="flex items-center mb-2">

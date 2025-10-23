@@ -713,8 +713,8 @@ export default function OrderHistory() {
               }
             </p>
             <button
-              onClick={() => navigate('/menu')}
-              className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+            onClick={() => navigate('/menu')}
+            className="px-6 py-3 bg-primary-500 text-white rounded-lg hover:bg-primary-700 transition-colors"
             >
               Browse Menu
             </button>

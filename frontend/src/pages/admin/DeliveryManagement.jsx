@@ -35,7 +35,7 @@ const DeliveryManagement = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Delivery Driver Management</h1>
+        <h1 className="text-2xl font-bold text-black">Delivery Driver Management</h1>
       </div>
 
       {/* Stats Cards */}
@@ -45,8 +45,8 @@ const DeliveryManagement = () => {
             <Clock className="h-6 w-6 text-yellow-600" />
           </div>
           <div>
-            <p className="text-sm text-gray-500">Pending Applications</p>
-            <p className="text-2xl font-bold">{stats.pendingCount}</p>
+            <p className="text-sm font-medium text-black">Pending Applications</p>
+            <p className="text-2xl font-bold text-black">{stats.pendingCount}</p>
           </div>
         </div>
         
@@ -55,8 +55,8 @@ const DeliveryManagement = () => {
             <Truck className="h-6 w-6 text-green-600" />
           </div>
           <div>
-            <p className="text-sm text-gray-500">Active Drivers</p>
-            <p className="text-2xl font-bold">{stats.activeCount}</p>
+            <p className="text-sm font-medium text-black">Active Drivers</p>
+            <p className="text-2xl font-bold text-black">{stats.activeCount}</p>
           </div>
         </div>
         
@@ -65,8 +65,8 @@ const DeliveryManagement = () => {
             <CheckCircle className="h-6 w-6 text-blue-600" />
           </div>
           <div>
-            <p className="text-sm text-gray-500">Completed Deliveries</p>
-            <p className="text-2xl font-bold">{stats.completedCount}</p>
+            <p className="text-sm font-medium text-black">Completed Deliveries</p>
+            <p className="text-2xl font-bold text-black">{stats.completedCount}</p>
           </div>
         </div>
         
@@ -75,8 +75,8 @@ const DeliveryManagement = () => {
             <XCircle className="h-6 w-6 text-red-600" />
           </div>
           <div>
-            <p className="text-sm text-gray-500">Rejected Applications</p>
-            <p className="text-2xl font-bold">{stats.rejectedCount}</p>
+            <p className="text-sm font-medium text-black">Rejected Applications</p>
+            <p className="text-2xl font-bold text-black">{stats.rejectedCount}</p>
           </div>
         </div>
       </div>
