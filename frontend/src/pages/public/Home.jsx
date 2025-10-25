@@ -78,6 +78,7 @@ function Home() {
             {[
               {
                 title: 'Appetizers',
+                category: 'Appetizers',
                 image:
                   'https://images.unsplash.com/photo-1541014741259-de529411b96a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80',
                 description:
@@ -85,6 +86,7 @@ function Home() {
               },
               {
                 title: 'Main Courses',
+                category: 'Main Course',
                 image:
                   'https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80',
                 description:
@@ -92,12 +94,14 @@ function Home() {
               },
               {
                 title: 'Desserts',
+                category: 'Desserts',
                 image:
                   'https://images.unsplash.com/photo-1563805042-7684c019e1cb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1548&q=80',
                 description: 'Sweet treats to perfectly end your meal.',
               },
               {
                 title: 'Drinks',
+                category: 'Beverages',
                 image:
                   'https://images.unsplash.com/photo-1595981267035-7b04ca84a82d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80',
                 description: 'Refreshing beverages for every occasion.',
@@ -120,7 +124,7 @@ function Home() {
                   </h3>
                   <p className="text-gray-600 mb-4">{category.description}</p>
                   <Link
-                    to="/menu"
+                    to={`/menu?category=${encodeURIComponent(category.category)}`}
                     className="text-orange-600 font-medium hover:underline"
                   >
                     View Items →

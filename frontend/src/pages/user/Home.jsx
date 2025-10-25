@@ -44,7 +44,7 @@ const Home = () => {
 
   const handleAddToCart = (itemId) => {
     const item = menuItems.find((item) => item.id === itemId);
-    if (item && item.available) {
+    if (item && item.isAvailable) {
       const q = Number(itemQuantities[itemId]);
       addItem(item, Number.isFinite(q) && q > 0 ? q : 1);
     }
@@ -160,12 +160,12 @@ const Home = () => {
                 <div
                   key={item.id}
                   className={`bg-white rounded-2xl shadow-md overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl ${
-                    !item.available ? 'opacity-60' : ''
+                    !item.isAvailable ? 'opacity-60' : ''
                   }`}
                 >
                   <div className="h-56 overflow-hidden relative">
                     <FoodImage
-                      src={item.image}
+                      src={item.imageUrl}
                       alt={item.name}
                       category={item.category}
                       className="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
@@ -180,13 +180,13 @@ const Home = () => {
                       <span className="text-lg font-bold text-purple-700">{formatPrice(item.price)}</span>
                       <button
                         onClick={() => handleAddToCart(item.id)}
-                        disabled={!item.available}
+                        disabled={!item.isAvailable}
                         className={`flex items-center gap-1 px-4 py-2 rounded-full transition-all duration-300 ${
-                          item.available ? 'bg-purple-600 text-white hover:bg-purple-700 transform hover:scale-105' : 'bg-gray-300 cursor-not-allowed'
+                          item.isAvailable ? 'bg-purple-600 text-white hover:bg-purple-700 transform hover:scale-105' : 'bg-gray-300 cursor-not-allowed'
                         }`}
                       >
                         <PlusIcon size={18} />
-                        {item.available ? 'Add to Cart' : 'Unavailable'}
+                        {item.isAvailable ? 'Add to Cart' : 'Unavailable'}
                       </button>
                     </div>
                   </div>

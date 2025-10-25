@@ -69,6 +69,12 @@ public class DeliveryDriverController {
         return ResponseEntity.ok(deliveryDriverService.getPendingDrivers());
     }
 
+    @GetMapping("/active")
+    public ResponseEntity<List<DeliveryDriverDTO>> getActiveDrivers() {
+        logger.info("Fetching active delivery drivers");
+        return ResponseEntity.ok(deliveryDriverService.getActiveDrivers());
+    }
+
     @PostMapping("/{id}/approve")
     public ResponseEntity<DeliveryDriverDTO> approveDriver(@PathVariable Long id) {
         logger.info("Approving delivery driver with id: {}", id);

@@ -36,7 +36,7 @@ public class Notification {
     private User user; // null for system-wide notifications
 
     @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
 
     @Column(name = "read_at")
     private LocalDateTime readAt;

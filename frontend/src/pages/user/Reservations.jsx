@@ -7,6 +7,8 @@ export default function Reservations() {
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [submitError, setSubmitError] = useState(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
 
   const [formData, setFormData] = useState({
     date: '',
@@ -36,28 +38,43 @@ export default function Reservations() {
   };
 
   const handleInputChange = (e) => {
-    const { id, value } = e.target;
-    const fieldName = id.replace('res', '').toLowerCase();
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [fieldName]: value,
+      [name]: value,
     });
+    // Clear errors when user starts typing
+    if (submitError) setSubmitError(null);
+    if (submitSuccess) setSubmitSuccess(false);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // Clear previous messages
+    setSubmitError(null);
+    setSubmitSuccess(false);
+    
+    // Validate required fields
     if (!formData.date || !formData.time || !formData.guests) {
-      alert('Please fill in all required fields');
+      setSubmitError('Please fill in all required fields (Date, Time, and Number of Guests)');
+      return;
+    }
+
+    // Validate special requests length (optional but good UX)
+    if (formData.specialRequests && formData.specialRequests.length > 500) {
+      setSubmitError('Special requests must be less than 500 characters');
       return;
     }
 
     try {
+      // Combine date and time into ISO format datetime
+      const dateTimeString = `${formData.date}T${formData.time}:00`;
+      
       const reservationData = {
-        reservationDate: formData.date,
-        reservationTime: formData.time,
-        partySize: parseInt(formData.guests),
-        specialRequests: formData.specialRequests || '',
+        reservationDateTime: dateTimeString,
+        numberOfPeople: parseInt(formData.guests),
+        specialRequests: formData.specialRequests?.trim() || '',
         status: 'PENDING'
       };
 
@@ -65,7 +82,7 @@ export default function Reservations() {
       const response = await axios.post('/api/reservations', reservationData);
       console.log('Reservation created:', response.data);
       
-      alert('Reservation submitted successfully! Awaiting confirmation.');
+      setSubmitSuccess(true);
       
       // Reset form
       setFormData({
@@ -77,9 +94,51 @@ export default function Reservations() {
       
       // Refresh reservations list
       fetchReservations();
+      
+      // Auto-hide success message after 5 seconds
+      setTimeout(() => setSubmitSuccess(false), 5000);
     } catch (err) {
       console.error('Failed to create reservation:', err);
-      alert('Failed to submit reservation. Please try again.');
+      
+      // Extract detailed error message from API response
+      let errorMessage = 'Failed to submit reservation. Please try again.';
+      
+      if (err.response) {
+        // Server responded with error
+        const status = err.response.status;
+        const data = err.response.data;
+        
+        if (status === 400) {
+          // Validation error
+          if (data.message) {
+            errorMessage = data.message;
+          } else if (data.errors) {
+            // Handle field-specific errors
+            const fieldErrors = Object.entries(data.errors)
+              .map(([field, msg]) => `${field}: ${msg}`)
+              .join(', ');
+            errorMessage = `Validation error: ${fieldErrors}`;
+          } else {
+            errorMessage = 'Invalid reservation data. Please check your inputs.';
+          }
+        } else if (status === 401) {
+          errorMessage = 'You must be logged in to make a reservation.';
+        } else if (status === 404) {
+          errorMessage = 'Reservation service not found. Please contact support.';
+        } else if (status === 409) {
+          errorMessage = 'This time slot is no longer available. Please choose another time.';
+        } else if (status === 500) {
+          errorMessage = data.message || 'Server error. Please try again later or contact support.';
+        }
+      } else if (err.request) {
+        // Request made but no response
+        errorMessage = 'Cannot connect to server. Please check your internet connection.';
+      } else {
+        // Error in request setup
+        errorMessage = err.message || 'An unexpected error occurred.';
+      }
+      
+      setSubmitError(errorMessage);
     }
   };
 
@@ -115,19 +174,19 @@ export default function Reservations() {
 
   if (loading) {
     return (
-  <div className="min-h-screen bg-black py-12 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 py-12 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500 mx-auto"></div>
-          <p className="mt-4 text-orange-400">Loading reservations...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+          <p className="mt-4 text-orange-600 font-medium">Loading reservations...</p>
         </div>
       </div>
     );
   }
 
   return (
-  <div className="min-h-screen bg-black py-12">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 py-12">
       <div className="container mx-auto px-4">
-        <h1 className="text-3xl font-bold mb-8 text-center">Table Reservations</h1>
+        <h1 className="text-3xl font-bold mb-8 text-center text-orange-600">Table Reservations</h1>
         
         {error && (
           <div className="mb-6 p-4 bg-red-100 text-red-700 rounded-lg">
@@ -143,19 +202,19 @@ export default function Reservations() {
 
         {/* Current Reservations */}
         <div className="mb-12">
-          <h2 className="text-2xl font-semibold mb-6">Your Reservations</h2>
+          <h2 className="text-2xl font-semibold mb-6 text-orange-600">Your Reservations</h2>
           {reservations.length === 0 ? (
-            <div className="text-center py-8 bg-black rounded-lg shadow-sm border-2 border-orange-500">
-              <p className="text-orange-400">You don't have any reservations yet.</p>
+            <div className="text-center py-8 bg-white rounded-lg shadow-md border border-orange-200">
+              <p className="text-gray-600">You don't have any reservations yet.</p>
             </div>
           ) : (
             <div className="grid gap-6 md:grid-cols-2">
               {reservations
                 .filter((res) => res.status?.toLowerCase() !== 'cancelled')
                 .map((reservation) => (
-                  <div key={reservation.id} className="bg-black rounded-lg shadow-sm p-6 border-2 border-orange-500">
+                  <div key={reservation.id} className="bg-white rounded-lg shadow-md p-6 border border-orange-200 hover:shadow-lg transition-shadow">
                     <div className="flex justify-between items-start mb-4">
-                      <h3 className="font-medium text-lg">Reservation #{reservation.id}</h3>
+                      <h3 className="font-medium text-lg text-gray-800">Reservation #{reservation.id}</h3>
                       <span
                         className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusClass(
                           reservation.status
@@ -165,8 +224,8 @@ export default function Reservations() {
                       </span>
                     </div>
                     <div className="space-y-3 mb-6">
-                      <div className="flex items-center text-white">
-                        <CalendarIcon size={18} className="mr-2 text-indigo-500" />
+                      <div className="flex items-center text-gray-700">
+                        <CalendarIcon size={18} className="mr-2 text-orange-500" />
                         <span>
                           {new Date(reservation.reservationDate).toLocaleDateString('en-US', {
                             weekday: 'long',
@@ -176,26 +235,26 @@ export default function Reservations() {
                           })}
                         </span>
                       </div>
-                      <div className="flex items-center text-white">
-                        <ClockIcon size={18} className="mr-2 text-indigo-500" />
+                      <div className="flex items-center text-gray-700">
+                        <ClockIcon size={18} className="mr-2 text-orange-500" />
                         <span>{reservation.reservationTime || 'Not set'}</span>
                       </div>
-                      <div className="flex items-center text-white">
-                        <UsersIcon size={18} className="mr-2 text-indigo-500" />
+                      <div className="flex items-center text-gray-700">
+                        <UsersIcon size={18} className="mr-2 text-orange-500" />
                         <span>
                           {reservation.partySize} {reservation.partySize === 1 ? 'Guest' : 'Guests'}
                         </span>
                       </div>
                       {reservation.specialRequests && (
-                        <div className="text-sm text-orange-400 mt-2">
-                          <strong>Special Requests:</strong> {reservation.specialRequests}
+                        <div className="text-sm text-gray-600 mt-2 bg-orange-50 p-3 rounded-md">
+                          <strong className="text-orange-600">Special Requests:</strong> {reservation.specialRequests}
                         </div>
                       )}
                     </div>
                     {reservation.status?.toLowerCase() === 'pending' && (
                       <button
                         onClick={() => cancelReservation(reservation.id)}
-                        className="flex items-center text-red-500 hover:text-orange-500 transition-colors"
+                        className="flex items-center text-red-500 hover:text-red-700 transition-colors"
                       >
                         <TrashIcon size={16} className="mr-1" />
                         <span>Cancel Reservation</span>
@@ -207,21 +266,53 @@ export default function Reservations() {
           )}
         </div>
         {/* New Reservation Form */}
-  <div className="bg-black rounded-lg shadow-sm p-6 md:p-8 border-2 border-orange-500">
-          <h2 className="text-2xl font-semibold mb-6 text-center">Book a New Reservation</h2>
+        <div className="bg-white rounded-lg shadow-md p-6 md:p-8 border border-orange-200">
+          <h2 className="text-2xl font-semibold mb-6 text-center text-orange-600">Book a New Reservation</h2>
+          
+          {/* Success Message */}
+          {submitSuccess && (
+            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-start">
+                <svg className="w-5 h-5 text-green-500 mt-0.5 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
+                </svg>
+                <div>
+                  <h3 className="text-sm font-medium text-green-800">Reservation Submitted Successfully!</h3>
+                  <p className="text-sm text-green-700 mt-1">Your reservation is awaiting confirmation. We'll notify you once it's confirmed.</p>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Error Message */}
+          {submitError && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <div className="flex items-start">
+                <svg className="w-5 h-5 text-red-500 mt-0.5 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd"/>
+                </svg>
+                <div>
+                  <h3 className="text-sm font-medium text-red-800">Reservation Failed</h3>
+                  <p className="text-sm text-red-700 mt-1">{submitError}</p>
+                </div>
+              </div>
+            </div>
+          )}
+          
           <form onSubmit={handleSubmit} className="max-w-md mx-auto">
             <div className="grid gap-6 mb-6">
               <div>
                 <label
-                  htmlFor="resDate"
-                  className="block text-sm font-medium text-orange-400 mb-1"
+                  htmlFor="date"
+                  className="block text-sm font-medium text-gray-700 mb-1"
                 >
                   Date
                 </label>
                 <input
                   type="date"
-                  id="resDate"
-                  className="w-full px-3 py-2 border border-orange-500 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 bg-black text-white"
+                  id="date"
+                  name="date"
+                  className="w-full px-3 py-2 border border-orange-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-gray-900"
                   required
                   min={new Date().toISOString().split('T')[0]}
                   value={formData.date}
@@ -230,14 +321,15 @@ export default function Reservations() {
               </div>
               <div>
                 <label
-                  htmlFor="resTime"
-                  className="block text-sm font-medium text-orange-400 mb-1"
+                  htmlFor="time"
+                  className="block text-sm font-medium text-gray-700 mb-1"
                 >
                   Time
                 </label>
                 <select
-                  id="resTime"
-                  className="w-full px-3 py-2 border border-orange-500 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 bg-black text-white"
+                  id="time"
+                  name="time"
+                  className="w-full px-3 py-2 border border-orange-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-gray-900"
                   required
                   value={formData.time}
                   onChange={handleInputChange}
@@ -256,14 +348,15 @@ export default function Reservations() {
               </div>
               <div>
                 <label
-                  htmlFor="resGuests"
+                  htmlFor="guests"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
                   Number of Guests
                 </label>
                 <select
-                  id="resGuests"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  id="guests"
+                  name="guests"
+                  className="w-full px-3 py-2 border border-orange-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-gray-900"
                   required
                   value={formData.guests}
                   onChange={handleInputChange}
@@ -280,26 +373,45 @@ export default function Reservations() {
                 </select>
               </div>
               <div>
-                <label
-                  htmlFor="resSpecialrequests"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Special Requests (Optional)
-                </label>
+                <div className="flex justify-between items-center mb-1">
+                  <label
+                    htmlFor="specialRequests"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Special Requests (Optional)
+                  </label>
+                  <span className={`text-xs ${formData.specialRequests.length > 500 ? 'text-red-600 font-medium' : 'text-gray-500'}`}>
+                    {formData.specialRequests.length}/500
+                  </span>
+                </div>
                 <textarea
-                  id="resSpecialrequests"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  id="specialRequests"
+                  name="specialRequests"
+                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 bg-white text-gray-900 ${
+                    formData.specialRequests.length > 500 
+                      ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
+                      : 'border-orange-300 focus:ring-orange-500 focus:border-orange-500'
+                  }`}
                   rows="3"
+                  maxLength="500"
                   placeholder="Any dietary restrictions, allergies, or special occasions..."
                   value={formData.specialRequests}
                   onChange={handleInputChange}
                 />
+                {formData.specialRequests.length > 450 && (
+                  <p className={`text-xs mt-1 ${formData.specialRequests.length > 500 ? 'text-red-600' : 'text-orange-600'}`}>
+                    {formData.specialRequests.length > 500 
+                      ? 'Special requests must be 500 characters or less' 
+                      : `${500 - formData.specialRequests.length} characters remaining`}
+                  </p>
+                )}
               </div>
             </div>
             <Button
-            type="submit"
-            fullWidth
-            className="bg-blue-600 text-white hover:bg-blue-700"
+              type="submit"
+              fullWidth
+              className="bg-orange-500 text-white hover:bg-orange-600 transition-colors font-medium py-3"
+              disabled={formData.specialRequests.length > 500}
             >
               Book Reservation
             </Button>

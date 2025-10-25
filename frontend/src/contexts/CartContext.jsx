@@ -45,7 +45,7 @@ export const CartProvider = ({ children }) => {
   const addItem = (item, quantity) => {
     const qNum = Number(quantity)
     const safeQuantity = Number.isFinite(qNum) && qNum > 0 ? qNum : 1
-    if (!item.available) {
+    if (!item.isAvailable) {
       toast.error(`${item.name} is currently unavailable`)
       return
     }

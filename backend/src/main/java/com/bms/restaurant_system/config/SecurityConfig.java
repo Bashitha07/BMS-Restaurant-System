@@ -35,6 +35,11 @@ public class SecurityConfig {
                 .requestMatchers("/api/menus/{id}").permitAll()  // View specific menu item
                 .requestMatchers("/api/menus/category/**").permitAll()  // Menu by category
                 
+                // Static resources - no authentication required
+                .requestMatchers("/images/**").permitAll()  // Menu item images
+                .requestMatchers("/uploads/**").permitAll()  // Uploaded files
+                .requestMatchers("/assets/**").permitAll()  // Frontend assets
+                
                 // Admin-only endpoints - require ADMIN role
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/delivery-drivers/pending").permitAll()  // Public can view

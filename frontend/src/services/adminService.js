@@ -43,7 +43,9 @@ const ADMIN_ENDPOINTS = {
 
   // Delivery Driver Management
   DELIVERY_DRIVERS: '/api/admin/drivers',
+  ALL_DRIVERS: '/api/delivery-drivers',
   PENDING_DRIVERS: '/api/delivery-drivers/pending',
+  ACTIVE_DRIVERS: '/api/delivery-drivers/active',
   APPROVE_DRIVER: (id) => `/api/delivery-drivers/${id}/approve`,
   REJECT_DRIVER: (id) => `/api/delivery-drivers/${id}/reject`
 };
@@ -269,9 +271,57 @@ export const adminService = {
     }
   },
 
+  updateReservation: async (id, reservationData) => {
+    try {
+      const response = await axios.put(`${ADMIN_ENDPOINTS.RESERVATION_BY_ID(id)}`, reservationData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || 'Failed to update reservation';
+    }
+  },
+
+  createReservation: async (reservationData) => {
+    try {
+      const response = await axios.post(ADMIN_ENDPOINTS.RESERVATIONS, reservationData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || 'Failed to create reservation';
+    }
+  },
+
+  deleteReservation: async (id) => {
+    try {
+      const response = await axios.delete(ADMIN_ENDPOINTS.RESERVATION_BY_ID(id));
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || 'Failed to delete reservation';
+    }
+  },
+
   updateReservationStatus: async (id, status) => {
     try {
-      const response = await axios.put(ADMIN_ENDPOINTS.RESERVATION_STATUS(id), { status });
+      let response;
+      // Call the appropriate endpoint based on status
+      switch(status) {
+        case 'CONFIRMED':
+          response = await axios.post(ADMIN_ENDPOINTS.CONFIRM_RESERVATION(id), {});
+          break;
+        case 'CANCELLED':
+          response = await axios.post(`/api/admin/reservations/${id}/cancel`, { reason: 'Status updated by admin' });
+          break;
+        case 'SEATED':
+          response = await axios.post(`/api/admin/reservations/${id}/seat`, {});
+          break;
+        case 'COMPLETED':
+          response = await axios.post(`/api/admin/reservations/${id}/complete`, {});
+          break;
+        case 'NO_SHOW':
+          response = await axios.post(`/api/admin/reservations/${id}/no-show`, {});
+          break;
+        default:
+          // For PENDING or any other status, update the reservation directly
+          response = await axios.put(ADMIN_ENDPOINTS.RESERVATION_BY_ID(id), { status });
+      }
       return response.data;
     } catch (error) {
       throw error.response?.data || 'Failed to update reservation status';
@@ -286,6 +336,17 @@ export const adminService = {
       return response.data;
     } catch (error) {
       throw error.response?.data || 'Failed to fetch reservations by date';
+    }
+  },
+
+  getReservationsByDateRange: async (dateRange) => {
+    try {
+      // For now, just fetch all reservations and let the component filter
+      // In the future, backend can implement date range filtering
+      const response = await axios.get(ADMIN_ENDPOINTS.RESERVATIONS);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || 'Failed to fetch reservations by date range';
     }
   },
 
@@ -324,6 +385,35 @@ export const adminService = {
         timestamp: new Date().toISOString()
       });
       throw error.response?.data || 'Failed to fetch orders';
+    }
+  },
+
+  getGroupedOrders: async () => {
+    console.log('🌐 [API] Sending GET request to fetch grouped orders for admin:', {
+      endpoint: '/api/orders/admin/grouped',
+      timestamp: new Date().toISOString()
+    });
+    
+    try {
+      const response = await axios.get('/api/orders/admin/grouped');
+      
+      console.log('✅ [API] Successfully received grouped orders from backend:', {
+        endpoint: '/api/orders/admin/grouped',
+        notDelivered: response.data?.notDelivered?.length || 0,
+        recentlyDelivered: response.data?.recentlyDelivered?.length || 0,
+        others: response.data?.others?.length || 0,
+        timestamp: new Date().toISOString()
+      });
+      
+      return response.data;
+    } catch (error) {
+      console.error('❌ [API] Failed to fetch grouped orders:', {
+        endpoint: '/api/orders/admin/grouped',
+        error: error.message,
+        response: error.response?.data,
+        timestamp: new Date().toISOString()
+      });
+      throw error.response?.data || 'Failed to fetch grouped orders';
     }
   },
 
@@ -408,7 +498,7 @@ export const adminService = {
 
   confirmPaymentSlip: async (id, confirmationData) => {
     try {
-      const response = await axios.put(ADMIN_ENDPOINTS.CONFIRM_PAYMENT(id), confirmationData);
+      const response = await axios.post(ADMIN_ENDPOINTS.CONFIRM_PAYMENT(id), confirmationData);
       return response.data;
     } catch (error) {
       throw error.response?.data || 'Failed to confirm payment slip';
@@ -417,10 +507,61 @@ export const adminService = {
 
   rejectPaymentSlip: async (id, rejectionData) => {
     try {
-      const response = await axios.put(ADMIN_ENDPOINTS.REJECT_PAYMENT(id), rejectionData);
+      const response = await axios.post(ADMIN_ENDPOINTS.REJECT_PAYMENT(id), rejectionData);
       return response.data;
     } catch (error) {
       throw error.response?.data || 'Failed to reject payment slip';
+    }
+  },
+
+  updatePaymentSlipStatus: async (slipId, newStatus, rejectionReason = '') => {
+    try {
+      // Get admin username from localStorage
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const adminUsername = user.username || 'admin';
+      
+      if (newStatus === 'VERIFIED' || newStatus === 'CONFIRMED') {
+        const response = await axios.post(ADMIN_ENDPOINTS.CONFIRM_PAYMENT(slipId), {
+          adminUsername,
+          notes: 'Payment verified'
+        });
+        return response.data;
+      } else if (newStatus === 'REJECTED') {
+        const response = await axios.post(ADMIN_ENDPOINTS.REJECT_PAYMENT(slipId), { 
+          adminUsername,
+          reason: rejectionReason || 'Payment rejected',
+          notes: rejectionReason
+        });
+        return response.data;
+      }
+    } catch (error) {
+      throw error.response?.data || 'Failed to update payment slip status';
+    }
+  },
+
+  bulkUpdatePaymentSlipStatus: async (slipIds, status) => {
+    try {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const adminUsername = user.username || 'admin';
+      
+      const promises = slipIds.map(id => {
+        if (status === 'VERIFIED' || status === 'CONFIRMED') {
+          return axios.post(ADMIN_ENDPOINTS.CONFIRM_PAYMENT(id), {
+            adminUsername,
+            notes: 'Bulk verification'
+          });
+        } else if (status === 'REJECTED') {
+          return axios.post(ADMIN_ENDPOINTS.REJECT_PAYMENT(id), { 
+            adminUsername,
+            reason: 'Bulk rejection',
+            notes: 'Bulk rejection'
+          });
+        }
+      });
+      await Promise.all(promises);
+      return { success: true };
+    } catch (error) {
+      throw error.response?.data || 'Failed to bulk update payment slips';
     }
   },
 
@@ -440,6 +581,26 @@ export const adminService = {
       return response.data;
     } catch (error) {
       console.error('Failed to fetch pending drivers from backend:', error);
+      throw error;
+    }
+  },
+
+  getActiveDrivers: async () => {
+    try {
+      const response = await axios.get(ADMIN_ENDPOINTS.ACTIVE_DRIVERS);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch active drivers from backend:', error);
+      throw error;
+    }
+  },
+
+  getAllDrivers: async () => {
+    try {
+      const response = await axios.get(ADMIN_ENDPOINTS.ALL_DRIVERS);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch all drivers from backend:', error);
       throw error;
     }
   },
@@ -464,17 +625,21 @@ export const adminService = {
     }
   },
 
-  uploadMenuImage: async (file) => {
+  uploadMenuImage: async (file, menuId = null) => {
     console.log('🌐 [API] Uploading menu image:', {
       endpoint: ADMIN_ENDPOINTS.UPLOAD_MENU_IMAGE,
       filename: file.name,
       size: file.size,
+      menuId: menuId,
       timestamp: new Date().toISOString()
     });
 
     try {
       const formData = new FormData();
       formData.append('file', file);
+      if (menuId) {
+        formData.append('menuId', menuId);
+      }
 
       const response = await axios.post(ADMIN_ENDPOINTS.UPLOAD_MENU_IMAGE, formData, {
         headers: {
@@ -485,6 +650,7 @@ export const adminService = {
       console.log('✅ [API] Successfully uploaded menu image:', {
         endpoint: ADMIN_ENDPOINTS.UPLOAD_MENU_IMAGE,
         response: response.data,
+        menuId: menuId,
         timestamp: new Date().toISOString()
       });
 

@@ -54,7 +54,7 @@ public class Reservation {
     private Integer tableNumber;
 
     @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
@@ -97,6 +97,7 @@ public class Reservation {
         if (this.createdAt == null) {
             this.createdAt = LocalDateTime.now();
         }
+        this.updatedAt = LocalDateTime.now(); // Set updated_at on creation too
         // Combine date and time into datetime
         if (this.reservationDate != null && this.reservationTime != null) {
             this.reservationDateTime = this.reservationDate.atTime(this.reservationTime);

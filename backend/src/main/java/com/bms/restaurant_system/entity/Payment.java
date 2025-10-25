@@ -67,7 +67,7 @@ public class Payment {
     private String refundReason;
 
     @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
@@ -92,6 +92,7 @@ public class Payment {
         if (this.createdAt == null) {
             this.createdAt = LocalDateTime.now();
         }
+        this.updatedAt = LocalDateTime.now(); // Set updated_at on creation too
         if (this.submittedDate == null) {
             this.submittedDate = LocalDateTime.now();
         }

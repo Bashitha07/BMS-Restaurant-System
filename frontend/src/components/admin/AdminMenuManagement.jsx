@@ -5,8 +5,10 @@ import FoodImage from '../common/FoodImage';
 import { getBestMatchImage } from '../../utils/specificFoodImages';
 import { menuItems as staticMenuItems } from '../../data/menuData';
 import adminService from '../../services/adminService';
+import { useAuth } from '../../contexts/AuthContext';
 
 const AdminMenuManagement = () => {
+  const { isAdmin } = useAuth();
   const [menuItems, setMenuItems] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -43,19 +45,25 @@ const AdminMenuManagement = () => {
 
   useEffect(() => {
     initializeMenuItems();
-  }, []);
+  }, [isAdmin]);
 
   const initializeMenuItems = async () => {
     try {
       setLoading(true);
-      // Try to fetch from API first, fallback to static data
-      try {
-        const data = await adminService.getAllMenuItems();
-        setMenuItems(data);
-      } catch (apiError) {
-        // Fallback to static menu items
+      // Only try to fetch from API if user is admin
+      if (isAdmin) {
+        try {
+          const data = await adminService.getAllMenuItems();
+          setMenuItems(data);
+        } catch (apiError) {
+          // Fallback to static menu items
+          setMenuItems(staticMenuItems);
+          console.log('Using static menu data as fallback');
+        }
+      } else {
+        // Use static menu items for non-admin users
         setMenuItems(staticMenuItems);
-        console.log('Using static menu data as fallback');
+        console.log('Using static menu data for non-admin user');
       }
     } catch (err) {
       setError('Failed to fetch menu items');
@@ -139,10 +147,13 @@ const AdminMenuManagement = () => {
       price: item.price?.toString() || '',
       category: item.category || 'Pasta',
       available: item.isAvailable ?? true,
-      image: item.image || '',
+      image: item.imageUrl || '',
       portion: item.portion || '',
       prepTime: item.prepTime || '',
-      rating: item.rating || 4.5
+      rating: item.rating || 4.5,
+      ingredients: item.ingredients || '',
+      nutritionalInfo: item.nutritionalInfo || '',
+      preparationMethod: item.preparationMethod || ''
     });
     setShowForm(true);
   };
@@ -290,10 +301,12 @@ const AdminMenuManagement = () => {
 
     setUploadingImage(true);
     try {
-      const response = await adminService.uploadMenuImage(imageFile);
+      // Pass menuId if editing an existing item
+      const menuId = editingItem?.id || null;
+      const response = await adminService.uploadMenuImage(imageFile, menuId);
       const uploadedUrl = response.imageUrl;
       setFormData(prev => ({ ...prev, image: uploadedUrl }));
-      toast.success('Image uploaded successfully!');
+      toast.success(`Image uploaded successfully!${menuId ? ` (menu_image_no${menuId})` : ''}`);
     } catch (error) {
       toast.error('Failed to upload image');
       console.error('Image upload error:', error);
@@ -451,7 +464,7 @@ const AdminMenuManagement = () => {
                   <FoodImage 
                     foodName={item.name}
                     category={item.category}
-                    imageUrl={item.image}
+                    imageUrl={item.imageUrl}
                     className="w-full h-48 object-cover"
                   />
                   <div className="absolute top-2 right-2">

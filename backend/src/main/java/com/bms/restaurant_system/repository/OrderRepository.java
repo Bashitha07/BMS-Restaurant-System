@@ -25,9 +25,14 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     Optional<Long> findOrderIdByDeliveryIdNative(@Param("deliveryId") Long deliveryId);
     
     // New queries for enhanced functionality
-    List<Order> findByUserIdOrderByCreatedAtDesc(Long userId);
+    @Query("SELECT o FROM Order o LEFT JOIN FETCH o.items i LEFT JOIN FETCH i.menu WHERE o.user.id = :userId ORDER BY o.createdAt DESC")
+    List<Order> findByUserIdOrderByCreatedAtDesc(@Param("userId") Long userId);
     
-    List<Order> findByUserId(Long userId);
+    @Query("SELECT o FROM Order o LEFT JOIN FETCH o.items i LEFT JOIN FETCH i.menu WHERE o.user.id = :userId")
+    List<Order> findByUserId(@Param("userId") Long userId);
+    
+    @Query("SELECT DISTINCT o FROM Order o LEFT JOIN FETCH o.items i LEFT JOIN FETCH i.menu LEFT JOIN FETCH o.user ORDER BY o.createdAt DESC")
+    List<Order> findAllWithDetails();
     
     List<Order> findByStatusOrderByCreatedAtDesc(Order.OrderStatus status);
     

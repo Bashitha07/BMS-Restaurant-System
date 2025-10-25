@@ -8,6 +8,7 @@ import { downloadInvoice } from '../../utils/invoiceGenerator';
 import { orderService } from '../../services/api';
 import Invoice from '../../components/common/Invoice';
 import AuthModal from '../../components/auth/AuthModal';
+import DeliveryDistanceValidator from '../../components/common/DeliveryDistanceValidator';
 import { formatPrice } from '../../utils/currency';
 import { 
   CreditCard, 
@@ -57,6 +58,7 @@ const Checkout = () => {
   const [paymentMethod, setPaymentMethod] = useState('cash'); // 'cash' or 'deposit'
   const [depositSlip, setDepositSlip] = useState(null);
   const [depositSlipPreview, setDepositSlipPreview] = useState(null);
+  const [deliveryDistance, setDeliveryDistance] = useState(0);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [showInvoice, setShowInvoice] = useState(false);
@@ -93,6 +95,14 @@ const Checkout = () => {
     else if (!/^[\+]?[0-9\-\(\)\s]*$/.test(deliveryInfo.phone)) newErrors.phone = 'Invalid phone number';
     if (!deliveryInfo.address.trim()) newErrors.address = 'Address is required';
     if (!deliveryInfo.city.trim()) newErrors.city = 'City is required';
+    
+    // Validate delivery distance
+    if (deliveryDistance > 7.0) {
+      newErrors.distance = 'Delivery distance cannot exceed 7km';
+      toast.error('Delivery distance exceeds our maximum delivery range of 7km');
+    } else if (deliveryDistance <= 0) {
+      newErrors.distance = 'Please enter a valid delivery distance';
+    }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -715,6 +725,14 @@ const Checkout = () => {
                         rows="2"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
                         placeholder="Special instructions for delivery..."
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <DeliveryDistanceValidator
+                        distance={deliveryDistance}
+                        onDistanceChange={setDeliveryDistance}
+                        preparationTime={30}
                       />
                     </div>
                   </div>

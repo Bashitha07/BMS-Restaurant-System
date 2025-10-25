@@ -28,7 +28,7 @@ export default function MenuItem({ item }) {
   const decrementQuantity = () => setQuantity(prev => prev > 1 ? prev - 1 : 1);
 
   return (
-  <div className="bg-black rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-200 hover:-translate-y-1 group border-2 border-orange-500">
+  <div className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-200 hover:-translate-y-1 group border-2 border-orange-300">
       <div className="relative overflow-hidden">
         <FoodImage
           src={item.imageUrl || item.image}
@@ -37,8 +37,8 @@ export default function MenuItem({ item }) {
           itemName={item.name}
           className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
         />
-        {!item.available && (
-          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        {!item.isAvailable && (
+          <div className="absolute inset-0 bg-gray-900 bg-opacity-70 flex items-center justify-center">
             <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium">
               Unavailable
             </span>
@@ -53,7 +53,7 @@ export default function MenuItem({ item }) {
           </h3>
         </div>
         
-        <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+        <p className="text-gray-700 text-sm mb-3 line-clamp-2 font-medium">
           {item.description}
         </p>
         
@@ -68,7 +68,7 @@ export default function MenuItem({ item }) {
           </div>
         </div>
 
-        {item.available ? (
+        {item.isAvailable ? (
           <div className="flex items-center justify-between">
             <div className="flex items-center bg-gray-100 rounded-lg border border-gray-200">
               <button

@@ -127,10 +127,35 @@ public class ReservationService {
             reservation.setReservationTime(reservationDTO.reservationDateTime().toLocalTime());
         }
         
-        // Set customer details
-        reservation.setCustomerName(reservationDTO.customerName());
-        reservation.setCustomerEmail(reservationDTO.customerEmail());
-        reservation.setCustomerPhone(reservationDTO.customerPhone());
+        // Set the current authenticated user
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
+        reservation.setUser(user);
+        
+        // Set customer details from DTO if provided, otherwise from authenticated user
+        if (reservationDTO.customerName() != null && !reservationDTO.customerName().isEmpty()) {
+            reservation.setCustomerName(reservationDTO.customerName());
+        } else {
+            // Use username or full name from user entity
+            reservation.setCustomerName(user.getUsername());
+        }
+        
+        if (reservationDTO.customerEmail() != null && !reservationDTO.customerEmail().isEmpty()) {
+            reservation.setCustomerEmail(reservationDTO.customerEmail());
+        } else {
+            // Use email from user entity, or generate a placeholder
+            reservation.setCustomerEmail(user.getEmail() != null ? user.getEmail() : user.getUsername() + "@example.com");
+        }
+        
+        if (reservationDTO.customerPhone() != null && !reservationDTO.customerPhone().isEmpty()) {
+            reservation.setCustomerPhone(reservationDTO.customerPhone());
+        } else {
+            // Use phone from user entity, or set a placeholder
+            reservation.setCustomerPhone(user.getPhone() != null ? user.getPhone() : "N/A");
+        }
+        
         reservation.setSpecialRequests(reservationDTO.specialRequests());
 
         // Assign table number if provided, otherwise assign first available table
@@ -148,13 +173,6 @@ public class ReservationService {
                 throw new RuntimeException("No tables available for the selected time slot");
             }
         }
-
-        // Set the current authenticated user
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
-        reservation.setUser(user);
 
         return reservation;
     }

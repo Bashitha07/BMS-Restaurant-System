@@ -1,147 +1,147 @@
 import React, { useState, createContext, useContext, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { useAuth } from './AuthContext';
+import { notificationService } from '../services/api';
 
 const NotificationContext = createContext(undefined);
 
 export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Clear notifications when user changes (login/logout)
+  const loadNotifications = async () => {
+    if (!user) return;
+    
+    setIsLoading(true);
+    try {
+      console.log('Loading notifications from backend for user:', user.id);
+      const data = await notificationService.getMyNotifications();
+      setNotifications(data || []);
+      console.log(`Loaded ${data?.length || 0} notifications from database`);
+    } catch (error) {
+      // Notifications API not yet implemented on backend, use empty array
+      console.warn('Notification API not available, using empty notifications list');
+      setNotifications([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Load notifications from backend when user logs in
   useEffect(() => {
     if (!user) {
       setNotifications([]); // Clear notifications when user logs out
       return;
     }
 
-    // Load user-specific notifications from localStorage
-    const userNotificationsKey = `notifications_${user.id}`;
-    const savedNotifications = localStorage.getItem(userNotificationsKey);
-    
-    if (savedNotifications) {
-      try {
-        const parsedNotifications = JSON.parse(savedNotifications);
-        setNotifications(parsedNotifications);
-      } catch (error) {
-        console.error('Error parsing saved notifications:', error);
-        setNotifications([]);
-      }
-    } else {
-      // Initialize with empty array for new users
-      setNotifications([]);
-    }
-  }, [user]);
+    let isMounted = true;
 
-  // Save notifications to localStorage whenever they change
-  useEffect(() => {
-    if (user && notifications.length >= 0) {
-      const userNotificationsKey = `notifications_${user.id}`;
-      localStorage.setItem(userNotificationsKey, JSON.stringify(notifications));
-    }
-  }, [notifications, user]);
+    const fetchNotifications = async () => {
+      if (!isMounted) return;
+      await loadNotifications();
+    };
 
-  const addNotification = (message, type = 'info', extra = {}) => {
+    fetchNotifications();
+
+    // Cleanup function to prevent setting state on unmounted component
+    return () => {
+      isMounted = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]); // Only reload when user ID changes
+
+  const addNotification = async (message, type = 'info', extra = {}) => {
     // Only add notifications if user is logged in
     if (!user) return;
 
-    const newNotification = {
-      id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      userId: user.id, // Associate notification with current user
+    // For now, add to local state immediately for real-time feedback
+    const tempNotification = {
+      id: `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      userId: user.id,
       message: String(message),
       type,
+      status: 'UNREAD',
       read: false,
       timestamp: new Date(),
-      originalUserId: extra.originalUserId || user.id, // Track original user for admin view
-      isAdminCopy: extra.isAdminCopy || false,
+      referenceId: extra.referenceId || null,
+      referenceType: extra.referenceType || null,
       ...extra
     };
     
-    setNotifications((prev) => [newNotification, ...prev]);
-    
-    // If this is not an admin copy and user is not admin, also send to admin
-    if (!extra.isAdminCopy && user.role !== 'admin') {
-      broadcastToAdmin(newNotification);
-    }
+    setNotifications((prev) => [tempNotification, ...prev]);
     
     // Show toast for real-time notifications
     if (extra.showToast !== false) {
       toast.success(extra.title || message, { duration: 4000 });
     }
+
+    // TODO: Send to backend when notification API is implemented
+    // try {
+    //   await notificationService.createNotification(tempNotification);
+    //   loadNotifications(); // Reload to get server-assigned ID
+    // } catch (error) {
+    //   console.error('Failed to save notification to backend:', error);
+    // }
   };
 
-  const markAsRead = (id) => {
+  const markAsRead = async (id) => {
+    // Update local state immediately
     setNotifications((prev) =>
       prev.map((notification) =>
-        notification.id === id ? { ...notification, read: true } : notification,
+        notification.id === id 
+          ? { ...notification, read: true, status: 'READ' } 
+          : notification,
+      ),
+    );
+
+    // Update backend
+    try {
+      await notificationService.markAsRead(id);
+    } catch (error) {
+      console.error('Failed to mark notification as read:', error);
+      // Revert on error
+      loadNotifications();
+    }
+  };
+
+  const markAsDismissed = (id) => {
+    setNotifications((prev) =>
+      prev.map((notification) =>
+        notification.id === id 
+          ? { ...notification, status: 'DISMISSED' } 
+          : notification,
       ),
     );
   };
 
-  // Function to broadcast notifications to admin
-  const broadcastToAdmin = (notification) => {
-    // Store notification for admin with special marking
-    const adminNotificationKey = 'notifications_admin_global';
-    const existingAdminNotifications = localStorage.getItem(adminNotificationKey);
-    
-    let adminNotifications = [];
-    if (existingAdminNotifications) {
-      try {
-        adminNotifications = JSON.parse(existingAdminNotifications);
-      } catch (error) {
-        console.error('Error parsing admin notifications:', error);
-      }
+  const deleteNotification = async (id) => {
+    // Update local state immediately
+    setNotifications((prev) => prev.filter((notification) => notification.id !== id));
+
+    // Delete from backend
+    try {
+      await notificationService.deleteNotification(id);
+    } catch (error) {
+      console.error('Failed to delete notification from backend:', error);
+      // Reload on error
+      loadNotifications();
     }
-    
-    const adminNotification = {
-      ...notification,
-      id: `admin_${notification.id}_${Math.random().toString(36).substr(2, 5)}`,
-      isAdminCopy: true,
-      adminMessage: `User notification from ${user.username || user.email}: ${notification.message}`,
-      originalUser: {
-        id: user.id,
-        username: user.username,
-        email: user.email
-      }
-    };
-    
-    adminNotifications.unshift(adminNotification);
-    
-    // Keep only last 100 admin notifications to prevent storage overflow
-    if (adminNotifications.length > 100) {
-      adminNotifications = adminNotifications.slice(0, 100);
-    }
-    
-    localStorage.setItem(adminNotificationKey, JSON.stringify(adminNotifications));
   };
 
-  // Load admin notifications if user is admin
-  useEffect(() => {
-    if (user && user.role === 'admin') {
-      const adminNotificationKey = 'notifications_admin_global';
-      const adminNotifications = localStorage.getItem(adminNotificationKey);
-      
-      if (adminNotifications) {
-        try {
-          const parsedAdminNotifications = JSON.parse(adminNotifications);
-          // Merge admin notifications with personal notifications
-          setNotifications(prev => {
-            const userNotifications = prev.filter(n => !n.isAdminCopy);
-            return [...userNotifications, ...parsedAdminNotifications];
-          });
-        } catch (error) {
-          console.error('Error loading admin notifications:', error);
-        }
-      }
-    }
-  }, [user]);
+  const markAllAsRead = async () => {
+    setNotifications((prev) => prev.map((notification) => ({ 
+      ...notification, 
+      read: true, 
+      status: notification.status === 'UNREAD' ? 'READ' : notification.status 
+    })));
 
-  const markAllAsRead = () => {
-    setNotifications((prev) => prev.map((notification) => ({ ...notification, read: true })));
+    // TODO: Implement backend batch update when API is available
   };
 
   const clearNotifications = () => {
     setNotifications([]);
+    // TODO: Implement backend clear when API is available
   };
 
   const notifySuccess = (message) => {
@@ -177,7 +177,9 @@ export const NotificationProvider = ({ children }) => {
           title: 'Payment Confirmed',
           message: `Your payment for Order #${String(orderId)} has been verified`,
           orderId,
-          userId: user.id
+          userId: user.id,
+          referenceId: orderId,
+          referenceType: 'ORDER'
         };
         break;
       case 'order_preparing':
@@ -186,7 +188,9 @@ export const NotificationProvider = ({ children }) => {
           title: 'Order Being Prepared',
           message: 'Your order is now being prepared in our kitchen',
           orderId,
-          userId: user.id
+          userId: user.id,
+          referenceId: orderId,
+          referenceType: 'ORDER'
         };
         break;
       case 'driver_assigned':
@@ -196,7 +200,9 @@ export const NotificationProvider = ({ children }) => {
           message: `Driver ${String(driverInfo?.name || '')} (${String(driverInfo?.vehicle || '')}) has been assigned`,
           orderId,
           driverInfo,
-          userId: user.id
+          userId: user.id,
+          referenceId: orderId,
+          referenceType: 'ORDER'
         };
         break;
       case 'out_for_delivery':
@@ -206,7 +212,9 @@ export const NotificationProvider = ({ children }) => {
           message: `Your order is on the way! Driver: ${String(driverInfo?.name || '')}`,
           orderId,
           driverInfo,
-          userId: user.id
+          userId: user.id,
+          referenceId: orderId,
+          referenceType: 'ORDER'
         };
         break;
       case 'delivered':
@@ -215,7 +223,9 @@ export const NotificationProvider = ({ children }) => {
           title: 'Order Delivered',
           message: 'Your order has been delivered successfully',
           orderId,
-          userId: user.id
+          userId: user.id,
+          referenceId: orderId,
+          referenceType: 'ORDER'
         };
         break;
       default:
@@ -239,6 +249,8 @@ export const NotificationProvider = ({ children }) => {
           message: `Your reservation #${String(reservationId)} has been confirmed`,
           reservationId,
           userId: user.id,
+          referenceId: reservationId,
+          referenceType: 'RESERVATION',
           ...details
         };
         break;
@@ -249,6 +261,8 @@ export const NotificationProvider = ({ children }) => {
           message: `Your reservation #${String(reservationId)} has been cancelled`,
           reservationId,
           userId: user.id,
+          referenceId: reservationId,
+          referenceType: 'RESERVATION',
           ...details
         };
         break;
@@ -259,6 +273,8 @@ export const NotificationProvider = ({ children }) => {
           message: `Reminder: Your reservation is in 1 hour`,
           reservationId,
           userId: user.id,
+          referenceId: reservationId,
+          referenceType: 'RESERVATION',
           ...details
         };
         break;
@@ -269,9 +285,11 @@ export const NotificationProvider = ({ children }) => {
     addNotification(notification.message, notification.type, notification);
   };
 
-  // Filter notifications to only show user's notifications
-  const userNotifications = user && user.id ? notifications.filter(n => String(n.userId) === String(user.id)) : [];
-  const unreadCount = userNotifications.filter(n => !n.read).length;
+  // Filter notifications to only show user's notifications (exclude dismissed)
+  const userNotifications = user && user.id 
+    ? notifications.filter(n => String(n.userId) === String(user.id) && n.status !== 'DISMISSED') 
+    : [];
+  const unreadCount = userNotifications.filter(n => n.status === 'UNREAD').length;
 
   return (
     <NotificationContext.Provider
@@ -279,6 +297,8 @@ export const NotificationProvider = ({ children }) => {
         notifications: userNotifications, // Return only user-specific notifications
         addNotification,
         markAsRead,
+        markAsDismissed,
+        deleteNotification,
         markAllAsRead,
         clearNotifications,
         notifySuccess,
@@ -288,6 +308,8 @@ export const NotificationProvider = ({ children }) => {
         sendOrderUpdate,
         sendReservationUpdate,
         unreadCount,
+        isLoading,
+        refreshNotifications: loadNotifications // Add refresh function
       }}
     >
       {children}

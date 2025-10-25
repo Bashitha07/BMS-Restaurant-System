@@ -37,7 +37,7 @@ public class OrderService {
 
     // Basic CRUD Operations
     public List<OrderDTO> getAllOrders() {
-        return orderRepository.findAll().stream()
+        return orderRepository.findAllWithDetails().stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
@@ -50,7 +50,7 @@ public class OrderService {
     
     public List<OrderDTO> getOrdersForCurrentUser() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        User currentUser = userRepository.findByEmail(username)
+        User currentUser = userRepository.findByUsername(username)
             .orElseThrow(() -> new ResourceNotFoundException("User not found"));
             
         List<Order> userOrders = orderRepository.findByUserId(currentUser.getId());
@@ -222,6 +222,73 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
+    public Map<String, List<OrderDTO>> getOrdersGroupedForAdmin() {
+        LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
+        List<Order> allOrders = orderRepository.findAll();
+        
+        Map<String, List<OrderDTO>> groupedOrders = new HashMap<>();
+        
+        // Group 1: Not delivered (PENDING, CONFIRMED, PREPARING, READY_FOR_PICKUP, OUT_FOR_DELIVERY)
+        List<OrderDTO> notDelivered = allOrders.stream()
+            .filter(order -> order.getStatus() != Order.OrderStatus.DELIVERED 
+                          && order.getStatus() != Order.OrderStatus.CANCELLED
+                          && order.getStatus() != Order.OrderStatus.REFUNDED)
+            .sorted((o1, o2) -> {
+                LocalDateTime date1 = o1.getCreatedAt() != null ? o1.getCreatedAt() : LocalDateTime.MIN;
+                LocalDateTime date2 = o2.getCreatedAt() != null ? o2.getCreatedAt() : LocalDateTime.MIN;
+                return date2.compareTo(date1);
+            })
+            .map(this::convertToDTO)
+            .collect(Collectors.toList());
+        
+        // Group 2: Delivered in last 7 days
+        List<OrderDTO> recentlyDelivered = allOrders.stream()
+            .filter(order -> {
+                if (order.getStatus() != Order.OrderStatus.DELIVERED) return false;
+                LocalDateTime updated = order.getUpdatedAt() != null ? order.getUpdatedAt() : 
+                                       (order.getCreatedAt() != null ? order.getCreatedAt() : LocalDateTime.MIN);
+                return updated.isAfter(sevenDaysAgo);
+            })
+            .sorted((o1, o2) -> {
+                LocalDateTime date1 = o1.getUpdatedAt() != null ? o1.getUpdatedAt() : 
+                                     (o1.getCreatedAt() != null ? o1.getCreatedAt() : LocalDateTime.MIN);
+                LocalDateTime date2 = o2.getUpdatedAt() != null ? o2.getUpdatedAt() : 
+                                     (o2.getCreatedAt() != null ? o2.getCreatedAt() : LocalDateTime.MIN);
+                return date2.compareTo(date1);
+            })
+            .map(this::convertToDTO)
+            .collect(Collectors.toList());
+        
+        // Group 3: All other orders (old delivered, cancelled, refunded)
+        List<OrderDTO> otherOrders = allOrders.stream()
+            .filter(order -> {
+                if (order.getStatus() == Order.OrderStatus.CANCELLED || 
+                    order.getStatus() == Order.OrderStatus.REFUNDED) return true;
+                
+                if (order.getStatus() == Order.OrderStatus.DELIVERED) {
+                    LocalDateTime updated = order.getUpdatedAt() != null ? order.getUpdatedAt() : 
+                                           (order.getCreatedAt() != null ? order.getCreatedAt() : LocalDateTime.MIN);
+                    return updated.isBefore(sevenDaysAgo) || updated.equals(LocalDateTime.MIN);
+                }
+                return false;
+            })
+            .sorted((o1, o2) -> {
+                LocalDateTime date1 = o1.getUpdatedAt() != null ? o1.getUpdatedAt() : 
+                                     (o1.getCreatedAt() != null ? o1.getCreatedAt() : LocalDateTime.MIN);
+                LocalDateTime date2 = o2.getUpdatedAt() != null ? o2.getUpdatedAt() : 
+                                     (o2.getCreatedAt() != null ? o2.getCreatedAt() : LocalDateTime.MIN);
+                return date2.compareTo(date1);
+            })
+            .map(this::convertToDTO)
+            .collect(Collectors.toList());
+        
+        groupedOrders.put("notDelivered", notDelivered);
+        groupedOrders.put("recentlyDelivered", recentlyDelivered);
+        groupedOrders.put("others", otherOrders);
+        
+        return groupedOrders;
+    }
+
     public Map<String, Object> getOrderStatistics() {
         return Map.of(
             "totalOrders", orderRepository.count(),
@@ -245,10 +312,15 @@ public class OrderService {
                 .map(this::convertPaymentToDTO)
                 .collect(Collectors.toList()) : List.of();
 
+        // Safely get user information with null checks
+        Long userId = order.getUser() != null ? order.getUser().getId() : null;
+        String username = order.getUser() != null ? order.getUser().getUsername() : "Unknown";
+        String userEmail = order.getUser() != null ? order.getUser().getEmail() : "No email";
+
         return new OrderDTO(
                 order.getId(),
                 order.getOrderDate(),
-                order.getStatus().name(),
+                order.getStatus() != null ? order.getStatus().name() : "PENDING",
                 order.getTotalAmount(),
                 order.getSubtotal(),
                 order.getTaxAmount(),
@@ -257,14 +329,14 @@ public class OrderService {
                 order.getDeliveryAddress(),
                 order.getDeliveryPhone(),
                 order.getSpecialInstructions(),
-                order.getOrderType().name(),
+                order.getOrderType() != null ? order.getOrderType().name() : "DELIVERY",
                 order.getEstimatedDeliveryTime(),
                 order.getActualDeliveryTime(),
                 order.getCreatedAt(),
                 order.getUpdatedAt(),
-                order.getUser().getId(),
-                order.getUser().getUsername(),
-                order.getUser().getEmail(),
+                userId,
+                username,
+                userEmail,
                 items,
                 deliveryDTO,
                 payments
@@ -272,13 +344,20 @@ public class OrderService {
     }
 
     private OrderItemDTO convertOrderItemToDTO(OrderItem item) {
+        // Safely get menu information with null checks
+        Long menuId = item.getMenu() != null ? item.getMenu().getId() : null;
+        String menuName = item.getMenu() != null ? item.getMenu().getName() : "Unknown Item";
+        String menuDescription = item.getMenu() != null ? item.getMenu().getDescription() : "";
+        String menuCategory = item.getMenu() != null ? item.getMenu().getCategory() : "";
+        String menuImageUrl = item.getMenu() != null ? item.getMenu().getImageUrl() : "";
+
         return new OrderItemDTO(
                 item.getId(),
-                item.getMenu().getId(),
-                item.getMenu().getName(),
-                item.getMenu().getDescription(),
-                item.getMenu().getCategory(),
-                item.getMenu().getImageUrl(),
+                menuId,
+                menuName,
+                menuDescription,
+                menuCategory,
+                menuImageUrl,
                 item.getQuantity(),
                 item.getUnitPrice(),
                 item.getTotalPrice(),

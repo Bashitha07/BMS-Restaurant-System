@@ -5,16 +5,26 @@ import { menuCategories } from '../../data/menuData';
 import { formatPrice } from "../../utils/currency";
 import FoodImage from "../../components/common/FoodImage";
 import { menuService } from "../../services/api";
+import { useSearchParams } from 'react-router-dom';
 
 const Menu = () => {
   const { addItem } = useCart();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || null);
   const [showAvailableOnly, setShowAvailableOnly] = useState(false);
   const [itemQuantities, setItemQuantities] = useState({});
   const [menuItems, setMenuItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Update selected category when URL parameter changes
+  useEffect(() => {
+    const categoryParam = searchParams.get('category');
+    if (categoryParam) {
+      setSelectedCategory(categoryParam);
+    }
+  }, [searchParams]);
 
   // Fetch menu items from API
   useEffect(() => {
@@ -78,10 +88,10 @@ const Menu = () => {
 
   return (
     <div className="bg-white min-h-screen">
-      <div className="bg-black py-12 rounded-2xl">
+      <div className="bg-gradient-to-r from-orange-50 to-orange-100 py-12 rounded-2xl border-2 border-orange-200">
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl font-bold mb-4 text-orange-500">Our Menu</h1>
-          <p className="text-lg max-w-2xl mx-auto text-orange-500">
+          <h1 className="text-4xl font-bold mb-4 text-orange-600">Our Menu</h1>
+          <p className="text-lg max-w-2xl mx-auto text-gray-700">
             Explore our wide selection of delicious dishes prepared with the freshest ingredients
           </p>
         </div>
@@ -111,7 +121,15 @@ const Menu = () => {
                 />
                 <select
                   value={selectedCategory || ''}
-                  onChange={(e) => setSelectedCategory(e.target.value || null)}
+                  onChange={(e) => {
+                    const category = e.target.value || null;
+                    setSelectedCategory(category);
+                    if (category) {
+                      setSearchParams({ category });
+                    } else {
+                      setSearchParams({});
+                    }
+                  }}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none"
                 >
                   <option value="">All Categories</option>
@@ -142,7 +160,10 @@ const Menu = () => {
                 ? 'bg-orange-500 text-black shadow-md border-2 border-black'
                 : 'bg-white text-black border-2 border-orange-500 hover:bg-orange-500 hover:text-black'
             }`}
-            onClick={() => setSelectedCategory(null)}
+            onClick={() => {
+              setSelectedCategory(null);
+              setSearchParams({});
+            }}
           >
             All
           </button>
@@ -154,7 +175,10 @@ const Menu = () => {
                   ? 'bg-orange-500 text-black shadow-md border-2 border-black'
                   : 'bg-white text-black border-2 border-orange-500 hover:bg-orange-500 hover:text-black'
               }`}
-              onClick={() => setSelectedCategory(category)}
+              onClick={() => {
+                setSelectedCategory(category);
+                setSearchParams({ category });
+              }}
             >
               {category}
             </button>
@@ -178,7 +202,7 @@ const Menu = () => {
               >
                 <div className="h-48 overflow-hidden">
                   <FoodImage
-                    src={item.image}
+                    src={item.imageUrl}
                     alt={item.name}
                     category={item.category}
                     className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
@@ -191,7 +215,7 @@ const Menu = () => {
                       {formatPrice(item.price)}
                     </span>
                   </div>
-                  <p className="text-gray-600 mb-4">{item.description}</p>
+                  <p className="text-gray-800 mb-4 font-medium">{item.description}</p>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <button

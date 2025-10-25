@@ -55,23 +55,23 @@ const UserLayout = ({ children, onCartClick }) => {
   return (
   <div className="min-h-screen bg-white">
       {/* Header */}
-  <header className="bg-black shadow-lg relative">
+  <header className="bg-gradient-to-r from-orange-500 to-orange-600 shadow-lg relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <Link to="/" className="text-2xl font-bold text-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-400 rounded transition-all">
+              <Link to="/" className="text-2xl font-bold text-white focus:outline-none focus:ring-2 focus:ring-orange-300 rounded transition-all">
                 BMS Kingdom of Taste
               </Link>
             </div>
             <div className="flex items-center space-x-4">
               <button 
                 onClick={handleCartClick}
-                className="relative p-2 rounded-lg transition-colors text-orange-500 hover:bg-orange-400 hover:text-black group"
+                className="relative p-2 rounded-lg transition-colors text-white hover:bg-white hover:text-orange-600 group"
                 aria-label="View cart"
               >
-                <ShoppingCart className="h-6 w-6 stroke-orange-500 group-hover:stroke-black group-hover:fill-none" />
+                <ShoppingCart className="h-6 w-6 stroke-white group-hover:stroke-orange-600 group-hover:fill-none" />
                 {getTotalItems() > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-orange-500 text-black text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold shadow-lg border-2 border-black">
+                  <span className="absolute -top-2 -right-2 bg-white text-orange-600 text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold shadow-lg border-2 border-orange-300">
                     {getTotalItems()}
                   </span>
                 )}
@@ -107,11 +107,11 @@ const UserLayout = ({ children, onCartClick }) => {
             </div>
           </div>
         </div>
-        <div className="absolute left-0 bottom-0 w-full h-1 bg-gradient-to-r from-transparent via-accent-400 to-transparent pointer-events-none" />
+        <div className="absolute left-0 bottom-0 w-full h-1 bg-gradient-to-r from-transparent via-orange-400 to-transparent pointer-events-none" />
       </header>
 
       {/* Navigation */}
-  <nav className="bg-black shadow-md relative">
+  <nav className="bg-orange-500 shadow-md relative border-b-2 border-orange-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex space-x-8">
             {allNavItems
@@ -137,8 +137,8 @@ const UserLayout = ({ children, onCartClick }) => {
                     to={item.path}
                     className={`flex items-center px-3 py-4 border-b-3 font-semibold text-sm transition-all duration-200 ${
                       isActive
-                        ? 'border-orange-500 text-black bg-orange-500'
-                        : 'border-transparent text-orange-500 hover:text-black hover:border-orange-500 hover:bg-orange-500'
+                        ? 'border-white text-white bg-orange-600'
+                        : 'border-transparent text-white hover:text-orange-100 hover:border-white hover:bg-orange-600'
                     }`}
                   >
                     <Icon className="h-5 w-5 mr-2" />
@@ -157,13 +157,13 @@ const UserLayout = ({ children, onCartClick }) => {
       </main>
 
       {/* Footer */}
-  <footer className="bg-black border-t-4 border-orange-500 mt-12">
+  <footer className="bg-gradient-to-r from-orange-500 to-orange-600 border-t-4 border-orange-700 mt-12">
         <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-          <div className="text-center text-sm text-orange-500">
-            <p className="mb-2 text-lg font-semibold text-orange-500">BMS Kingdom of taste</p>
+          <div className="text-center text-sm text-white">
+            <p className="mb-2 text-lg font-semibold text-white">BMS Kingdom of taste</p>
             <p className="mb-1">📞 +94 11 217 1944 | 📍 No 187/1/B, Hokandara 10230</p>
             <p>
-              <a href="https://www.facebook.com/share/1749XW4KBV/" target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:text-orange-400 font-medium transition-colors">
+              <a href="https://www.facebook.com/share/1749XW4KBV/" target="_blank" rel="noopener noreferrer" className="text-white hover:text-orange-100 font-medium transition-colors underline">
                 Follow us on Facebook
               </a>
             </p>

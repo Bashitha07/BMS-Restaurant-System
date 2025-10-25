@@ -1,6 +1,6 @@
 import React from 'react';
 
-export function Button({ onClick, variant = 'default', size = 'md', className = '', children, fullWidth = false, isLoading = false, ...props }) {
+export function Button({ onClick, variant = 'default', size = 'md', className = '', children, fullWidth = false, isLoading = false, disabled = false, ...props }) {
   const baseStyles = 'rounded font-semibold focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200 flex items-center justify-center gap-2';
   
   const variants = {
@@ -17,14 +17,14 @@ export function Button({ onClick, variant = 'default', size = 'md', className = 
   };
 
   const widthClass = fullWidth ? 'w-full' : '';
-  const disabledClass = isLoading ? 'opacity-50 cursor-not-allowed' : '';
+  const disabledClass = (isLoading || disabled) ? 'opacity-50 cursor-not-allowed' : '';
   const combinedClassName = `${baseStyles} ${sizes[size] || sizes.md} ${variants[variant] || variants.default} ${widthClass} ${disabledClass} ${className}`;
 
   return (
     <button 
-      onClick={isLoading ? undefined : onClick} 
+      onClick={(isLoading || disabled) ? undefined : onClick} 
       className={combinedClassName} 
-      disabled={isLoading}
+      disabled={isLoading || disabled}
       {...props}
     >
       {isLoading && (

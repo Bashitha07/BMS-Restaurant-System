@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -24,7 +25,14 @@ public class OrderController {
     @GetMapping
     public ResponseEntity<List<OrderDTO>> getAllOrders() {
         logger.info("Fetching all orders");
-        return ResponseEntity.ok(orderService.getAllOrders());
+        try {
+            List<OrderDTO> orders = orderService.getAllOrders();
+            logger.info("Successfully retrieved {} orders", orders.size());
+            return ResponseEntity.ok(orders);
+        } catch (Exception e) {
+            logger.error("Error fetching all orders", e);
+            throw e; // Re-throw to let GlobalExceptionHandler handle it
+        }
     }
 
     @GetMapping("/{id}")
@@ -86,6 +94,22 @@ public class OrderController {
             return ResponseEntity.ok(orders);
         } catch (Exception e) {
             logger.error("Error fetching user orders", e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+    
+    @GetMapping("/admin/grouped")
+    public ResponseEntity<Map<String, List<OrderDTO>>> getOrdersGroupedForAdmin() {
+        logger.info("Fetching grouped orders for admin");
+        try {
+            Map<String, List<OrderDTO>> groupedOrders = orderService.getOrdersGroupedForAdmin();
+            logger.info("Successfully grouped orders - Not Delivered: {}, Recently Delivered: {}, Others: {}", 
+                       groupedOrders.get("notDelivered").size(),
+                       groupedOrders.get("recentlyDelivered").size(),
+                       groupedOrders.get("others").size());
+            return ResponseEntity.ok(groupedOrders);
+        } catch (Exception e) {
+            logger.error("Error fetching grouped orders for admin", e);
             return ResponseEntity.internalServerError().build();
         }
     }

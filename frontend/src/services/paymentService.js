@@ -3,7 +3,9 @@ import api from './api';
 const PAYMENT_ENDPOINTS = {
   UPLOAD: '/api/payment-slips/upload',
   USER_SLIPS: (userId) => `/api/payment-slips/user/${userId}`,
-  SLIP_BY_ID: (id) => `/api/payment-slips/${id}`
+  SLIP_BY_ID: (id) => `/api/payment-slips/${id}`,
+  DOWNLOAD: (id) => `/api/payment-slips/${id}/download`,
+  DELETE: (id) => `/api/payment-slips/${id}`
 };
 
 export const paymentService = {
@@ -38,6 +40,28 @@ export const paymentService = {
       return response.data;
     } catch (error) {
       throw error.response?.data || 'Failed to fetch payment slip';
+    }
+  },
+
+  // Download payment slip
+  downloadPaymentSlip: async (id) => {
+    try {
+      const response = await api.get(PAYMENT_ENDPOINTS.DOWNLOAD(id), {
+        responseType: 'blob'
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || 'Failed to download payment slip';
+    }
+  },
+
+  // Delete payment slip
+  deletePaymentSlip: async (id) => {
+    try {
+      const response = await api.delete(PAYMENT_ENDPOINTS.DELETE(id));
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || 'Failed to delete payment slip';
     }
   }
 };

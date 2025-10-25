@@ -3,6 +3,7 @@ package com.bms.restaurant_system.controller.admin;
 import com.bms.restaurant_system.dto.menu.MenuDTO;
 import com.bms.restaurant_system.dto.menu.MenuItemUpdateDTO;
 import com.bms.restaurant_system.service.menu.MenuService;
+import com.bms.restaurant_system.service.storage.FileStorageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,13 +13,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/admin/menu")
@@ -28,6 +24,9 @@ public class AdminMenuController {
 
     @Autowired
     private MenuService menuService;
+    
+    @Autowired
+    private FileStorageService fileStorageService;
 
     // Get all menu items for admin
     @GetMapping
@@ -136,89 +135,30 @@ public class AdminMenuController {
     @PostMapping("/upload-image")
     public ResponseEntity<?> uploadMenuImage(
             @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "menuId", required = false) Long menuId,
             @RequestParam(value = "category", required = false, defaultValue = "food") String category) {
         
-        logger.info("Admin uploading menu image: {}, category: {}", file.getOriginalFilename(), category);
+        logger.info("Admin uploading menu image: {}, menuId: {}, category: {}", 
+                    file.getOriginalFilename(), menuId, category);
 
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body("File is empty");
         }
 
-        // Validate file type
-        String contentType = file.getContentType();
-        if (contentType == null || !contentType.startsWith("image/")) {
-            return ResponseEntity.badRequest().body("Only image files are allowed");
-        }
-
-        // Validate file size (max 5MB)
-        if (file.getSize() > 5 * 1024 * 1024) {
-            return ResponseEntity.badRequest().body("File size must be less than 5MB");
-        }
-
         try {
-            // Determine the correct subdirectory based on category
-            String subDirectory;
-            switch (category.toLowerCase()) {
-                case "beverage":
-                case "beverages":
-                    subDirectory = "beverages";
-                    break;
-                case "dessert":
-                case "desserts":
-                    subDirectory = "desserts";
-                    break;
-                case "food":
-                default:
-                    subDirectory = "food";
-                    break;
-            }
-            
-            // Create frontend assets directory path - for local development
-            Path frontendDir = Paths.get("frontend/src/assets/images/" + subDirectory);
-            if (!Files.exists(frontendDir)) {
-                Files.createDirectories(frontendDir);
-            }
-            
-            // Create backend static resources path - for production
-            Path backendDir = Paths.get("src/main/resources/static/images/" + subDirectory);
-            if (!Files.exists(backendDir)) {
-                Files.createDirectories(backendDir);
-            }
-
-            // Generate unique filename with a slug from the original name for better SEO
-            String originalFilename = file.getOriginalFilename();
-            String nameWithoutExtension = originalFilename != null && originalFilename.contains(".")
-                ? originalFilename.substring(0, originalFilename.lastIndexOf(".")).toLowerCase()
-                    .replaceAll("[^a-z0-9]", "-") // Replace non-alphanumeric with dash
-                    .replaceAll("-+", "-") // Replace multiple dashes with single dash
-                : "menu-item";
-                
-            String fileExtension = originalFilename != null && originalFilename.contains(".")
-                ? originalFilename.substring(originalFilename.lastIndexOf("."))
-                : ".jpg";
-                
-            String uniqueFilename = nameWithoutExtension + "-" + 
-                UUID.randomUUID().toString().substring(0, 8) + fileExtension;
-
-            // Save file to both locations
-            Path frontendFilePath = frontendDir.resolve(uniqueFilename);
-            Files.copy(file.getInputStream(), frontendFilePath, StandardCopyOption.REPLACE_EXISTING);
-            
-            // Save another copy to backend static resources
-            Path backendFilePath = backendDir.resolve(uniqueFilename);
-            Files.copy(frontendFilePath, backendFilePath, StandardCopyOption.REPLACE_EXISTING);
-
-            // Return the URL that can be accessed by frontend - use the assets relative path for development
-            String imageUrl = "/assets/images/" + subDirectory + "/" + uniqueFilename;
+            // Use FileStorageService for consistent naming
+            String imageUrl = fileStorageService.storeMenuImage(file, menuId);
             logger.info("Menu image uploaded successfully: {}", imageUrl);
 
             return ResponseEntity.ok(Map.of(
                 "imageUrl", imageUrl,
-                "filename", uniqueFilename,
-                "category", subDirectory,
+                "menuId", menuId != null ? menuId : "null",
                 "message", "Image uploaded successfully"
             ));
 
+        } catch (IllegalArgumentException e) {
+            logger.error("Validation error uploading menu image: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         } catch (IOException e) {
             logger.error("Error uploading menu image: {}", e.getMessage());
             return ResponseEntity.status(500).body("Failed to upload image: " + e.getMessage());

@@ -35,9 +35,14 @@ const PaymentSlipManagement = () => {
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     setUserRole(user.role || '');
-    fetchPaymentSlips();
-    fetchStatistics();
-  }, [filters]);
+  }, []);
+
+  useEffect(() => {
+    if (userRole) {
+      fetchPaymentSlips();
+      fetchStatistics();
+    }
+  }, [filters, userRole]);
 
   const fetchPaymentSlips = async () => {
     try {
@@ -53,20 +58,38 @@ const PaymentSlipManagement = () => {
       // Apply filters
       let filteredData = data;
       if (filters.status !== 'ALL') {
-        filteredData = filteredData.filter(slip => slip.status === filters.status);
+        filteredData = filteredData.filter(slip => {
+          // Map frontend filter values to backend status values
+          if (filters.status === 'PENDING_VERIFICATION') {
+            return slip.status === 'PENDING' || slip.status === 'PENDING_VERIFICATION';
+          }
+          if (filters.status === 'VERIFIED') {
+            return slip.status === 'CONFIRMED' || slip.status === 'VERIFIED';
+          }
+          return slip.status === filters.status;
+        });
       }
       if (filters.orderNumber) {
         filteredData = filteredData.filter(slip => 
-          slip.orderNumber?.toLowerCase().includes(filters.orderNumber.toLowerCase())
+          slip.orderId?.toString().includes(filters.orderNumber)
         );
       }
       if (filters.customerName) {
         filteredData = filteredData.filter(slip => 
-          slip.customerName?.toLowerCase().includes(filters.customerName.toLowerCase())
+          slip.userName?.toLowerCase().includes(filters.customerName.toLowerCase())
         );
       }
 
       setPaymentSlips(filteredData);
+      
+      // Calculate statistics from the actual data
+      const stats = {
+        totalPaymentSlips: data.length,
+        pendingSlips: data.filter(s => s.status === 'PENDING' || s.status === 'PENDING_VERIFICATION').length,
+        verifiedSlips: data.filter(s => s.status === 'CONFIRMED' || s.status === 'VERIFIED').length,
+        rejectedSlips: data.filter(s => s.status === 'REJECTED').length
+      };
+      setStatistics(stats);
     } catch (err) {
       setError('Failed to fetch payment slips');
     } finally {
@@ -204,7 +227,9 @@ const PaymentSlipManagement = () => {
   const getStatusColor = (status) => {
     const colors = {
       PENDING_VERIFICATION: 'bg-yellow-100 text-yellow-800',
+      PENDING: 'bg-yellow-100 text-yellow-800',
       VERIFIED: 'bg-green-100 text-green-800',
+      CONFIRMED: 'bg-green-100 text-green-800',
       REJECTED: 'bg-red-100 text-red-800',
       PROCESSING: 'bg-blue-100 text-blue-800'
     };
@@ -451,7 +476,7 @@ const PaymentSlipManagement = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {paymentSlips.map((slip) => {
-                const { date, time } = formatDateTime(slip.paymentDateTime);
+                const { date, time } = formatDateTime(slip.uploadedAt);
                 return (
                   <tr key={slip.id}>
                     {userRole === 'ADMIN' && (
@@ -471,20 +496,20 @@ const PaymentSlipManagement = () => {
                     )}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
-                        <div className="text-sm font-medium text-gray-900">Order #{slip.orderNumber}</div>
-                        <div className="text-sm text-gray-500">{slip.customerName}</div>
-                        <div className="text-sm text-gray-500">Transaction: {slip.transactionId}</div>
+                        <div className="text-sm font-medium text-gray-900">Order #{slip.orderId}</div>
+                        <div className="text-sm text-gray-500">{slip.userName || 'N/A'}</div>
+                        <div className="text-sm text-gray-500">Transaction: {slip.transactionReference}</div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
-                        <div className="text-sm text-gray-900">{slip.paymentMethod?.replace('_', ' ')}</div>
+                        <div className="text-sm text-gray-900">{slip.bankName || 'N/A'}</div>
                         <div className="text-sm text-gray-500">{date}</div>
                         <div className="text-sm text-gray-500">{time}</div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      LKR {slip.amount?.toLocaleString()}
+                      LKR {slip.paymentAmount?.toLocaleString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(slip.status)}`}>

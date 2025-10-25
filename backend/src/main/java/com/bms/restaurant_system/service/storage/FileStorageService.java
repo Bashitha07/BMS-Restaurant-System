@@ -22,8 +22,9 @@ import java.util.UUID;
 public class FileStorageService {
     private static final Logger logger = LoggerFactory.getLogger(FileStorageService.class);
     
-    // Base directory for all images in resources
-    private static final String BASE_UPLOAD_DIR = "src/main/resources/static/images/";
+    // Base directories for all images
+    private static final String BACKEND_UPLOAD_DIR = "src/main/resources/static/images/";
+    private static final String FRONTEND_UPLOAD_DIR = "frontend/src/assets/images/";
     
     // Subdirectories for different types of images
     private static final String PAYMENT_SLIPS_DIR = "payment-slips/";
@@ -48,10 +49,10 @@ public class FileStorageService {
         
         // Create date-based subdirectory (e.g., payment-slips/2025-10/)
         String yearMonth = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
-        String uploadPath = BASE_UPLOAD_DIR + PAYMENT_SLIPS_DIR + yearMonth + "/";
+        String backendPath = BACKEND_UPLOAD_DIR + PAYMENT_SLIPS_DIR + yearMonth + "/";
         
-        // Store file and return URL
-        String filename = storeFile(file, uploadPath, "payment_order_" + orderId);
+        // Store file with specific naming: deposit_slip_order_no{orderId}
+        String filename = storeFileWithOrderId(file, backendPath, orderId);
         String imageUrl = "/images/" + PAYMENT_SLIPS_DIR + yearMonth + "/" + filename;
         
         logger.info("Payment slip stored successfully: {}", imageUrl);
@@ -61,22 +62,45 @@ public class FileStorageService {
     /**
      * Store menu item image
      * @param file The multipart file to store
+     * @param menuId The menu item ID for reference (optional)
      * @return The relative URL path to access the stored file
      * @throws IOException If file storage fails
      */
-    public String storeMenuImage(MultipartFile file) throws IOException {
+    public String storeMenuImage(MultipartFile file, Long menuId) throws IOException {
         logger.info("Storing menu item image: {}", file.getOriginalFilename());
         
         // Validate file
         validateFile(file, MAX_MENU_IMAGE_SIZE, false);
         
-        // Store file in menu directory
-        String uploadPath = BASE_UPLOAD_DIR + MENU_ITEMS_DIR;
-        String filename = storeFile(file, uploadPath, "menu_item");
-        String imageUrl = "/images/" + MENU_ITEMS_DIR + filename;
+        // Store file in both backend and frontend directories
+        String backendPath = BACKEND_UPLOAD_DIR + MENU_ITEMS_DIR;
+        String frontendPath = FRONTEND_UPLOAD_DIR + "food/"; // Menu images go to food folder
+        
+        String filename;
+        if (menuId != null) {
+            filename = storeFileWithMenuId(file, backendPath, menuId);
+            // Also save to frontend for immediate visibility in development
+            storeFileToFrontend(file, frontendPath, filename);
+        } else {
+            filename = storeFile(file, backendPath, "menu_item");
+            storeFileToFrontend(file, frontendPath, filename);
+        }
+        
+        // Return assets path for frontend access during development
+        String imageUrl = "/assets/images/food/" + filename;
         
         logger.info("Menu image stored successfully: {}", imageUrl);
         return imageUrl;
+    }
+    
+    /**
+     * Store menu item image (backward compatibility - auto-generates ID)
+     * @param file The multipart file to store
+     * @return The relative URL path to access the stored file
+     * @throws IOException If file storage fails
+     */
+    public String storeMenuImage(MultipartFile file) throws IOException {
+        return storeMenuImage(file, null);
     }
     
     /**
@@ -112,6 +136,96 @@ public class FileStorageService {
         
         logger.info("File stored at: {}", targetPath);
         return uniqueFilename;
+    }
+    
+    /**
+     * Store file with order-specific naming
+     * @param file The file to store
+     * @param uploadPath The directory path to store the file
+     * @param orderId The order ID for naming
+     * @return The generated filename
+     * @throws IOException If storage fails
+     */
+    private String storeFileWithOrderId(MultipartFile file, String uploadPath, Long orderId) throws IOException {
+        // Create directory if it doesn't exist
+        Path uploadDir = Paths.get(uploadPath);
+        if (!Files.exists(uploadDir)) {
+            Files.createDirectories(uploadDir);
+            logger.info("Created directory: {}", uploadPath);
+        }
+        
+        // Generate filename: deposit_slip_order_no{orderId}
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename == null || originalFilename.isEmpty()) {
+            throw new IllegalArgumentException("File name cannot be null or empty");
+        }
+        
+        String fileExtension = getFileExtension(originalFilename);
+        String specificFilename = String.format("deposit_slip_order_no%d%s", orderId, fileExtension);
+        
+        // Save file
+        Path targetPath = uploadDir.resolve(specificFilename);
+        Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+        
+        logger.info("Payment slip stored at: {} for order ID: {}", targetPath, orderId);
+        return specificFilename;
+    }
+    
+    /**
+     * Store file with menu-specific naming
+     * @param file The file to store
+     * @param uploadPath The directory path to store the file
+     * @param menuId The menu ID for naming
+     * @return The generated filename
+     * @throws IOException If storage fails
+     */
+    private String storeFileWithMenuId(MultipartFile file, String uploadPath, Long menuId) throws IOException {
+        // Create directory if it doesn't exist
+        Path uploadDir = Paths.get(uploadPath);
+        if (!Files.exists(uploadDir)) {
+            Files.createDirectories(uploadDir);
+            logger.info("Created directory: {}", uploadPath);
+        }
+        
+        // Generate filename: menu_image_no{menuId}
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename == null || originalFilename.isEmpty()) {
+            throw new IllegalArgumentException("File name cannot be null or empty");
+        }
+        
+        String fileExtension = getFileExtension(originalFilename);
+        String specificFilename = String.format("menu_image_no%d%s", menuId, fileExtension);
+        
+        // Save file
+        Path targetPath = uploadDir.resolve(specificFilename);
+        Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+        
+        logger.info("Menu image stored at: {} for menu ID: {}", targetPath, menuId);
+        return specificFilename;
+    }
+    
+    /**
+     * Store file to frontend assets directory for development
+     * @param file The file to store
+     * @param frontendPath The frontend directory path
+     * @param filename The filename to use
+     * @throws IOException If storage fails
+     */
+    private void storeFileToFrontend(MultipartFile file, String frontendPath, String filename) throws IOException {
+        try {
+            Path frontendDir = Paths.get(frontendPath);
+            if (!Files.exists(frontendDir)) {
+                Files.createDirectories(frontendDir);
+                logger.info("Created frontend directory: {}", frontendPath);
+            }
+            
+            Path targetPath = frontendDir.resolve(filename);
+            Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+            logger.info("File also saved to frontend at: {}", targetPath);
+        } catch (IOException e) {
+            // Log error but don't fail the upload if frontend save fails
+            logger.warn("Failed to save file to frontend directory: {}", e.getMessage());
+        }
     }
     
     /**
@@ -176,8 +290,13 @@ public class FileStorageService {
                 return false;
             }
             
-            // Convert URL to file path
-            String filePath = fileUrl.replace("/images/", BASE_UPLOAD_DIR);
+            // Convert URL to file path (handle both /images/ and /assets/images/ URLs)
+            String filePath;
+            if (fileUrl.startsWith("/assets/images/")) {
+                filePath = fileUrl.replace("/assets/images/", FRONTEND_UPLOAD_DIR);
+            } else {
+                filePath = fileUrl.replace("/images/", BACKEND_UPLOAD_DIR);
+            }
             Path path = Paths.get(filePath);
             
             if (Files.exists(path)) {
@@ -200,7 +319,12 @@ public class FileStorageService {
      * @return The full file system path
      */
     public Path getFilePath(String fileUrl) {
-        String filePath = fileUrl.replace("/images/", BASE_UPLOAD_DIR);
+        String filePath;
+        if (fileUrl.startsWith("/assets/images/")) {
+            filePath = fileUrl.replace("/assets/images/", FRONTEND_UPLOAD_DIR);
+        } else {
+            filePath = fileUrl.replace("/images/", BACKEND_UPLOAD_DIR);
+        }
         return Paths.get(filePath);
     }
 }

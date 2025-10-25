@@ -148,7 +148,8 @@ export default function OrderHistory() {
       }
       
       // Extract orders data (ensure it's an array)
-      const ordersData = Array.isArray(response.data) ? response.data : [];
+      // API returns array directly, not wrapped in {data: [...]}
+      const ordersData = Array.isArray(response) ? response : [];
       console.log(`Processing ${ordersData.length} orders for user ${user.id}`);
 
       // Process orders with robust error handling for each order
@@ -194,7 +195,7 @@ export default function OrderHistory() {
               name: String(item.name || 'Unknown Item'),
               price: typeof item.price === 'number' ? item.price : 0,
               quantity: typeof item.quantity === 'number' ? item.quantity : 0,
-              image: item.image || null
+              image: item.imageUrl || item.image || null
             })),
             subtotal,
             tax,
@@ -214,18 +215,10 @@ export default function OrderHistory() {
       }).filter(order => order !== null); // Remove any null entries
 
       setOrders(processedOrders);
-      
-      // In development mode, show a message about where data came from
-      if (import.meta.env.DEV) {
-        if (response.fromLocalStorage) {
-          toast.success('Showing orders from local storage');
-        } else if (response.fromMockData) {
-          toast.success('Showing demo orders for development');
-        }
-      }
+      console.log(`Loaded ${processedOrders.length} orders from database`);
     } catch (error) {
-      console.error('Failed to load orders:', error);
-      toast.error('Failed to load order history');
+      console.error('Failed to load orders from backend:', error);
+      toast.error('Failed to load order history from database');
       
       // Set empty orders array as a last resort
       setOrders([]);
@@ -749,10 +742,22 @@ export default function OrderHistory() {
                               {formatDate(orderDate)}
                             </p>
                           </div>
-                          <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-${statusColor}-100 text-${statusColor}-800`}>
-                            <StatusIcon className="w-4 h-4" />
-                            {status.charAt(0).toUpperCase() + status.slice(1)}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-${statusColor}-100 text-${statusColor}-800`}>
+                              <StatusIcon className="w-4 h-4" />
+                              {status.charAt(0).toUpperCase() + status.slice(1)}
+                            </span>
+                            {order.orderType && (
+                              <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${
+                                order.orderType === 'DELIVERY' ? 'bg-blue-100 text-blue-800' :
+                                order.orderType === 'PICKUP' ? 'bg-purple-100 text-purple-800' :
+                                'bg-gray-100 text-gray-800'
+                              }`}>
+                                {order.orderType === 'DELIVERY' ? <Truck className="w-3 h-3" /> : <Package className="w-3 h-3" />}
+                                {order.orderType}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       <div className="text-right">
                         <p className="text-xl font-bold text-purple-600">
@@ -910,6 +915,12 @@ export default function OrderHistory() {
                       <span>Tax (6%)</span>
                       <span>{formatPrice(selectedOrder.tax)}</span>
                     </div>
+                    {selectedOrder.deliveryFee > 0 && (
+                      <div className="flex justify-between">
+                        <span>Delivery Fee</span>
+                        <span>{formatPrice(selectedOrder.deliveryFee)}</span>
+                      </div>
+                    )}
                     <div className="flex justify-between font-bold text-lg pt-2 border-t">
                       <span>Total</span>
                       <span className="text-purple-600">{formatPrice(selectedOrder.total)}</span>
@@ -932,6 +943,11 @@ export default function OrderHistory() {
                         <div className="flex-1">
                           <p className="font-medium">{update.title}</p>
                           <p className="text-sm text-gray-600">{update.description}</p>
+                          {update.actor && (
+                            <p className="text-xs text-indigo-600 mt-1">
+                              By: {update.actor}
+                            </p>
+                          )}
                           <p className="text-xs text-gray-500 mt-1">
                             {formatDate(update.timestamp)}
                           </p>

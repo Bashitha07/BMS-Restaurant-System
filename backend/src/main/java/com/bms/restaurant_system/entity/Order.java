@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -62,7 +63,7 @@ public class Order {
     private LocalDateTime actualDeliveryTime;
 
     @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
@@ -72,13 +73,13 @@ public class Order {
     private User user;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "order", fetch = FetchType.LAZY)
-    private List<OrderItem> items;
+    private List<OrderItem> items = new ArrayList<>();
 
     @OneToOne(mappedBy = "order", fetch = FetchType.LAZY)
     private Delivery delivery;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Payment> payments;
+    private List<Payment> payments = new ArrayList<>();
     
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_status")
@@ -101,9 +102,13 @@ public class Order {
     
     public enum PaymentStatus {
         PENDING,
+        PROCESSING,
+        COMPLETED,
         PAID,
         FAILED,
-        REFUNDED
+        CANCELLED,
+        REFUNDED,
+        PARTIALLY_REFUNDED
     }
 
     public enum OrderType {
@@ -140,6 +145,7 @@ public class Order {
         if (this.createdAt == null) {
             this.createdAt = LocalDateTime.now();
         }
+        this.updatedAt = LocalDateTime.now(); // Set updated_at on creation too
         if (this.orderDate == null) {
             this.orderDate = LocalDateTime.now();
         }

@@ -9,10 +9,31 @@ import { Users, UserCheck, Shield, Eye, Edit, Save, X, ChefHat, Settings, Truck 
 import { useLocation, useNavigate } from 'react-router-dom';
 
 export default function Profile() {
-  const { user, updateProfile } = useAuth();
+  const { user, updateProfile, isAdmin } = useAuth();
   const { notifySuccess, notifyError } = useNotifications();
   const location = useLocation();
   const navigate = useNavigate();
+  
+  // Debug authentication state on component mount
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    console.log('🔐 [AUTH DEBUG] Profile Component Authentication State:', {
+      hasToken: !!token,
+      tokenPreview: token ? `${token.substring(0, 20)}...` : 'NO TOKEN',
+      user: user,
+      storedUser: storedUser ? JSON.parse(storedUser) : 'NO USER',
+      isAdmin: isAdmin,
+      timestamp: new Date().toISOString()
+    });
+    
+    if (!token) {
+      console.error('❌ [AUTH] No authentication token found! User must log in.');
+    }
+    if (!isAdmin && user) {
+      console.warn('⚠️ [AUTH] Current user is not admin. Role:', user.role);
+    }
+  }, [user, isAdmin]);
   
   // Get tab from URL parameters
   const urlParams = new URLSearchParams(location.search);
@@ -35,8 +56,6 @@ export default function Profile() {
   const [selectedRoleFilter, setSelectedRoleFilter] = useState('All');
   const [showAdminSection, setShowAdminSection] = useState(true);
   const [activeTab, setActiveTab] = useState(initialTab); // 'profile', 'users', 'menu'
-
-  const isAdmin = user?.role?.toLowerCase() === 'admin' || user?.role === 'ADMIN';
   
   // Function to handle tab changes and update URL
   const handleTabChange = (tabName) => {

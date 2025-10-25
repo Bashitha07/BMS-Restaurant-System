@@ -32,16 +32,43 @@ const AdminUserManagement = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [usersData, driversData, statsData] = await Promise.all([
-        adminService.getAllUsers(),
-        driverService.getAllDrivers(),
-        adminService.getUserStatistics()
-      ]);
-      setUsers(usersData);
-      setDrivers(driversData);
-      setStatistics(statsData);
+      setError('');
+      
+      console.log('📊 Fetching users...');
+      const usersData = await adminService.getAllUsers();
+      console.log('✅ Users fetched:', usersData);
+      setUsers(usersData || []);
+      
+      try {
+        console.log('📊 Fetching drivers...');
+        // Use the adminService method that fetches all drivers from /api/delivery-drivers
+        const driversData = await adminService.getAllDrivers();
+        console.log('✅ Drivers fetched:', driversData);
+        setDrivers(driversData || []);
+      } catch (driverErr) {
+        console.warn('⚠️ Could not fetch drivers:', driverErr);
+        // Don't fail the whole page if drivers can't be fetched
+        setDrivers([]);
+      }
+      
+      try {
+        console.log('📊 Fetching statistics...');
+        const statsData = await adminService.getUserStatistics();
+        console.log('✅ Statistics fetched:', statsData);
+        setStatistics(statsData || {});
+      } catch (statsErr) {
+        console.warn('⚠️ Could not fetch statistics:', statsErr);
+        setStatistics({
+          totalUsers: usersData?.length || 0,
+          adminUsers: usersData?.filter(u => u.role === 'ADMIN')?.length || 0,
+          totalDrivers: 0,
+          activeUsers: usersData?.filter(u => u.enabled)?.length || 0
+        });
+      }
+      
     } catch (err) {
-      setError('Failed to fetch data');
+      console.error('❌ Error fetching data:', err);
+      setError('Failed to fetch data: ' + (err.message || err));
     } finally {
       setLoading(false);
     }

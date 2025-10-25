@@ -25,46 +25,12 @@ export const menuService = {
 export const orderService = {
   createOrder: async (orderData) => {
     try {
-      // In development, save to localStorage
-      if (import.meta.env.DEV) {
-        const newOrder = {
-          ...orderData,
-          id: `ORD-${Date.now()}`,
-          orderDate: new Date().toISOString(),
-          status: 'pending',
-        };
-        
-        // Get existing orders from localStorage
-        const existingOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-        existingOrders.push(newOrder);
-        localStorage.setItem('orders', JSON.stringify(existingOrders));
-        
-        return { data: newOrder, success: true };
-      }
-      
-      // In production, use the API
+      console.log('Creating order via API:', orderData);
       const response = await axios.post('/api/orders', orderData);
+      console.log('Order created successfully:', response.data);
       return response.data;
     } catch (error) {
-      // If API fails in production, attempt localStorage fallback
-      if (!import.meta.env.DEV) {
-        try {
-          const newOrder = {
-            ...orderData,
-            id: `ORD-${Date.now()}`,
-            orderDate: new Date().toISOString(),
-            status: 'pending',
-          };
-          
-          const existingOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-          existingOrders.push(newOrder);
-          localStorage.setItem('orders', JSON.stringify(existingOrders));
-          
-          return { data: newOrder, success: true };
-        } catch (fallbackError) {
-          console.error('Failed to save order to localStorage:', fallbackError);
-        }
-      }
+      console.error('Failed to create order:', error);
       throw handleAPIError(error);
     }
   },
@@ -250,6 +216,44 @@ export const userService = {
   }
 };
 
+// Notification Service
+export const notificationService = {
+  getAllNotifications: async () => {
+    try {
+      console.log('Fetching notifications from backend...');
+      const response = await axios.get('/api/notifications');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch notifications:', error);
+      throw handleAPIError(error);
+    }
+  },
+  getMyNotifications: async () => {
+    try {
+      const response = await axios.get('/api/notifications/my-notifications');
+      return response.data;
+    } catch (error) {
+      throw handleAPIError(error);
+    }
+  },
+  markAsRead: async (notificationId) => {
+    try {
+      const response = await axios.patch(`/api/notifications/${notificationId}/read`);
+      return response.data;
+    } catch (error) {
+      throw handleAPIError(error);
+    }
+  },
+  deleteNotification: async (notificationId) => {
+    try {
+      const response = await axios.delete(`/api/notifications/${notificationId}`);
+      return response.data;
+    } catch (error) {
+      throw handleAPIError(error);
+    }
+  }
+};
+
 // Function to generate mock orders for development
 // Import mock data helper
 // Mock data generation removed as per requirements
@@ -259,5 +263,9 @@ export default {
   menuService,
   orderService,
   reservationService,
-  userService
+  userService,
+  adminService,
+  paymentService,
+  deliveryService,
+  notificationService
 };

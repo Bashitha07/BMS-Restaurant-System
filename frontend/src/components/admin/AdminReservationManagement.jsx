@@ -47,7 +47,10 @@ const AdminReservationManagement = () => {
   const fetchReservations = async () => {
     try {
       setLoading(true);
+      setError('');
       let data;
+      
+      console.log('📊 Fetching reservations with filters:', filters);
       
       if (filters.dateRange === 'CUSTOM' && filters.date) {
         data = await adminService.getReservationsByDate(filters.date);
@@ -56,6 +59,8 @@ const AdminReservationManagement = () => {
       } else {
         data = await adminService.getAllReservations();
       }
+
+      console.log('✅ Reservations fetched:', data);
 
       // Apply additional filters
       let filteredData = data;
@@ -68,9 +73,11 @@ const AdminReservationManagement = () => {
         );
       }
 
+      console.log('✅ Filtered reservations:', filteredData);
       setReservations(filteredData);
     } catch (err) {
-      setError('Failed to fetch reservations');
+      console.error('❌ Error fetching reservations:', err);
+      setError('Failed to fetch reservations: ' + (err.message || err));
     } finally {
       setLoading(false);
     }
@@ -89,40 +96,49 @@ const AdminReservationManagement = () => {
     e.preventDefault();
     try {
       const submitData = {
-        ...formData,
-        partySize: parseInt(formData.partySize),
+        customerName: formData.customerName,
+        customerEmail: formData.customerEmail,
+        customerPhone: formData.customerPhone,
+        numberOfPeople: parseInt(formData.partySize),
         tableNumber: formData.tableNumber ? parseInt(formData.tableNumber) : null,
-        reservationDateTime: `${formData.reservationDate}T${formData.reservationTime}`
+        reservationDate: formData.reservationDate,
+        reservationTime: formData.reservationTime,
+        specialRequests: formData.specialRequests,
+        status: formData.status
       };
+
+      console.log('📝 Submitting reservation data:', submitData);
 
       if (editingReservation) {
         await adminService.updateReservation(editingReservation.id, submitData);
+        console.log('✅ Reservation updated successfully');
       } else {
         await adminService.createReservation(submitData);
+        console.log('✅ Reservation created successfully');
       }
       
       resetForm();
       fetchReservations();
       fetchStatistics();
     } catch (err) {
-      setError(editingReservation ? 'Failed to update reservation' : 'Failed to create reservation');
+      console.error('❌ Error submitting reservation:', err);
+      setError(editingReservation ? 'Failed to update reservation: ' + (err.message || err) : 'Failed to create reservation: ' + (err.message || err));
     }
   };
 
   const handleEdit = (reservation) => {
     setEditingReservation(reservation);
-    const reservationDateTime = new Date(reservation.reservationDateTime);
     setFormData({
       customerName: reservation.customerName || '',
       customerEmail: reservation.customerEmail || '',
       customerPhone: reservation.customerPhone || '',
-      reservationDate: reservationDateTime.toISOString().split('T')[0],
-      reservationTime: reservationDateTime.toTimeString().slice(0, 5),
-      partySize: reservation.partySize?.toString() || '',
+      reservationDate: reservation.reservationDate || '',
+      reservationTime: reservation.reservationTime || '',
+      partySize: reservation.numberOfPeople?.toString() || '',
       specialRequests: reservation.specialRequests || '',
       status: reservation.status || 'CONFIRMED',
       tableNumber: reservation.tableNumber?.toString() || '',
-      notes: reservation.notes || ''
+      notes: reservation.adminNotes || ''
     });
     setShowForm(true);
   };
@@ -490,7 +506,7 @@ const AdminReservationManagement = () => {
                       <div className="text-sm text-gray-500">{time}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {reservation.partySize} {reservation.partySize === 1 ? 'person' : 'people'}
+                      {reservation.numberOfPeople} {reservation.numberOfPeople === 1 ? 'person' : 'people'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {reservation.tableNumber || 'Not assigned'}

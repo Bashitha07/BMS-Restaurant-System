@@ -27,7 +27,21 @@ const MenuManagement = () => {
     price: '',
     category: '',
     available: true,
-    image: ''
+    image: '',
+    // Dietary information
+    isVegetarian: false,
+    isVegan: false,
+    isGlutenFree: false,
+    isSpicy: false,
+    spiceLevel: 0,
+    // Inventory management
+    stockQuantity: null,
+    lowStockThreshold: 10,
+    // Promotions
+    isFeatured: false,
+    discountPercentage: 0,
+    // Preparation
+    preparationTime: 30
   });
 
   // Fetch menu items
@@ -159,10 +173,24 @@ const MenuManagement = () => {
       description: item.description,
       price: item.price.toString(),
       category: item.category,
-      available: item.available,
-      image: item.image || ''
+      available: item.isAvailable,
+      image: item.imageUrl || '',
+      // Dietary information
+      isVegetarian: item.isVegetarian || false,
+      isVegan: item.isVegan || false,
+      isGlutenFree: item.isGlutenFree || false,
+      isSpicy: item.isSpicy || false,
+      spiceLevel: item.spiceLevel || 0,
+      // Inventory management
+      stockQuantity: item.stockQuantity,
+      lowStockThreshold: item.lowStockThreshold || 10,
+      // Promotions
+      isFeatured: item.isFeatured || false,
+      discountPercentage: item.discountPercentage || 0,
+      // Preparation
+      preparationTime: item.preparationTime || 30
     });
-    setImagePreview(item.image || '');
+    setImagePreview(item.imageUrl || '');
     setEditingItem(item);
     setShowForm(true);
   };
@@ -187,7 +215,21 @@ const MenuManagement = () => {
       price: '',
       category: '',
       available: true,
-      image: ''
+      image: '',
+      // Dietary information
+      isVegetarian: false,
+      isVegan: false,
+      isGlutenFree: false,
+      isSpicy: false,
+      spiceLevel: 0,
+      // Inventory management
+      stockQuantity: null,
+      lowStockThreshold: 10,
+      // Promotions
+      isFeatured: false,
+      discountPercentage: 0,
+      // Preparation
+      preparationTime: 30
     });
     setImageFile(null);
     setImagePreview('');
@@ -309,18 +351,166 @@ const MenuManagement = () => {
                   </div>
                 </div>
 
-                <div className="mb-4 flex items-center">
-                  <input
-                    type="checkbox"
-                    id="available"
-                    name="available"
-                    checked={formData.available}
-                    onChange={handleInputChange}
-                    className="mr-2"
-                  />
-                  <label htmlFor="available" className="text-sm font-medium text-black">
-                    Available for ordering
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="block text-sm font-medium text-black mb-1">
+                      Preparation Time (min)
+                    </label>
+                    <input
+                      type="number"
+                      name="preparationTime"
+                      value={formData.preparationTime}
+                      onChange={handleInputChange}
+                      min="1"
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-black mb-1">
+                      Stock Quantity
+                    </label>
+                    <input
+                      type="number"
+                      name="stockQuantity"
+                      value={formData.stockQuantity || ''}
+                      onChange={handleInputChange}
+                      min="0"
+                      placeholder="Optional"
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="block text-sm font-medium text-black mb-1">
+                      Discount (%)
+                    </label>
+                    <input
+                      type="number"
+                      name="discountPercentage"
+                      value={formData.discountPercentage}
+                      onChange={handleInputChange}
+                      min="0"
+                      max="100"
+                      step="0.01"
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-black mb-1">
+                      Spice Level (0-5)
+                    </label>
+                    <input
+                      type="number"
+                      name="spiceLevel"
+                      value={formData.spiceLevel}
+                      onChange={handleInputChange}
+                      min="0"
+                      max="5"
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                    />
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-black mb-2">
+                    Dietary Options
                   </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="isVegetarian"
+                        name="isVegetarian"
+                        checked={formData.isVegetarian}
+                        onChange={handleInputChange}
+                        className="mr-2"
+                      />
+                      <label htmlFor="isVegetarian" className="text-sm text-gray-700">
+                        🥬 Vegetarian
+                      </label>
+                    </div>
+
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="isVegan"
+                        name="isVegan"
+                        checked={formData.isVegan}
+                        onChange={handleInputChange}
+                        className="mr-2"
+                      />
+                      <label htmlFor="isVegan" className="text-sm text-gray-700">
+                        🌱 Vegan
+                      </label>
+                    </div>
+
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="isGlutenFree"
+                        name="isGlutenFree"
+                        checked={formData.isGlutenFree}
+                        onChange={handleInputChange}
+                        className="mr-2"
+                      />
+                      <label htmlFor="isGlutenFree" className="text-sm text-gray-700">
+                        🌾 Gluten-Free
+                      </label>
+                    </div>
+
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="isSpicy"
+                        name="isSpicy"
+                        checked={formData.isSpicy}
+                        onChange={handleInputChange}
+                        className="mr-2"
+                      />
+                      <label htmlFor="isSpicy" className="text-sm text-gray-700">
+                        🌶️ Spicy
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-black mb-2">
+                    Status & Features
+                  </label>
+                  <div className="space-y-2">
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="available"
+                        name="available"
+                        checked={formData.available}
+                        onChange={handleInputChange}
+                        className="mr-2"
+                      />
+                      <label htmlFor="available" className="text-sm text-gray-700">
+                        ✅ Available for ordering
+                      </label>
+                    </div>
+
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="isFeatured"
+                        name="isFeatured"
+                        checked={formData.isFeatured}
+                        onChange={handleInputChange}
+                        className="mr-2"
+                      />
+                      <label htmlFor="isFeatured" className="text-sm text-gray-700">
+                        ⭐ Featured item
+                      </label>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -423,7 +613,7 @@ const MenuManagement = () => {
               >
                 <div className="h-48 overflow-hidden">
                   <FoodImage
-                    src={item.image}
+                    src={item.imageUrl}
                     alt={item.name}
                     category={item.category}
                     itemName={item.name}
@@ -432,31 +622,80 @@ const MenuManagement = () => {
                 </div>
                 <div className="p-4">
                   <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-bold text-lg">{item.name}</h3>
-                    <span className="font-semibold text-green-600">
-                      {formatPrice(item.price)}
-                    </span>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-lg flex items-center gap-2">
+                        {item.name}
+                        {item.isFeatured && <span className="text-yellow-500">⭐</span>}
+                      </h3>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {item.isVegetarian && (
+                          <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded">
+                            🥬 Veg
+                          </span>
+                        )}
+                        {item.isVegan && (
+                          <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded">
+                            🌱 Vegan
+                          </span>
+                        )}
+                        {item.isGlutenFree && (
+                          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">
+                            🌾 GF
+                          </span>
+                        )}
+                        {item.isSpicy && (
+                          <span className="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded">
+                            🌶️ Spicy {item.spiceLevel > 0 && `(${item.spiceLevel}/5)`}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="font-semibold text-green-600 block">
+                        {formatPrice(item.price)}
+                      </span>
+                      {item.discountPercentage > 0 && (
+                        <span className="text-xs text-orange-600 font-medium">
+                          {item.discountPercentage}% OFF
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                  <p className="text-gray-600 text-sm mb-3 line-clamp-2">
                     {item.description}
                   </p>
+                  {item.preparationTime && (
+                    <p className="text-xs text-gray-500 mb-2">
+                      ⏱️ Prep: {item.preparationTime} min
+                    </p>
+                  )}
+                  {item.stockQuantity !== null && item.stockQuantity !== undefined && (
+                    <p className={`text-xs mb-2 ${
+                      item.stockQuantity <= (item.lowStockThreshold || 10)
+                        ? 'text-orange-600 font-medium'
+                        : 'text-gray-500'
+                    }`}>
+                      📦 Stock: {item.stockQuantity}
+                      {item.stockQuantity <= (item.lowStockThreshold || 10) && ' (Low)'}
+                    </p>
+                  )}
                   <div className="flex justify-between items-center">
                     <span
                       className={`text-xs px-2 py-1 rounded-full ${
-                        item.available
+                        item.isAvailable
                           ? 'bg-green-100 text-green-800'
                           : 'bg-red-100 text-red-800'
                       }`}
                     >
-                      {item.available ? 'Available' : 'Unavailable'}
+                      {item.isAvailable ? 'Available' : 'Unavailable'}
                     </span>
                     <div className="flex space-x-2">
                       <button
-                        onClick={() => toggleAvailability(item.id, item.available)}
+                        onClick={() => toggleAvailability(item.id, item.isAvailable)}
                         className="p-1 rounded-full hover:bg-gray-100"
-                        title={item.available ? 'Mark as unavailable' : 'Mark as available'}
+                        title={item.isAvailable ? 'Mark as unavailable' : 'Mark as available'}
                       >
-                        {item.available ? (
+                        {item.isAvailable ? (
                           <EyeOffIcon size={18} className="text-gray-500" />
                         ) : (
                           <EyeIcon size={18} className="text-gray-500" />

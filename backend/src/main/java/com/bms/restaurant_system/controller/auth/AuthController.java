@@ -44,7 +44,7 @@ public class AuthController {
             String token = jwtUtil.generateToken(user.getUsername(), user.getRole().name());
 
             logger.info("Login successful for user: {}", loginRequest.getUsername());
-            return ResponseEntity.ok(new LoginResponse(token, user.getUsername(), user.getRole().name()));
+            return ResponseEntity.ok(new LoginResponse(user.getId(), token, user.getUsername(), user.getRole().name()));
 
         } catch (AuthenticationException e) {
             logger.warn("Login failed for user: {}", loginRequest.getUsername());

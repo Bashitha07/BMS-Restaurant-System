@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AdminDeliveryDrivers from '../../components/admin/AdminDeliveryDrivers';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/Tabs';
 import { Truck, Users, Clock, CheckCircle, XCircle } from 'lucide-react';
+import adminService from '../../services/adminService';
 
 const DeliveryManagement = () => {
   const [activeTab, setActiveTab] = useState('pending');
@@ -11,25 +12,49 @@ const DeliveryManagement = () => {
     completedCount: 0,
     rejectedCount: 0
   });
+  const [loading, setLoading] = useState(true);
 
-  const updateDriverStats = () => {
-    // In a real implementation, this would fetch actual counts from your API
-    // For now, we'll just decrement the pending count when approving/rejecting
-    setStats(prev => ({
-      ...prev,
-      pendingCount: Math.max(0, prev.pendingCount - 1)
-    }));
+  const fetchDriverStats = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch all driver data in parallel
+      const [pendingDrivers, activeDrivers, allDrivers] = await Promise.all([
+        adminService.getPendingDrivers(),
+        adminService.getActiveDrivers(),
+        adminService.getAllDrivers()
+      ]);
+
+      // Calculate rejected count (drivers that are not pending and not active)
+      const rejectedCount = allDrivers.filter(d => 
+        d.status === 'REJECTED' || (d.status !== 'PENDING' && d.status !== 'APPROVED')
+      ).length;
+
+      // For completed deliveries, we'll sum up all deliveries from all drivers
+      const completedCount = allDrivers.reduce((sum, driver) => {
+        return sum + (driver.totalDeliveries || 0);
+      }, 0);
+
+      setStats({
+        pendingCount: pendingDrivers.length,
+        activeCount: activeDrivers.length,
+        completedCount: completedCount,
+        rejectedCount: rejectedCount
+      });
+    } catch (error) {
+      console.error('Failed to fetch driver statistics:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // In a real implementation, this would fetch counts from your API
+  const updateDriverStats = () => {
+    // Refresh stats when a driver is approved/rejected
+    fetchDriverStats();
+  };
+
   useEffect(() => {
-    // Mock stats - in a real app, you'd fetch these from your API
-    setStats({
-      pendingCount: 3,
-      activeCount: 8,
-      completedCount: 24,
-      rejectedCount: 5
-    });
+    fetchDriverStats();
   }, []);
 
   return (
@@ -46,7 +71,9 @@ const DeliveryManagement = () => {
           </div>
           <div>
             <p className="text-sm font-medium text-black">Pending Applications</p>
-            <p className="text-2xl font-bold text-black">{stats.pendingCount}</p>
+            <p className="text-2xl font-bold text-black">
+              {loading ? '...' : stats.pendingCount}
+            </p>
           </div>
         </div>
         
@@ -56,7 +83,9 @@ const DeliveryManagement = () => {
           </div>
           <div>
             <p className="text-sm font-medium text-black">Active Drivers</p>
-            <p className="text-2xl font-bold text-black">{stats.activeCount}</p>
+            <p className="text-2xl font-bold text-black">
+              {loading ? '...' : stats.activeCount}
+            </p>
           </div>
         </div>
         
@@ -66,7 +95,9 @@ const DeliveryManagement = () => {
           </div>
           <div>
             <p className="text-sm font-medium text-black">Completed Deliveries</p>
-            <p className="text-2xl font-bold text-black">{stats.completedCount}</p>
+            <p className="text-2xl font-bold text-black">
+              {loading ? '...' : stats.completedCount}
+            </p>
           </div>
         </div>
         
@@ -76,7 +107,9 @@ const DeliveryManagement = () => {
           </div>
           <div>
             <p className="text-sm font-medium text-black">Rejected Applications</p>
-            <p className="text-2xl font-bold text-black">{stats.rejectedCount}</p>
+            <p className="text-2xl font-bold text-black">
+              {loading ? '...' : stats.rejectedCount}
+            </p>
           </div>
         </div>
       </div>

@@ -9,6 +9,8 @@ import {
   Clock
 } from 'lucide-react';
 import { formatPrice } from '../../utils/currency';
+import { paymentService } from '../../services/api';
+import axios from '../../utils/axios';
 
 export default function PaymentManagement() {
   const [payments, setPayments] = useState([]);
@@ -22,35 +24,20 @@ export default function PaymentManagement() {
   const loadPayments = async () => {
     setLoading(true);
     try {
-      // Get orders from localStorage
-      const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+      // Fetch payments from backend API
+      console.log('Fetching payments from backend...');
+      const paymentsData = await paymentService.getAllPayments();
       
-      // Transform orders into payment records
-      const paymentRecords = orders
-        .filter(order => order.paymentMethod === 'deposit')
-        .map(order => ({
-          id: order.id,
-          orderId: order.id,
-          customerName: order.deliveryInfo.fullName,
-          customerEmail: order.deliveryInfo.email,
-          amount: order.total,
-          reference: `Order ID - ${order.id}`,
-          depositSlip: order.depositSlip,
-          depositSlipName: order.depositSlipName,
-          status: order.paymentStatus === 'verified' ? 'verified' : 
-                 order.paymentStatus === 'failed' ? 'rejected' : 'pending',
-          uploadedAt: order.orderDate,
-          verifiedAt: order.trackingUpdates?.find(u => u.status === 'payment_verified')?.timestamp,
-          rejectedAt: order.trackingUpdates?.find(u => u.status === 'payment_failed')?.timestamp,
-          deliveryInfo: order.deliveryInfo,
-          items: order.items
-        }))
-        .filter(payment => filter === 'all' || payment.status === filter);
-
-      setPayments(paymentRecords);
+      // Filter by status if needed
+      const filteredPayments = filter === 'all' 
+        ? paymentsData 
+        : paymentsData.filter(payment => payment.status.toLowerCase() === filter);
+      
+      setPayments(filteredPayments);
+      console.log(`Loaded ${filteredPayments.length} payments from database`);
     } catch (error) {
       console.error('Error loading payments:', error);
-      toast.error('Failed to load payments');
+      toast.error('Failed to load payments from database');
     } finally {
       setLoading(false);
     }
@@ -58,36 +45,23 @@ export default function PaymentManagement() {
 
   const handleVerifyPayment = async (payment) => {
     try {
-      // Get orders from localStorage
-      const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+      console.log('Verifying payment:', payment.id);
       
-      // Find and update the order
-      const updatedOrders = orders.map(order => {
-        if (order.id === payment.orderId) {
-          const now = new Date().toISOString();
-          return {
-            ...order,
-            status: 'confirmed',
-            paymentStatus: 'verified',
-            trackingUpdates: [
-              ...order.trackingUpdates,
-              {
-                status: 'payment_verified',
-                title: 'Payment Verified',
-                description: 'Bank deposit has been verified by admin',
-                timestamp: now,
-                completed: true
-              }
-            ]
-          };
-        }
-        return order;
+      // Update payment status via backend API
+      await paymentService.updatePayment(payment.id, {
+        ...payment,
+        status: 'COMPLETED',
+        processedDate: new Date().toISOString(),
+        approvedDate: new Date().toISOString()
       });
       
-      // Save updated orders
-      localStorage.setItem('orders', JSON.stringify(updatedOrders));
+      // Also update associated order status if needed
+      if (payment.orderId) {
+        await axios.patch(`/api/orders/${payment.orderId}/status`, { status: 'CONFIRMED' });
+      }
+      
       toast.success('Payment verified successfully');
-      loadPayments();
+      loadPayments(); // Reload from backend
     } catch (error) {
       console.error('Error verifying payment:', error);
       toast.error('Failed to verify payment');
@@ -111,36 +85,23 @@ export default function PaymentManagement() {
   
   const handleRejectPayment = async (payment, reason = 'Payment verification failed') => {
     try {
-      // Get orders from localStorage
-      const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+      console.log('Rejecting payment:', payment.id);
       
-      // Find and update the order
-      const updatedOrders = orders.map(order => {
-        if (order.id === payment.orderId) {
-          const now = new Date().toISOString();
-          return {
-            ...order,
-            status: 'payment_failed',
-            paymentStatus: 'failed',
-            trackingUpdates: [
-              ...(order.trackingUpdates || []),
-              {
-                status: 'payment_failed',
-                title: 'Payment Rejected',
-                description: reason,
-                timestamp: now,
-                completed: true
-              }
-            ]
-          };
-        }
-        return order;
+      // Update payment status via backend API
+      await paymentService.updatePayment(payment.id, {
+        ...payment,
+        status: 'FAILED',
+        failureReason: reason,
+        processedDate: new Date().toISOString()
       });
       
-      // Save updated orders
-      localStorage.setItem('orders', JSON.stringify(updatedOrders));
+      // Also update associated order status if needed
+      if (payment.orderId) {
+        await axios.patch(`/api/orders/${payment.orderId}/status`, { status: 'CANCELLED' });
+      }
+      
       toast.success('Payment rejected');
-      loadPayments();
+      loadPayments(); // Reload from backend
       closeRejectDialog();
     } catch (error) {
       console.error('Error rejecting payment:', error);
