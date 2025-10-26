@@ -84,6 +84,15 @@ public class Delivery {
     @Column(name = "proof_of_delivery")
     private String proofOfDelivery; // Image URL or signature
 
+    @Column(name = "cash_collected", precision = 10, scale = 2)
+    private BigDecimal cashCollected; // Amount collected for COD orders
+
+    @Column(name = "cash_collection_confirmed")
+    private Boolean cashCollectionConfirmed = false; // Driver confirms cash received
+
+    @Column(name = "cash_collection_time")
+    private LocalDateTime cashCollectionTime; // When cash was collected
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 

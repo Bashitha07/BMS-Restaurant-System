@@ -14,17 +14,17 @@ import java.util.Optional;
 @Repository
 public interface DriverRepository extends JpaRepository<Driver, Long> {
     
-    // Find drivers by status
-    List<Driver> findByStatusOrderByRatingDesc(Driver.DriverStatus status);
+    // Find available drivers by rating
+    List<Driver> findByAvailableTrueOrderByRatingDesc();
     
-    // Find available drivers
-    List<Driver> findByStatusOrderByTotalDeliveriesDesc(Driver.DriverStatus status);
+    // Find available drivers by total deliveries
+    List<Driver> findByAvailableTrueOrderByTotalDeliveriesDesc();
     
     // Find driver by phone number
     Optional<Driver> findByPhone(String phone);
     
-    // Find driver by email
-    Optional<Driver> findByEmail(String email);
+    // Find driver by user ID (one-to-one relationship)
+    Optional<Driver> findByUserId(Long userId);
     
     // Find drivers by vehicle type
     List<Driver> findByVehicleTypeOrderByRatingDesc(String vehicleType);
@@ -33,16 +33,16 @@ public interface DriverRepository extends JpaRepository<Driver, Long> {
     @Query("SELECT d FROM Driver d WHERE d.rating >= :minRating ORDER BY d.rating DESC")
     List<Driver> findDriversWithMinRating(@Param("minRating") BigDecimal minRating);
     
-    // Find top-rated drivers
-    @Query("SELECT d FROM Driver d WHERE d.status = :status ORDER BY d.rating DESC, d.totalDeliveries DESC")
-    List<Driver> findTopRatedDriversByStatus(@Param("status") Driver.DriverStatus status);
+    // Find top-rated available drivers
+    @Query("SELECT d FROM Driver d WHERE d.available = true ORDER BY d.rating DESC, d.totalDeliveries DESC")
+    List<Driver> findTopRatedAvailableDrivers();
     
     // Find drivers by name containing
     List<Driver> findByNameContainingIgnoreCaseOrderByName(String name);
     
-    // Count drivers by status
-    @Query("SELECT COUNT(d) FROM Driver d WHERE d.status = :status")
-    Long countByStatus(@Param("status") Driver.DriverStatus status);
+    // Count available drivers
+    @Query("SELECT COUNT(d) FROM Driver d WHERE d.available = true")
+    Long countAvailableDrivers();
     
     // Find drivers created within a date range
     List<Driver> findByCreatedAtBetweenOrderByCreatedAtDesc(LocalDateTime startDate, LocalDateTime endDate);
@@ -52,16 +52,12 @@ public interface DriverRepository extends JpaRepository<Driver, Long> {
     List<Driver> findDriversByDeliveryCount();
     
     // Find available drivers with specific vehicle type
-    @Query("SELECT d FROM Driver d WHERE d.status = 'AVAILABLE' AND d.vehicleType = :vehicleType ORDER BY d.rating DESC")
+    @Query("SELECT d FROM Driver d WHERE d.available = true AND d.vehicleType = :vehicleType ORDER BY d.rating DESC")
     List<Driver> findAvailableDriversByVehicleType(@Param("vehicleType") String vehicleType);
     
-    // Update driver status
-    @Query("UPDATE Driver d SET d.status = :status WHERE d.id = :driverId")
-    void updateDriverStatus(@Param("driverId") Long driverId, @Param("status") Driver.DriverStatus status);
-    
-    // Get driver statistics
-    @Query("SELECT AVG(d.rating) FROM Driver d WHERE d.status = :status")
-    Double getAverageRatingByStatus(@Param("status") Driver.DriverStatus status);
+    // Get average rating for available drivers
+    @Query("SELECT AVG(d.rating) FROM Driver d WHERE d.available = true")
+    Double getAverageRatingForAvailableDrivers();
     
     // Find drivers with delivery count range
     @Query("SELECT d FROM Driver d WHERE d.totalDeliveries BETWEEN :minDeliveries AND :maxDeliveries ORDER BY d.rating DESC")
@@ -69,7 +65,4 @@ public interface DriverRepository extends JpaRepository<Driver, Long> {
     
     // Check if phone number exists (for unique validation)
     boolean existsByPhone(String phone);
-    
-    // Check if email exists (for unique validation)
-    boolean existsByEmail(String email);
 }

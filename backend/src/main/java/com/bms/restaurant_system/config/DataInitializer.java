@@ -8,14 +8,14 @@ import com.bms.restaurant_system.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Component;
+// import org.springframework.stereotype.Component; - DISABLED to prevent menu auto-recreation
 import org.springframework.context.annotation.Profile;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Component
+// @Component - DISABLED: Menu items are now managed via admin panel only
 @Profile("!test")
 public class DataInitializer implements CommandLineRunner {
 

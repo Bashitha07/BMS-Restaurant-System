@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { Eye, EyeOff, User, Mail, Phone, Car, FileText } from 'lucide-react';
+import { driverService } from '../../services/driverService';
 
 const DriverRegister = ({ onRegister, showLogin }) => {
   const [formData, setFormData] = useState({
@@ -40,40 +41,77 @@ const DriverRegister = ({ onRegister, showLogin }) => {
     setLoading(true);
     setError('');
 
+    // Validate required fields
+    const requiredFields = [
+      { field: 'firstName', label: 'First Name' },
+      { field: 'lastName', label: 'Last Name' },
+      { field: 'email', label: 'Email' },
+      { field: 'phone', label: 'Phone Number' },
+      { field: 'username', label: 'Username' },
+      { field: 'password', label: 'Password' },
+      { field: 'licenseNumber', label: 'Driver\'s License Number' },
+      { field: 'vehicleType', label: 'Vehicle Type' },
+      { field: 'vehicleModel', label: 'Vehicle Model' },
+      { field: 'licensePlate', label: 'License Plate Number' }
+    ];
+
+    const missingFields = requiredFields.filter(({ field }) => !formData[field]?.trim());
+    
+    if (missingFields.length > 0) {
+      const missingLabels = missingFields.map(({ label }) => label).join(', ');
+      setError(`Please fill in all required fields: ${missingLabels}`);
+      toast.error('Please fill in all required fields');
+      setLoading(false);
+      return;
+    }
+
     // Basic validation
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
+      toast.error('Passwords do not match');
       setLoading(false);
       return;
     }
 
     if (formData.password.length < 6) {
       setError('Password must be at least 6 characters long');
+      toast.error('Password must be at least 6 characters long');
       setLoading(false);
       return;
     }
 
     try {
-      // Mock registration - replace with actual API call
+      // Prepare driver registration data for backend
       const registrationData = {
-        ...formData,
-        role: 'delivery_driver',
-        status: 'pending_approval'
+        name: `${formData.firstName} ${formData.lastName}`.trim(),
+        username: formData.username.trim(),
+        password: formData.password,
+        email: formData.email.trim(),
+        phone: formData.phone.trim(),
+        address: 'To be provided',
+        licenseNumber: formData.licenseNumber.trim(),
+        vehicleNumber: formData.licensePlate.trim(),
+        vehicleType: formData.vehicleType.toUpperCase(), // Convert to uppercase to match backend enum
+        vehicleModel: formData.vehicleModel.trim(),
+        emergencyContact: formData.emergencyContact?.trim() || '',
+        emergencyPhone: formData.emergencyPhone?.trim() || '',
+        hourlyRate: 0,
+        commissionRate: 0,
+        notes: `Applied on ${new Date().toLocaleDateString()}`
       };
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      console.log('🚗 [PUBLIC] Submitting driver application:', registrationData);
+      const result = await driverService.registerDriver(registrationData);
+      console.log('✅ [PUBLIC] Driver registered:', result);
       
       toast.success('Driver application submitted successfully! We will review your application and contact you within 2-3 business days.');
+      setTimeout(() => navigate('/driver/login'), 2000);
       
-      if (onRegister) {
-        onRegister(registrationData);
-      } else {
-        navigate('/driver/login');
-      }
     } catch (err) {
-      setError('Registration failed. Please try again.');
-      toast.error('Failed to submit application');
+      console.error('❌ [PUBLIC] Registration failed:', err);
+      const errorMsg = err?.response?.data || err?.message || err || 'Registration failed. Please try again.';
+      setError(typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg));
+      toast.error(typeof errorMsg === 'string' ? errorMsg : 'Failed to submit application');
     } finally {
       setLoading(false);
     }
@@ -435,3 +473,4 @@ const DriverRegister = ({ onRegister, showLogin }) => {
 };
 
 export default DriverRegister;
+

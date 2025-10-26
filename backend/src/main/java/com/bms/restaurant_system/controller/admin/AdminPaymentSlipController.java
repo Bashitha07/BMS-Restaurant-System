@@ -102,6 +102,25 @@ public class AdminPaymentSlipController {
         }
     }
 
+    // Update payment slip status (general endpoint for all status changes)
+    @PatchMapping("/{id}/status")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> updatePaymentSlipStatus(@PathVariable Long id, @RequestBody Map<String, String> statusData) {
+        logger.info("Admin updating payment slip {} status", id);
+        try {
+            String status = statusData.get("status");
+            String adminUsername = statusData.get("adminUsername");
+            String rejectionReason = statusData.getOrDefault("rejectionReason", "");
+            
+            PaymentSlipDTO updated = paymentSlipService.updatePaymentSlipStatus(id, status, adminUsername, rejectionReason);
+            logger.info("Payment slip {} status updated to {}", id, status);
+            return ResponseEntity.ok(updated);
+        } catch (Exception e) {
+            logger.error("Error updating payment slip {} status: {}", id, e.getMessage());
+            return ResponseEntity.status(400).body("Failed to update payment slip status: " + e.getMessage());
+        }
+    }
+
     // Delete payment slip
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")

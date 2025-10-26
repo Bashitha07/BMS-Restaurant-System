@@ -35,14 +35,23 @@ export default function LoginForm({ onClose, showRegister }) {
       
       if (onClose) onClose();
       
-      // Navigate to the intended page or home page
-      const from = location.state?.from?.pathname || '/';
-      console.log("Login successful, navigating to:", from);
+      // Navigate based on user role
+      let destination = '/';
+      
+      // Check if user is admin
+      if (result.role?.toUpperCase() === 'ADMIN') {
+        destination = '/admin/dashboard';
+      } else {
+        // For non-admin users, navigate to intended page or home
+        destination = location.state?.from?.pathname || '/';
+      }
+      
+      console.log("Login successful, navigating to:", destination);
       
       // Increased timeout to ensure state updates are complete
       setTimeout(() => {
-        console.log('Executing navigation to:', from);
-        navigate(from, { replace: true });
+        console.log('Executing navigation to:', destination);
+        navigate(destination, { replace: true });
       }, 300);
     } catch (err) {
       console.error('Login error caught in form:', err);

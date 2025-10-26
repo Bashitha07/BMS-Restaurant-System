@@ -7,7 +7,7 @@ const Register = lazy(() => import('../pages/auth/Register'));
 // Driver pages
 const DriverLogin = lazy(() => import('../components/driver/DriverLogin'));
 const DriverRegisterPage = lazy(() => import('../pages/driver/DriverRegisterPage'));
-const DriverDashboard = lazy(() => import('../components/driver/DriverDashboard'));
+const DriverDashboard = lazy(() => import('../pages/driver/DriverDashboard'));
 
 // Lazy load page components
 const Home = lazy(() => import('../pages/public/Home'));
@@ -22,21 +22,23 @@ const Profile = lazy(() => import('../pages/user/Profile'));
 const PaymentSlipManagement = lazy(() => import('../components/payment/PaymentSlipManagement'));
 
 // Admin components
+const AdminDashboard = lazy(() => import('../pages/admin/AdminDashboard'));
 const AdminUserManagement = lazy(() => import('../components/admin/AdminUserManagement'));
 const AdminMenuManagement = lazy(() => import('../components/admin/AdminMenuManagement'));
 const AdminReservationManagement = lazy(() => import('../components/admin/AdminReservationManagement'));
+const AdminSettings = lazy(() => import('../pages/admin/AdminSettings'));
 
 // Admin routes
 const adminRoutes = [
   {
     path: '/admin',
-    Component: AdminUserManagement,
+    Component: AdminDashboard,
     requireAuth: true,
     requireAdmin: true,
   },
   {
     path: '/admin/dashboard',
-    Component: AdminUserManagement,
+    Component: AdminDashboard,
     requireAuth: true,
     requireAdmin: true,
   },
@@ -60,6 +62,12 @@ const adminRoutes = [
   },
   {
     path: '/admin/orders',
+    Component: lazy(() => import('../components/admin/AdminOrders')),
+    requireAuth: true,
+    requireAdmin: true,
+  },
+  {
+    path: '/admin/orders/old',
     Component: lazy(() => import('../pages/admin/OrderManagement')),
     requireAuth: true,
     requireAdmin: true,
@@ -85,6 +93,12 @@ const adminRoutes = [
   {
     path: '/admin/delivery',
     Component: lazy(() => import('../pages/admin/DeliveryManagement')),
+    requireAuth: true,
+    requireAdmin: true,
+  },
+  {
+    path: '/admin/settings',
+    Component: AdminSettings,
     requireAuth: true,
     requireAdmin: true,
   },

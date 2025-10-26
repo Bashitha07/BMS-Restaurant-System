@@ -11,7 +11,6 @@ import com.bms.restaurant_system.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -40,11 +39,11 @@ public class PaymentSlipService {
     @Autowired
     private UserRepository userRepository;
     
-    @Value("${app.upload.dir:${user.home}/restaurant-system/uploads}")
-    private String uploadBaseDir;
+    // Store payment slips in static resources directory (similar to menu images)
+    private static final String PAYMENT_SLIP_DIR = "src/main/resources/static/images/payment-slips/";
     
     private String getUploadDir() {
-        return uploadBaseDir + "/payment-slips/";
+        return PAYMENT_SLIP_DIR;
     }
     
     // User methods
@@ -82,16 +81,19 @@ public class PaymentSlipService {
             throw new IllegalArgumentException("File name cannot be null or empty");
         }
         String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
-        String uniqueFilename = UUID.randomUUID().toString() + fileExtension;
-        String filePath = uploadDir + uniqueFilename;
+        String uniqueFilename = "payment_slip_" + System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 8) + fileExtension;
+        String physicalFilePath = uploadDir + uniqueFilename;
         
-        // Save file
-        Path targetPath = Paths.get(filePath);
+        // Save file to physical directory
+        Path targetPath = Paths.get(physicalFilePath);
         Files.copy(file.getInputStream(), targetPath);
-        logger.info("Saved file to: {}", targetPath);
+        logger.info("Saved payment slip file to: {}", targetPath);
+        
+        // Store web-accessible URL path in database (similar to menu images)
+        String webAccessiblePath = "/images/payment-slips/" + uniqueFilename;
         
         // Create payment slip entity
-        PaymentSlip paymentSlip = new PaymentSlip(order, user, originalFilename, filePath, 
+        PaymentSlip paymentSlip = new PaymentSlip(order, user, originalFilename, webAccessiblePath, 
                                                 paymentAmount, paymentDate);
         paymentSlip.setFileSize(file.getSize());
         paymentSlip.setContentType(contentType);
@@ -201,6 +203,63 @@ public class PaymentSlipService {
         }
         
         return convertToDTO(paymentSlip);
+    }
+    
+    public PaymentSlipDTO updatePaymentSlipStatus(Long id, String statusString, String adminUsername, String rejectionReason) {
+        PaymentSlip paymentSlip = paymentSlipRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Payment slip not found with id: " + id));
+        
+        try {
+            PaymentSlip.PaymentSlipStatus newStatus = PaymentSlip.PaymentSlipStatus.valueOf(statusString.toUpperCase());
+            
+            // Update the status
+            paymentSlip.setStatus(newStatus);
+            
+            // Set confirmed fields if status is CONFIRMED
+            if (newStatus == PaymentSlip.PaymentSlipStatus.CONFIRMED && paymentSlip.getConfirmedAt() == null) {
+                paymentSlip.setConfirmedAt(LocalDateTime.now());
+                paymentSlip.setConfirmedBy(adminUsername);
+            }
+            
+            // Set rejection reason if status is REJECTED
+            if (newStatus == PaymentSlip.PaymentSlipStatus.REJECTED && rejectionReason != null && !rejectionReason.isEmpty()) {
+                paymentSlip.setRejectionReason(rejectionReason);
+            }
+            
+            paymentSlip = paymentSlipRepository.save(paymentSlip);
+            logger.info("Payment slip {} status updated to {} by admin: {}", id, newStatus, adminUsername);
+            
+            // Update order payment status based on payment slip status
+            Order order = paymentSlip.getOrder();
+            if (order != null) {
+                switch (newStatus) {
+                    case CONFIRMED:
+                        order.setPaymentStatus(Order.PaymentStatus.PAID);
+                        order.addTrackingUpdate("payment_confirmed", "Payment Confirmed", 
+                            "Payment verified and confirmed by " + adminUsername, false);
+                        break;
+                    case REJECTED:
+                        order.setPaymentStatus(Order.PaymentStatus.FAILED);
+                        String reason = rejectionReason != null && !rejectionReason.isEmpty() ? rejectionReason : "Payment verification failed";
+                        order.addTrackingUpdate("payment_rejected", "Payment Rejected", reason, false);
+                        break;
+                    case PROCESSING:
+                        order.setPaymentStatus(Order.PaymentStatus.PENDING);
+                        order.addTrackingUpdate("payment_processing", "Payment Processing", 
+                            "Payment verification in progress", false);
+                        break;
+                    case PENDING:
+                        order.setPaymentStatus(Order.PaymentStatus.PENDING);
+                        break;
+                }
+                orderRepository.save(order);
+                logger.info("Updated order payment status for order ID: {}", order.getId());
+            }
+            
+            return convertToDTO(paymentSlip);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid status value: " + statusString);
+        }
     }
     
     public void deletePaymentSlip(Long id) {

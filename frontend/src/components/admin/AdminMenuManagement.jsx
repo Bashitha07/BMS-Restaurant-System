@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, Edit2, Trash2, Upload, Save, X, Search, Filter, Eye, ToggleLeft, ToggleRight, Camera, FileImage, Link2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, Upload, Save, X, Search, Filter, Eye, ToggleLeft, ToggleRight, Camera, FileImage } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import FoodImage from '../common/FoodImage';
-import { getBestMatchImage } from '../../utils/specificFoodImages';
 import { menuItems as staticMenuItems } from '../../data/menuData';
 import adminService from '../../services/adminService';
 import { useAuth } from '../../contexts/AuthContext';
@@ -38,7 +37,7 @@ const AdminMenuManagement = () => {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
-  const [imageUploadMethod, setImageUploadMethod] = useState('url'); // 'file' or 'url'
+  const [availableImages, setAvailableImages] = useState([]);
   const fileInputRef = useRef(null);
 
   const categories = ['Pasta', 'Salads', 'Burgers', 'Rice', 'Noodles', 'Submarines', 'Bites', 'Fresh Juice', 'Desserts', 'Main Course'];
@@ -93,41 +92,52 @@ const AdminMenuManagement = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate: if image file is selected but not uploaded yet
+    if (imageFile) {
+      toast.error('Please upload the selected image before saving');
+      return;
+    }
+    
     setLoading(true);
     
     try {
-      const submitData = {
-        ...formData,
-        price: parseFloat(formData.price),
-        id: editingItem ? editingItem.id : Date.now().toString(),
-        // Use specific image if available, otherwise suggest one
-        image: formData.image || getBestMatchImage(formData.name, formData.category)
-      };
-
       if (editingItem) {
-        // Update existing item
+        // Update existing item - use MenuItemUpdateDTO structure
+        const updateData = {
+          name: formData.name,
+          description: formData.description,
+          price: parseFloat(formData.price),
+          category: formData.category,
+          available: formData.available,
+          imageUrl: formData.image
+        };
+        
+        const updated = await adminService.updateMenuItem(editingItem.id, updateData);
         setMenuItems(prev => prev.map(item => 
-          item.id === editingItem.id ? submitData : item
+          item.id === editingItem.id ? updated : item
         ));
         toast.success('Menu item updated successfully!');
-        
-        // Try to update via API as well
-        try {
-          await adminService.updateMenuItem(editingItem.id, submitData);
-        } catch (apiError) {
-          console.log('API update failed, using local update only');
-        }
       } else {
-        // Add new item
-        setMenuItems(prev => [submitData, ...prev]);
-        toast.success('Menu item added successfully!');
+        // Create new item - use MenuDTO structure  
+        const createData = {
+          name: formData.name,
+          description: formData.description,
+          price: parseFloat(formData.price),
+          category: formData.category,
+          isAvailable: formData.available,
+          imageUrl: formData.image,
+          preparationTime: formData.prepTime ? parseInt(formData.prepTime) : null,
+          ingredients: formData.ingredients || null,
+          isVegetarian: false,
+          isVegan: false,
+          isGlutenFree: false,
+          isSpicy: false
+        };
         
-        // Try to create via API as well
-        try {
-          await adminService.createMenuItem(submitData);
-        } catch (apiError) {
-          console.log('API create failed, using local creation only');
-        }
+        const created = await adminService.createMenuItem(createData);
+        setMenuItems(prev => [created, ...prev]);
+        toast.success('Menu item added successfully!');
       }
       
       resetForm();
@@ -169,7 +179,10 @@ const AdminMenuManagement = () => {
       image: '',
       portion: '',
       prepTime: '',
-      rating: 4.5
+      rating: 4.5,
+      ingredients: '',
+      nutritionalInfo: '',
+      preparationMethod: ''
     });
     setShowForm(true);
   };
@@ -235,23 +248,10 @@ const AdminMenuManagement = () => {
     clearImage();
     setEditingItem(null);
     setShowForm(false);
-    setImageUploadMethod('url');
   };
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => {
-      const updated = { ...prev, [field]: value };
-      
-      // Auto-suggest image when name or category changes
-      if (field === 'name' || field === 'category') {
-        const suggestedImage = getBestMatchImage(updated.name, updated.category);
-        if (suggestedImage && !updated.image) {
-          updated.image = suggestedImage;
-        }
-      }
-      
-      return updated;
-    });
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const handleSearch = (term) => {
@@ -264,7 +264,7 @@ const AdminMenuManagement = () => {
 
   const clearFilters = () => {
     setSearchTerm('');
-    setSelectedCategory('All');
+    setSelectedCategory('all');
   };
 
   // Image handling functions
@@ -283,11 +283,11 @@ const AdminMenuManagement = () => {
       
       setImageFile(file);
       
-      // Create preview
+      // Create preview (DON'T store in formData.image yet - only for display)
       const reader = new FileReader();
       reader.onload = (e) => {
         setImagePreview(e.target.result);
-        setFormData(prev => ({ ...prev, image: e.target.result }));
+        // DON'T update formData.image with base64 - wait for upload
       };
       reader.readAsDataURL(file);
     }
@@ -301,23 +301,31 @@ const AdminMenuManagement = () => {
 
     setUploadingImage(true);
     try {
-      // Pass menuId if editing an existing item
       const menuId = editingItem?.id || null;
       const response = await adminService.uploadMenuImage(imageFile, menuId);
       const uploadedUrl = response.imageUrl;
+      
+      // NOW set the actual URL in formData
       setFormData(prev => ({ ...prev, image: uploadedUrl }));
-      toast.success(`Image uploaded successfully!${menuId ? ` (menu_image_no${menuId})` : ''}`);
+      setImagePreview(uploadedUrl);
+      setImageFile(null); // Clear the file after successful upload
+      
+      // If editing an existing item, update the menuItems state immediately
+      if (editingItem) {
+        setMenuItems(prev => prev.map(item => 
+          item.id === editingItem.id 
+            ? { ...item, imageUrl: uploadedUrl }
+            : item
+        ));
+      }
+      
+      toast.success('Image uploaded successfully!');
     } catch (error) {
       toast.error('Failed to upload image');
       console.error('Image upload error:', error);
     } finally {
       setUploadingImage(false);
     }
-  };
-
-  const handleImageUrlChange = (url) => {
-    setFormData(prev => ({ ...prev, image: url }));
-    setImagePreview(url);
   };
 
   const clearImage = () => {
@@ -329,8 +337,9 @@ const AdminMenuManagement = () => {
     }
   };
 
+
   // Get unique categories for filter
-  const availableCategories = ['All', ...new Set(menuItems.map(item => item.category))];
+  const availableCategories = ['all', ...new Set(menuItems.map(item => item.category))];
 
   if (loading && !menuItems.length) {
     return (
@@ -375,11 +384,13 @@ const AdminMenuManagement = () => {
               className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               {availableCategories.map(category => (
-                <option key={category} value={category}>{category}</option>
+                <option key={category} value={category}>
+                  {category === 'all' ? 'All Categories' : category}
+                </option>
               ))}
             </select>
           </div>
-          {(searchTerm || selectedCategory !== 'All') && (
+          {(searchTerm || selectedCategory !== 'all') && (
             <button
               onClick={clearFilters}
               className="px-3 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50"
@@ -444,7 +455,7 @@ const AdminMenuManagement = () => {
             <div className="text-gray-400 text-6xl mb-4">🍽️</div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">No menu items found</h3>
             <p className="text-gray-500 mb-4">
-              {searchTerm || selectedCategory !== 'All' 
+              {searchTerm || selectedCategory !== 'all' 
                 ? 'Try adjusting your search or filters' 
                 : 'Start by adding your first menu item'}
             </p>
@@ -652,129 +663,80 @@ const AdminMenuManagement = () => {
                     Food Image
                   </label>
                   
-                  {/* Image Upload Method Toggle */}
-                  <div className="flex items-center gap-4 mb-4">
-                    <button
-                      type="button"
-                      onClick={() => setImageUploadMethod('url')}
-                      className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${
-                        imageUploadMethod === 'url' 
-                          ? 'bg-blue-50 border-blue-200 text-blue-700' 
-                          : 'bg-gray-50 border-gray-200 text-gray-600'
-                      }`}
-                    >
-                      <Link2 className="h-4 w-4" />
-                      Image URL
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setImageUploadMethod('file')}
-                      className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${
-                        imageUploadMethod === 'file' 
-                          ? 'bg-blue-50 border-blue-200 text-blue-700' 
-                          : 'bg-gray-50 border-gray-200 text-gray-600'
-                      }`}
-                    >
-                      <Camera className="h-4 w-4" />
-                      Upload File
-                    </button>
-                  </div>
-
-                  {/* URL Input Method */}
-                  {imageUploadMethod === 'url' && (
-                    <div className="space-y-2">
-                      <div className="relative">
-                        <input
-                          type="url"
-                          value={formData.image}
-                          onChange={(e) => handleImageUrlChange(e.target.value)}
-                          className="w-full px-4 py-2 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="https://example.com/image.jpg or leave empty for auto-suggestion"
-                        />
-                        <Link2 className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                      </div>
-                      <p className="text-xs text-gray-500">
-                        Paste an image URL or leave empty for automatic image suggestion based on food name
-                      </p>
-                    </div>
-                  )}
-
-                  {/* File Upload Method */}
-                  {imageUploadMethod === 'file' && (
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="file"
-                          ref={fileInputRef}
-                          onChange={handleImageFileSelect}
-                          accept="image/*"
-                          className="hidden"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => fileInputRef.current?.click()}
-                          className="flex items-center gap-2 px-4 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-300 rounded-lg text-gray-700 transition-colors"
-                        >
-                          <FileImage className="h-4 w-4" />
-                          Choose Image File
-                        </button>
-                        {imageFile && (
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm text-gray-600">{imageFile.name}</span>
-                            <button
-                              type="button"
-                              onClick={clearImage}
-                              className="text-red-500 hover:text-red-700"
-                            >
-                              <X className="h-4 w-4" />
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                      
-                      {imageFile && !formData.image && (
-                        <button
-                          type="button"
-                          onClick={handleImageUpload}
-                          disabled={uploadingImage}
-                          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50 transition-colors"
-                        >
-                          {uploadingImage ? (
-                            <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                          ) : (
-                            <Upload className="h-4 w-4" />
-                          )}
-                          {uploadingImage ? 'Uploading...' : 'Upload Image'}
-                        </button>
+                  {/* File Upload Section */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleImageFileSelect}
+                        accept="image/*"
+                        className="hidden"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                      >
+                        <Camera className="h-4 w-4" />
+                        Upload New Image
+                      </button>
+                      {imageFile && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-gray-600">{imageFile.name}</span>
+                          <button
+                            type="button"
+                            onClick={clearImage}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
                       )}
-                      
-                      <p className="text-xs text-gray-500">
-                        Supported formats: JPG, PNG, GIF (Max size: 5MB)
-                      </p>
                     </div>
-                  )}
+                    
+                    {imageFile && !formData.image && (
+                      <button
+                        type="button"
+                        onClick={handleImageUpload}
+                        disabled={uploadingImage}
+                        className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg disabled:opacity-50 transition-colors"
+                      >
+                        {uploadingImage ? (
+                          <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <Upload className="h-4 w-4" />
+                        )}
+                        {uploadingImage ? 'Uploading...' : 'Confirm Upload'}
+                      </button>
+                    )}
+                    
+                    <p className="text-xs text-gray-500">
+                      Supported formats: JPG, PNG, GIF (Max size: 5MB)
+                    </p>
+                  </div>
 
                   {/* Image Preview */}
                   {(formData.image || imagePreview) && (
                     <div className="mt-4 p-3 bg-gray-50 rounded-lg">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-700">Image Preview</span>
+                        <span className="text-sm font-medium text-gray-700">Current Image</span>
                         <button
                           type="button"
                           onClick={clearImage}
-                          className="text-red-500 hover:text-red-700"
+                          className="text-red-500 hover:text-red-700 text-sm"
                         >
-                          <X className="h-4 w-4" />
+                          Remove
                         </button>
                       </div>
                       <img 
                         src={formData.image || imagePreview} 
                         alt="Food preview" 
-                        className="w-full h-32 object-cover rounded-lg border border-gray-200"
-                        onError={(e) => {
-                          e.target.src = getBestMatchImage(formData.name, formData.category);
-                        }}
+                        className="w-full h-48 object-cover rounded-lg border border-gray-200"
                       />
+                      <p className="text-xs text-gray-500 mt-2">
+                        Uploaded Image
+                      </p>
                     </div>
                   )}
                 </div>

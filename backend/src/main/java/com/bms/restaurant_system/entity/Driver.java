@@ -23,6 +23,10 @@ public class Driver {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+    
     @NotBlank(message = "Driver name is required")
     @Size(max = 100, message = "Driver name must not exceed 100 characters")
     @Column(nullable = false, length = 100)
@@ -32,11 +36,6 @@ public class Driver {
     @Size(max = 20, message = "Phone number must not exceed 20 characters")
     @Column(nullable = false, length = 20, unique = true)
     private String phone;
-    
-    @Email(message = "Email should be valid")
-    @Size(max = 100, message = "Email must not exceed 100 characters")
-    @Column(length = 100, unique = true)
-    private String email;
     
     @Size(max = 50, message = "Vehicle type must not exceed 50 characters")
     @Column(name = "vehicle_type", length = 50)
@@ -50,9 +49,8 @@ public class Driver {
     @Column(name = "license_number", length = 50)
     private String licenseNumber;
     
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private DriverStatus status = DriverStatus.PENDING;
+    private Boolean available = true;
     
     @DecimalMin(value = "0.0", message = "Rating must be at least 0.0")
     @DecimalMax(value = "5.0", message = "Rating must not exceed 5.0")
@@ -74,13 +72,4 @@ public class Driver {
     // One-to-Many relationship with Delivery
     @OneToMany(mappedBy = "driver", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Delivery> deliveries;
-    
-    public enum DriverStatus {
-        PENDING,
-        APPROVED,
-        REJECTED,
-        AVAILABLE,
-        BUSY,
-        OFFLINE
-    }
 }

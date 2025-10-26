@@ -1,6 +1,0 @@
-@echo off
-cd /d C:\SpringBoot\restaurant-system\backend
-echo Starting Restaurant System Backend...
-echo Please wait while the server starts (this may take 30-60 seconds)...
-call mvnw.cmd spring-boot:run
-pause

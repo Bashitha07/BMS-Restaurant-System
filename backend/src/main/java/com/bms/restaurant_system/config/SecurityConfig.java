@@ -28,8 +28,12 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
-                // Public endpoints - no authentication required
+                // Public endpoints - no authentication required (ORDER MATTERS!)
                 .requestMatchers("/api/auth/**").permitAll()  // Authentication endpoints
+                .requestMatchers("/api/driver/auth/**").permitAll()  // Driver login/logout - MUST BE BEFORE /api/driver/**
+                .requestMatchers("/api/delivery-drivers/register").permitAll()  // Public driver registration - MUST BE BEFORE /api/delivery-drivers/**
+                .requestMatchers("/api/delivery-drivers/pending").permitAll()  // Public can view pending drivers
+                .requestMatchers("/api/users/register").permitAll()  // Public user registration
                 .requestMatchers("/api/menus","/api/menus/**").permitAll()  // Public menu viewing
                 .requestMatchers("/api/menus/available").permitAll()  // Available menus
                 .requestMatchers("/api/menus/{id}").permitAll()  // View specific menu item
@@ -42,9 +46,11 @@ public class SecurityConfig {
                 
                 // Admin-only endpoints - require ADMIN role
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                .requestMatchers("/api/delivery-drivers/pending").permitAll()  // Public can view
-                .requestMatchers("/api/delivery-drivers/**").hasRole("ADMIN")  // Admin manages
+                .requestMatchers("/api/delivery-drivers/**").hasRole("ADMIN")  // Admin manages driver endpoints
                 .requestMatchers("/api/users/*/role").hasRole("ADMIN")
+                
+                // Driver operations - require DRIVER role
+                .requestMatchers("/api/driver/**").hasRole("DRIVER")  // Driver dashboard and deliveries require DRIVER role
                 
                 // Kitchen staff endpoints
                 .requestMatchers("/api/kitchen/**").hasRole("KITCHEN")
@@ -101,7 +107,7 @@ public class SecurityConfig {
             "file://",  // Allow file:// protocol for local testing
             "null"      // Allow null origin (for local files)
         ));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

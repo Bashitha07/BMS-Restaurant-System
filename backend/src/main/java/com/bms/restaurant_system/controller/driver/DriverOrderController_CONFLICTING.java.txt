@@ -60,7 +60,8 @@ public class DriverOrderController {
         logger.info("Driver {} accepting delivery {}", driverId, deliveryId);
         
         try {
-            DeliveryDTO delivery = deliveryService.assignDriverToDelivery(deliveryId, driverId);
+            // Use the correct method for delivery drivers
+            DeliveryDTO delivery = deliveryService.assignDeliveryDriverToDelivery(deliveryId, driverId);
             
             // Update driver status to busy
             deliveryDriverService.updateDriverStatus(driverId, DeliveryDriver.DriverStatus.ON_DELIVERY);
@@ -144,6 +145,27 @@ public class DriverOrderController {
         } catch (Exception e) {
             logger.error("Error completing delivery {} for driver {}: {}", deliveryId, driverId, e.getMessage());
             return ResponseEntity.status(500).body("Failed to complete delivery");
+        }
+    }
+
+    // Confirm cash collection for COD orders
+    @PostMapping("/{driverId}/delivery/{deliveryId}/confirm-cash")
+    public ResponseEntity<?> confirmCashCollection(
+            @PathVariable Long driverId,
+            @PathVariable Long deliveryId,
+            @RequestBody Map<String, Object> cashData) {
+        
+        logger.info("Driver {} confirming cash collection for delivery {}", driverId, deliveryId);
+        
+        try {
+            BigDecimal amount = new BigDecimal(cashData.get("amount").toString());
+            DeliveryDTO delivery = deliveryService.confirmCashCollection(deliveryId, amount);
+            
+            logger.info("Cash collection confirmed for delivery {} by driver {}", deliveryId, driverId);
+            return ResponseEntity.ok(delivery);
+        } catch (Exception e) {
+            logger.error("Error confirming cash for delivery {} by driver {}: {}", deliveryId, driverId, e.getMessage());
+            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
         }
     }
 

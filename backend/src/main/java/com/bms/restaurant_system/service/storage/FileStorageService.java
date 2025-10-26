@@ -60,7 +60,7 @@ public class FileStorageService {
     }
     
     /**
-     * Store menu item image
+     * Store menu item image in backend resources with unique ID
      * @param file The multipart file to store
      * @param menuId The menu item ID for reference (optional)
      * @return The relative URL path to access the stored file
@@ -72,24 +72,20 @@ public class FileStorageService {
         // Validate file
         validateFile(file, MAX_MENU_IMAGE_SIZE, false);
         
-        // Store file in both backend and frontend directories
+        // Store file ONLY in backend resources directory
         String backendPath = BACKEND_UPLOAD_DIR + MENU_ITEMS_DIR;
-        String frontendPath = FRONTEND_UPLOAD_DIR + "food/"; // Menu images go to food folder
         
         String filename;
         if (menuId != null) {
             filename = storeFileWithMenuId(file, backendPath, menuId);
-            // Also save to frontend for immediate visibility in development
-            storeFileToFrontend(file, frontendPath, filename);
         } else {
             filename = storeFile(file, backendPath, "menu_item");
-            storeFileToFrontend(file, frontendPath, filename);
         }
         
-        // Return assets path for frontend access during development
-        String imageUrl = "/assets/images/food/" + filename;
+        // Return URL path that backend will serve from /images/menu/
+        String imageUrl = "/images/" + MENU_ITEMS_DIR + filename;
         
-        logger.info("Menu image stored successfully: {}", imageUrl);
+        logger.info("Menu image stored successfully at: {}", imageUrl);
         return imageUrl;
     }
     
@@ -202,30 +198,6 @@ public class FileStorageService {
         
         logger.info("Menu image stored at: {} for menu ID: {}", targetPath, menuId);
         return specificFilename;
-    }
-    
-    /**
-     * Store file to frontend assets directory for development
-     * @param file The file to store
-     * @param frontendPath The frontend directory path
-     * @param filename The filename to use
-     * @throws IOException If storage fails
-     */
-    private void storeFileToFrontend(MultipartFile file, String frontendPath, String filename) throws IOException {
-        try {
-            Path frontendDir = Paths.get(frontendPath);
-            if (!Files.exists(frontendDir)) {
-                Files.createDirectories(frontendDir);
-                logger.info("Created frontend directory: {}", frontendPath);
-            }
-            
-            Path targetPath = frontendDir.resolve(filename);
-            Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
-            logger.info("File also saved to frontend at: {}", targetPath);
-        } catch (IOException e) {
-            // Log error but don't fail the upload if frontend save fails
-            logger.warn("Failed to save file to frontend directory: {}", e.getMessage());
-        }
     }
     
     /**

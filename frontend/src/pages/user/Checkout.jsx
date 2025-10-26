@@ -5,7 +5,7 @@ import { useNotifications } from '../../contexts/NotificationContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { downloadInvoice } from '../../utils/invoiceGenerator';
-import { orderService } from '../../services/api';
+import { orderService, paymentService } from '../../services/api';
 import Invoice from '../../components/common/Invoice';
 import AuthModal from '../../components/auth/AuthModal';
 import DeliveryDistanceValidator from '../../components/common/DeliveryDistanceValidator';
@@ -33,6 +33,9 @@ const Checkout = () => {
   const { user, logout } = useAuth();
   const { addNotification } = useNotifications();
   const navigate = useNavigate();
+
+  // Delivery fee constant (LKR 400 flat rate)
+  const DELIVERY_FEE = 400;
 
   // Logout function
   const handleLogout = () => {
@@ -200,14 +203,35 @@ const Checkout = () => {
       const createdOrder = await orderService.createOrder(orderData);
       console.log('Order created successfully:', createdOrder);
 
+      // Upload deposit slip if payment method is deposit
+      if (paymentMethod === 'deposit' && depositSlip) {
+        try {
+          console.log('Uploading deposit slip for order:', createdOrder.id);
+          const paymentSlipData = await paymentService.uploadPaymentSlip(
+            createdOrder.id,
+            user.id,
+            depositSlip,
+            total + DELIVERY_FEE, // payment amount includes delivery fee
+            new Date().toISOString(), // payment date
+            'Bank Transfer', // bank name - you can make this a form field if needed
+            '' // transaction reference - optional
+          );
+          console.log('Deposit slip uploaded successfully:', paymentSlipData);
+          toast.success('Payment slip uploaded successfully!');
+        } catch (slipError) {
+          console.error('Failed to upload deposit slip:', slipError);
+          toast.error('Order created but failed to upload payment slip. Please upload it from order history.');
+        }
+      }
+
       // Send notification to admin about new order
       addNotification(
-        `New order #${createdOrder.id} placed by ${user.username || user.email} - Total: LKR ${total.toFixed(2)}`,
+        `New order #${createdOrder.id} placed by ${user.username || user.email} - Total: LKR ${(total + DELIVERY_FEE).toFixed(2)}`,
         'success',
         {
           title: 'New Order Received',
           orderId: createdOrder.id,
-          orderTotal: total,
+          orderTotal: total + DELIVERY_FEE,
           customerName: deliveryInfo.fullName,
           isAdminCopy: false,
           showToast: false // Don't show toast for user
@@ -825,7 +849,7 @@ const Checkout = () => {
                             </div>
                             <div className="flex justify-between">
                               <span className="font-medium">Amount to Pay:</span>
-                              <span className="font-bold text-lg text-green-600">{formatPrice(total)}</span>
+                              <span className="font-bold text-lg text-green-600">{formatPrice(total + DELIVERY_FEE)}</span>
                             </div>
                           </div>
                         </div>
@@ -833,7 +857,7 @@ const Checkout = () => {
                         <div className="bg-orange-100 rounded-lg p-3 mb-4">
                           <h5 className="font-semibold text-orange-800 mb-2">💡 Payment Instructions:</h5>
                           <ul className="text-sm text-orange-700 space-y-1">
-                            <li>• Transfer the exact amount: <strong>{formatPrice(total)}</strong></li>
+                            <li>• Transfer the exact amount: <strong>{formatPrice(total + DELIVERY_FEE)}</strong></li>
                             <li>• Use the reference number for easy tracking</li>
                             <li>• Take a clear photo of your deposit slip</li>
                             <li>• Upload the deposit slip below to complete your order</li>
@@ -1037,11 +1061,11 @@ const Checkout = () => {
                 </div>
                 <div className="flex justify-between text-gray-600">
                   <span>Delivery Fee</span>
-                  <span className="text-green-600">Free</span>
+                  <span>{formatPrice(DELIVERY_FEE)}</span>
                 </div>
                 <div className="flex justify-between font-bold text-lg pt-2 border-t">
                   <span>Total</span>
-                  <span className="text-purple-600">{formatPrice(total)}</span>
+                  <span className="text-purple-600">{formatPrice(total + DELIVERY_FEE)}</span>
                 </div>
               </div>
             </div>

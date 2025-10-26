@@ -6,6 +6,7 @@ const PaymentSlipManagement = () => {
   const [paymentSlips, setPaymentSlips] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [selectedSlips, setSelectedSlips] = useState([]);
   const [statistics, setStatistics] = useState({});
@@ -148,20 +149,41 @@ const PaymentSlipManagement = () => {
 
       await paymentService.uploadPaymentSlip(formData);
       resetUploadForm();
-      fetchPaymentSlips();
-      fetchStatistics();
+      setShowUploadForm(false);
+      setError('');
+      setSuccessMessage('Payment slip uploaded successfully!');
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccessMessage(''), 3000);
+      
+      // Refresh the list
+      await fetchPaymentSlips();
+      await fetchStatistics();
     } catch (err) {
-      setError('Failed to upload payment slip');
+      console.error('Upload error:', err);
+      setError('Failed to upload payment slip: ' + (err.response?.data?.message || err.message));
+      setSuccessMessage('');
     }
   };
 
   const handleStatusUpdate = async (slipId, newStatus, rejectionReason = '') => {
     try {
-      await adminService.updatePaymentSlipStatus(slipId, newStatus, rejectionReason);
+      console.log('🔄 [STATUS UPDATE] Starting update:', { slipId, newStatus, rejectionReason });
+      console.log('🔄 [STATUS UPDATE] Calling adminService.updatePaymentSlipStatus...');
+      const result = await adminService.updatePaymentSlipStatus(slipId, newStatus, rejectionReason);
+      console.log('✅ [STATUS UPDATE] Update successful!', result);
+      setSuccessMessage('Status updated successfully!');
+      setTimeout(() => setSuccessMessage(''), 3000);
       fetchPaymentSlips();
       fetchStatistics();
     } catch (err) {
-      setError('Failed to update payment slip status');
+      console.error('❌ [STATUS UPDATE] Failed to update payment slip status:', err);
+      console.error('❌ [STATUS UPDATE] Error details:', {
+        message: err.message,
+        response: err.response,
+        fullError: err
+      });
+      setError('Failed to update payment slip status: ' + (err.message || err));
     }
   };
 
@@ -171,28 +193,51 @@ const PaymentSlipManagement = () => {
       return;
     }
     
+    // Get the selected slip objects to check their current status
+    const selectedSlipObjects = paymentSlips.filter(slip => selectedSlips.includes(slip.id));
+    
+    // Validate status transitions
+    if (status === 'REJECTED') {
+      // Only PENDING or PROCESSING slips can be rejected
+      const invalidSlips = selectedSlipObjects.filter(slip => 
+        slip.status !== 'PENDING' && slip.status !== 'PROCESSING'
+      );
+      if (invalidSlips.length > 0) {
+        setError(`Cannot reject ${invalidSlips.length} slip(s) that are already ${invalidSlips[0].status}. Only PENDING or PROCESSING slips can be rejected.`);
+        return;
+      }
+    } else if (status === 'VERIFIED' || status === 'CONFIRMED') {
+      // Only PENDING or PROCESSING slips can be confirmed
+      const invalidSlips = selectedSlipObjects.filter(slip => 
+        slip.status !== 'PENDING' && slip.status !== 'PROCESSING'
+      );
+      if (invalidSlips.length > 0) {
+        setError(`Cannot confirm ${invalidSlips.length} slip(s) that are already ${invalidSlips[0].status}. Only PENDING or PROCESSING slips can be confirmed.`);
+        return;
+      }
+    }
+    
     try {
       await adminService.bulkUpdatePaymentSlipStatus(selectedSlips, status);
       setSelectedSlips([]);
       fetchPaymentSlips();
       fetchStatistics();
     } catch (err) {
-      setError('Failed to bulk update payment slips');
+      setError('Failed to bulk update payment slips: ' + (err.message || err));
     }
   };
 
-  const handleDownload = async (slipId, fileName) => {
+  const handleDownload = async (slip) => {
     try {
-      const blob = await paymentService.downloadPaymentSlip(slipId);
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
+      if (slip.filePath) {
+        // Open image in new tab for viewing/downloading
+        const imageUrl = `http://localhost:8084${slip.filePath}`;
+        window.open(imageUrl, '_blank');
+      } else {
+        setError('Payment slip file path not found');
+      }
     } catch (err) {
+      console.error('Download error:', err);
       setError('Failed to download payment slip');
     }
   };
@@ -259,16 +304,36 @@ const PaymentSlipManagement = () => {
         <h1 className="text-3xl font-bold text-gray-900">
           {userRole === 'ADMIN' ? 'Payment Slip Management' : 'My Payment Slips'}
         </h1>
-        <button
-          onClick={() => setShowUploadForm(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
-        >
-          Upload Payment Slip
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => {
+              fetchPaymentSlips();
+              fetchStatistics();
+            }}
+            className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Refresh
+          </button>
+        </div>
       </div>
 
+      {successMessage && (
+        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
+          {successMessage}
+          <button
+            onClick={() => setSuccessMessage('')}
+            className="absolute top-0 right-0 px-4 py-3 text-green-700 hover:text-green-900"
+          >
+            ×
+          </button>
+        </div>
+      )}
+
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">{error}
           {error}
           <button
             onClick={() => setError('')}
@@ -461,6 +526,9 @@ const PaymentSlipManagement = () => {
                   Order Details
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Image
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Payment Info
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -468,9 +536,6 @@ const PaymentSlipManagement = () => {
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
                 </th>
               </tr>
             </thead>
@@ -501,6 +566,28 @@ const PaymentSlipManagement = () => {
                         <div className="text-sm text-gray-500">Transaction: {slip.transactionReference}</div>
                       </div>
                     </td>
+                    <td className="px-6 py-4">
+                      {slip.filePath ? (
+                        <>
+                          {console.log('Payment slip image path:', slip.filePath)}
+                          <img 
+                            src={`http://localhost:8084${slip.filePath}`}
+                            alt="Payment Slip"
+                            className="h-20 w-20 object-cover rounded cursor-pointer hover:opacity-80"
+                            onClick={() => window.open(`http://localhost:8084${slip.filePath}`, '_blank')}
+                            onError={(e) => {
+                              console.error('Failed to load image:', `http://localhost:8084${slip.filePath}`);
+                              e.target.onerror = null;
+                              e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="80" height="80"%3E%3Crect fill="%23ddd" width="80" height="80"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999"%3ENo Image%3C/text%3E%3C/svg%3E';
+                            }}
+                          />
+                        </>
+                      ) : (
+                        <div className="h-20 w-20 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-500">
+                          No Image
+                        </div>
+                      )}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
                         <div className="text-sm text-gray-900">{slip.bankName || 'N/A'}</div>
@@ -512,49 +599,67 @@ const PaymentSlipManagement = () => {
                       LKR {slip.paymentAmount?.toLocaleString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(slip.status)}`}>
-                        {slip.status?.replace('_', ' ')}
-                      </span>
-                      {slip.rejectionReason && (
-                        <div className="text-xs text-red-600 mt-1">{slip.rejectionReason}</div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => handleDownload(slip.id, slip.fileName)}
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          Download
-                        </button>
-                        {userRole === 'ADMIN' && slip.status === 'PENDING_VERIFICATION' && (
-                          <>
-                            <button
-                              onClick={() => handleStatusUpdate(slip.id, 'VERIFIED')}
-                              className="text-green-600 hover:text-green-900"
-                            >
-                              Verify
-                            </button>
-                            <button
-                              onClick={() => {
+                      {userRole === 'ADMIN' ? (
+                        <div className="flex flex-col gap-1">
+                          <select
+                            value={slip.status || 'PENDING'}
+                            onChange={(e) => {
+                              const newStatus = e.target.value;
+                              if (newStatus === 'REJECTED') {
                                 const reason = prompt('Please enter rejection reason:');
-                                if (reason) handleStatusUpdate(slip.id, 'REJECTED', reason);
-                              }}
-                              className="text-red-600 hover:text-red-900"
-                            >
-                              Reject
-                            </button>
-                          </>
-                        )}
-                        {(userRole === 'ADMIN' || slip.status === 'PENDING_VERIFICATION') && (
-                          <button
-                            onClick={() => handleDelete(slip.id)}
-                            className="text-red-600 hover:text-red-900"
+                                if (reason) {
+                                  handleStatusUpdate(slip.id, newStatus, reason);
+                                } else {
+                                  // Reset select if user cancels
+                                  e.target.value = slip.status;
+                                }
+                              } else {
+                                handleStatusUpdate(slip.id, newStatus);
+                              }
+                            }}
+                            className={`w-full px-3 py-2 rounded-md text-sm font-medium border-2 cursor-pointer transition-all ${
+                              slip.status === 'CONFIRMED' ? 'bg-green-50 border-green-300 text-green-800 hover:bg-green-100' :
+                              slip.status === 'REJECTED' ? 'bg-red-50 border-red-300 text-red-800 hover:bg-red-100' :
+                              slip.status === 'PROCESSING' ? 'bg-blue-50 border-blue-300 text-blue-800 hover:bg-blue-100' :
+                              'bg-yellow-50 border-yellow-300 text-yellow-800 hover:bg-yellow-100'
+                            }`}
                           >
-                            Delete
-                          </button>
-                        )}
-                      </div>
+                            <option value="PENDING">⏳ Pending</option>
+                            <option value="PROCESSING">🔄 Processing</option>
+                            <option value="CONFIRMED">✅ Confirmed</option>
+                            <option value="REJECTED">❌ Rejected</option>
+                          </select>
+                          {slip.rejectionReason && (
+                            <div className="text-xs text-red-600 bg-red-50 p-2 rounded border border-red-200">
+                              <span className="font-semibold">Reason:</span> {slip.rejectionReason}
+                            </div>
+                          )}
+                          {slip.confirmedBy && slip.confirmedAt && (
+                            <div className="text-xs text-green-700 bg-green-50 p-1 rounded">
+                              ✓ By {slip.confirmedBy} on {new Date(slip.confirmedAt).toLocaleDateString()}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="flex flex-col gap-1">
+                          <span className={`inline-block px-3 py-2 rounded-md text-sm font-medium ${
+                            slip.status === 'CONFIRMED' ? 'bg-green-100 text-green-800' :
+                            slip.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
+                            slip.status === 'PROCESSING' ? 'bg-blue-100 text-blue-800' :
+                            'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {slip.status === 'CONFIRMED' ? '✅ Confirmed' :
+                             slip.status === 'REJECTED' ? '❌ Rejected' :
+                             slip.status === 'PROCESSING' ? '🔄 Processing' :
+                             '⏳ Pending'}
+                          </span>
+                          {slip.rejectionReason && (
+                            <div className="text-xs text-red-600 bg-red-50 p-2 rounded border border-red-200">
+                              <span className="font-semibold">Reason:</span> {slip.rejectionReason}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </td>
                   </tr>
                 );

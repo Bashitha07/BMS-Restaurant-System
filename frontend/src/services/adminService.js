@@ -37,17 +37,17 @@ const ADMIN_ENDPOINTS = {
   // Payment Slip Management
   PAYMENT_SLIPS: '/api/admin/payment-slips',
   PAYMENT_SLIP_BY_ID: (id) => `/api/admin/payment-slips/${id}`,
+  UPDATE_PAYMENT_STATUS: (id) => `/api/admin/payment-slips/${id}/status`,
   CONFIRM_PAYMENT: (id) => `/api/admin/payment-slips/${id}/confirm`,
   REJECT_PAYMENT: (id) => `/api/admin/payment-slips/${id}/reject`,
   PAYMENT_STATISTICS: '/api/admin/payment-slips/statistics',
 
-  // Delivery Driver Management
-  DELIVERY_DRIVERS: '/api/admin/drivers',
-  ALL_DRIVERS: '/api/delivery-drivers',
-  PENDING_DRIVERS: '/api/delivery-drivers/pending',
-  ACTIVE_DRIVERS: '/api/delivery-drivers/active',
-  APPROVE_DRIVER: (id) => `/api/delivery-drivers/${id}/approve`,
-  REJECT_DRIVER: (id) => `/api/delivery-drivers/${id}/reject`
+  // Delivery Driver Management (Driver system uses User entities with DRIVER role)
+  ALL_DRIVERS: '/api/orders/admin/drivers', // Get available drivers (Users with DRIVER role)
+  
+  // Note: Old standalone delivery-drivers endpoints deprecated
+  // Drivers are now managed through the User system with role='DRIVER'
+  // Use /api/orders/{orderId}/assign-driver to assign drivers to orders
 };
 
 export const adminService = {
@@ -516,25 +516,37 @@ export const adminService = {
 
   updatePaymentSlipStatus: async (slipId, newStatus, rejectionReason = '') => {
     try {
-      // Get admin username from localStorage
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       const adminUsername = user.username || 'admin';
       
-      if (newStatus === 'VERIFIED' || newStatus === 'CONFIRMED') {
-        const response = await axios.post(ADMIN_ENDPOINTS.CONFIRM_PAYMENT(slipId), {
-          adminUsername,
-          notes: 'Payment verified'
-        });
-        return response.data;
-      } else if (newStatus === 'REJECTED') {
-        const response = await axios.post(ADMIN_ENDPOINTS.REJECT_PAYMENT(slipId), { 
-          adminUsername,
-          reason: rejectionReason || 'Payment rejected',
-          notes: rejectionReason
-        });
-        return response.data;
-      }
+      console.log('📡 [ADMIN SERVICE] Preparing status update request:', {
+        slipId,
+        newStatus,
+        rejectionReason,
+        adminUsername,
+        endpoint: ADMIN_ENDPOINTS.UPDATE_PAYMENT_STATUS(slipId)
+      });
+      
+      const requestBody = {
+        status: newStatus,
+        adminUsername,
+        rejectionReason: rejectionReason || ''
+      };
+      
+      console.log('📡 [ADMIN SERVICE] Request body:', requestBody);
+      
+      // Use the new general status update endpoint
+      const response = await axios.patch(ADMIN_ENDPOINTS.UPDATE_PAYMENT_STATUS(slipId), requestBody);
+      
+      console.log('📡 [ADMIN SERVICE] Response received:', response.data);
+      return response.data;
     } catch (error) {
+      console.error('📡 [ADMIN SERVICE] Error updating status:', {
+        error,
+        response: error.response,
+        data: error.response?.data,
+        status: error.response?.status
+      });
       throw error.response?.data || 'Failed to update payment slip status';
     }
   },
@@ -575,23 +587,31 @@ export const adminService = {
   },
 
   // Delivery Driver Management
+  // Driver Management Methods
+  // Note: In the restored system, drivers are Users with role='DRIVER'
+  // There is no separate approval workflow - drivers are managed through user accounts
+  
   getPendingDrivers: async () => {
     try {
-      const response = await axios.get(ADMIN_ENDPOINTS.PENDING_DRIVERS);
-      return response.data;
+      // Get all drivers and filter for disabled ones (pending approval)
+      const allDrivers = await adminService.getAllDrivers();
+      const pendingDrivers = allDrivers.filter(driver => !driver.enabled);
+      return pendingDrivers;
     } catch (error) {
-      console.error('Failed to fetch pending drivers from backend:', error);
-      throw error;
+      console.error('Failed to fetch pending drivers:', error);
+      return [];
     }
   },
 
   getActiveDrivers: async () => {
     try {
-      const response = await axios.get(ADMIN_ENDPOINTS.ACTIVE_DRIVERS);
-      return response.data;
+      // Get all drivers and filter for enabled ones (active)
+      const allDrivers = await adminService.getAllDrivers();
+      const activeDrivers = allDrivers.filter(driver => driver.enabled);
+      return activeDrivers;
     } catch (error) {
-      console.error('Failed to fetch active drivers from backend:', error);
-      throw error;
+      console.error('Failed to fetch active drivers:', error);
+      return [];
     }
   },
 
@@ -607,7 +627,8 @@ export const adminService = {
 
   approveDriver: async (id) => {
     try {
-      const response = await axios.post(ADMIN_ENDPOINTS.APPROVE_DRIVER(id));
+      // Enable the user account (approve driver application)
+      const response = await axios.put(`/api/admin/users/${id}/enable`);
       return response.data;
     } catch (error) {
       console.error('Failed to approve driver:', error);
@@ -617,7 +638,8 @@ export const adminService = {
 
   rejectDriver: async (id) => {
     try {
-      const response = await axios.post(ADMIN_ENDPOINTS.REJECT_DRIVER(id));
+      // Disable the user account (reject driver application)
+      const response = await axios.put(`/api/admin/users/${id}/disable`);
       return response.data;
     } catch (error) {
       console.error('Failed to reject driver:', error);

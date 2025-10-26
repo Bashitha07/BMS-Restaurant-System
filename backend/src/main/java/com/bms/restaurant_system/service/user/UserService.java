@@ -3,9 +3,11 @@ package com.bms.restaurant_system.service.user;
 import com.bms.restaurant_system.dto.UserDTO;
 import com.bms.restaurant_system.dto.user.RegisterUserDTO;
 import com.bms.restaurant_system.entity.User;
+import com.bms.restaurant_system.entity.Driver;
 import com.bms.restaurant_system.entity.Role;
 import com.bms.restaurant_system.exception.ResourceNotFoundException;
 import com.bms.restaurant_system.repository.UserRepository;
+import com.bms.restaurant_system.repository.DriverRepository;
 import com.bms.restaurant_system.dto.UserResponseDTO; // Assuming this is created
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -30,6 +33,9 @@ public class UserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+    
+    @Autowired
+    private DriverRepository driverRepository;
 
     /**
      * Retrieves all users and converts them to a list of UserResponseDTOs.
@@ -79,9 +85,22 @@ public class UserService {
         }
         User user = convertToEntity(userDTO);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        
+        // New DRIVER accounts start as disabled (pending approval)
+        if (user.getRole() == Role.DRIVER) {
+            user.setEnabled(false);
+            logger.info("Driver account set to disabled - requires admin approval");
+        }
+        
         logger.info("Password hashed for user: {}", userDTO.username());
         user = userRepository.save(user);
         logger.info("User created with id: {}", user.getId());
+        
+        // If user is a DRIVER, create driver profile
+        if (user.getRole() == Role.DRIVER) {
+            createDriverProfile(user);
+        }
+        
         return convertToResponseDTO(user);
     }
 
@@ -285,5 +304,33 @@ public class UserService {
         
         return stats;
     }
+    
+    /**
+     * Creates a driver profile for a user with DRIVER role
+     * @param user The user for whom to create a driver profile
+     */
+    private void createDriverProfile(User user) {
+        try {
+            logger.info("Creating driver profile for user: {}", user.getUsername());
+            
+            Driver driver = new Driver();
+            driver.setUser(user);
+            driver.setName(user.getUsername());  // Default name
+            driver.setPhone(user.getPhone() != null ? user.getPhone() : "");
+            driver.setVehicleType("Motorcycle");  // Default type
+            driver.setVehicleNumber("PENDING");   // To be updated by admin
+            driver.setLicenseNumber("PENDING");   // To be updated by admin
+            driver.setAvailable(true);
+            driver.setRating(BigDecimal.ZERO);
+            driver.setTotalDeliveries(0);
+            
+            driverRepository.save(driver);
+            logger.info("Driver profile created successfully for user: {}", user.getUsername());
+        } catch (Exception e) {
+            logger.error("Failed to create driver profile for user: {}", user.getUsername(), e);
+            // Don't throw exception - user account is still created
+        }
+    }
 
 }
+

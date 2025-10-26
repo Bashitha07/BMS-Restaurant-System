@@ -127,8 +127,27 @@ public class DeliveryDriverService {
                 .collect(Collectors.toList());
     }
 
+    public List<DeliveryDriver> getApprovedDrivers() {
+        // Return all approved drivers (active and can be assigned deliveries)
+        // APPROVED drivers or drivers with AVAILABLE/BUSY/ON_DELIVERY status
+        return deliveryDriverRepository.findAll().stream()
+                .filter(driver -> driver.getIsActive() 
+                               && (driver.getStatus() == DriverStatus.APPROVED
+                                   || driver.getStatus() == DriverStatus.AVAILABLE
+                                   || driver.getStatus() == DriverStatus.BUSY
+                                   || driver.getStatus() == DriverStatus.ON_DELIVERY
+                                   || driver.getStatus() == DriverStatus.BREAK
+                                   || driver.getStatus() == DriverStatus.OFFLINE))
+                .collect(Collectors.toList());
+    }
+
     public List<DeliveryDriverDTO> getActiveDrivers() {
-        return deliveryDriverRepository.findByStatus(DriverStatus.ON_DELIVERY).stream()
+        // Return all approved/active drivers (AVAILABLE, ON_DELIVERY, BUSY, BREAK, OFFLINE)
+        // Exclude only PENDING, REJECTED, and SUSPENDED
+        return deliveryDriverRepository.findAll().stream()
+                .filter(driver -> driver.getStatus() != DriverStatus.PENDING 
+                               && driver.getStatus() != DriverStatus.REJECTED
+                               && driver.getStatus() != DriverStatus.SUSPENDED)
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
@@ -348,8 +367,8 @@ public class DeliveryDriverService {
         driver.setHourlyRate(registerDriverDTO.hourlyRate());
         driver.setCommissionRate(registerDriverDTO.commissionRate());
         driver.setNotes(registerDriverDTO.notes());
-        driver.setStatus(DriverStatus.OFFLINE);
-        driver.setIsActive(true);
+        driver.setStatus(DriverStatus.PENDING);  // New applications start as PENDING
+        driver.setIsActive(false);  // Not active until approved
         
         driver = deliveryDriverRepository.save(driver);
         return convertToDTO(driver);
@@ -420,6 +439,7 @@ public class DeliveryDriverService {
         }
 
         driver.setStatus(DriverStatus.APPROVED);
+        driver.setIsActive(true);  // Activate the driver account when approved
         driver = deliveryDriverRepository.save(driver);
         return convertToDTO(driver);
     }

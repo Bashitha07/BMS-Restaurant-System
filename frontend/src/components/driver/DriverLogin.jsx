@@ -25,9 +25,21 @@ const DriverLogin = ({ onLogin, showRegister }) => {
 
     try {
       const response = await driverService.login(formData);
-      onLogin(response.driver);
-      navigate('/driver/dashboard');
+      console.log('✅ [DRIVER LOGIN] Login successful:', response);
+      
+      // Call the onLogin callback if provided
+      if (onLogin) {
+        onLogin(response);
+      }
+      
+      // Add a small delay to ensure localStorage is updated
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Force a hard redirect to ensure AppRouter re-checks authentication
+      console.log('🔄 [DRIVER LOGIN] Redirecting to driver dashboard...');
+      window.location.href = '/driver/dashboard';
     } catch (err) {
+      console.error('❌ [DRIVER LOGIN] Login failed:', err);
       setError(typeof err === 'string' ? err : 'Login failed. Please try again.');
     } finally {
       setLoading(false);

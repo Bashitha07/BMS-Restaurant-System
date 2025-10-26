@@ -2,7 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCart } from '../../contexts/CartContext';
 import { toast } from 'react-hot-toast';
-import { User, ShoppingBag, Menu as MenuIcon, Search, MapPin, X } from 'lucide-react';
+import { User, ShoppingBag, Menu as MenuIcon, Search, MapPin, X, BarChart3, Users, ChefHat, CreditCard, Calendar, Truck } from 'lucide-react';
 import { useState } from 'react';
 
 export default function Navbar({ onCartClick }) {
@@ -11,6 +11,8 @@ export default function Navbar({ onCartClick }) {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const isAdmin = user?.role?.toUpperCase() === 'ADMIN';
 
   const handleLogout = () => {
     logout();
@@ -27,58 +29,98 @@ export default function Navbar({ onCartClick }) {
       <div className="section-container">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
+          <Link to={isAdmin ? "/admin/dashboard" : "/"} className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-accent-500 rounded-lg flex items-center justify-center">
               <span className="text-primary-900 font-bold text-sm">BMS</span>
             </div>
             <span className="text-xl font-bold text-accent-400 hidden sm:block">
-              Kingdom of Taste
+              {isAdmin ? 'Admin Panel' : 'Kingdom of Taste'}
             </span>
           </Link>
 
-          {/* Location - Hidden on mobile */}
-          <div className="hidden lg:flex items-center space-x-2 text-sm text-accent-200">
-            <MapPin className="w-4 h-4" />
-            <span>Deliver to</span>
-            <span className="font-medium text-accent-100">Current Location</span>
-          </div>
-
-          {/* Search Bar - Hidden on mobile */}
-          <div className="hidden md:flex flex-1 max-w-md mx-8">
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-accent-400 w-4 h-4" />
-              <input
-                type="text"
-                placeholder={user ? "Search for restaurant, cuisine, or dish" : "Search menu (Sign in for personalized results)"}
-                className="w-full pl-10 pr-4 py-2 border border-primary-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-400 focus:border-transparent bg-primary-800 text-accent-100 placeholder-accent-200"
-              />
-              {!user && (
-                <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-                  <Link
-                    to="/login"
-                    className="text-xs text-accent-400 hover:text-accent-500 font-medium"
-                  >
-                    Sign in
-                  </Link>
-                </div>
-              )}
+          {/* Admin Navigation Tabs - Desktop */}
+          {isAdmin && (
+            <div className="hidden lg:flex items-center space-x-1">
+              <Link to="/admin/dashboard" className="px-3 py-2 text-sm font-medium text-accent-200 hover:text-accent-100 hover:bg-primary-800 rounded-md transition-colors">
+                <BarChart3 className="w-4 h-4 inline mr-1" />
+                Dashboard
+              </Link>
+              <Link to="/admin/users" className="px-3 py-2 text-sm font-medium text-accent-200 hover:text-accent-100 hover:bg-primary-800 rounded-md transition-colors">
+                <Users className="w-4 h-4 inline mr-1" />
+                Users
+              </Link>
+              <Link to="/admin/menus" className="px-3 py-2 text-sm font-medium text-accent-200 hover:text-accent-100 hover:bg-primary-800 rounded-md transition-colors">
+                <ChefHat className="w-4 h-4 inline mr-1" />
+                Menu
+              </Link>
+              <Link to="/admin/orders" className="px-3 py-2 text-sm font-medium text-accent-200 hover:text-accent-100 hover:bg-primary-800 rounded-md transition-colors">
+                <ShoppingBag className="w-4 h-4 inline mr-1" />
+                Orders
+              </Link>
+              <Link to="/admin/payment-slips" className="px-3 py-2 text-sm font-medium text-accent-200 hover:text-accent-100 hover:bg-primary-800 rounded-md transition-colors">
+                <CreditCard className="w-4 h-4 inline mr-1" />
+                Payments
+              </Link>
+              <Link to="/admin/reservations" className="px-3 py-2 text-sm font-medium text-accent-200 hover:text-accent-100 hover:bg-primary-800 rounded-md transition-colors">
+                <Calendar className="w-4 h-4 inline mr-1" />
+                Reservations
+              </Link>
+              <Link to="/admin/delivery" className="px-3 py-2 text-sm font-medium text-accent-200 hover:text-accent-100 hover:bg-primary-800 rounded-md transition-colors">
+                <Truck className="w-4 h-4 inline mr-1" />
+                Deliveries
+              </Link>
             </div>
-          </div>
+          )}
+
+          {/* Location - Hidden on mobile and for admin */}
+          {!isAdmin && (
+            <div className="hidden lg:flex items-center space-x-2 text-sm text-accent-200">
+              <MapPin className="w-4 h-4" />
+              <span>Deliver to</span>
+              <span className="font-medium text-accent-100">Current Location</span>
+            </div>
+          )}
+
+          {/* Search Bar - Hidden on mobile and for admin */}
+          {!isAdmin && (
+            <div className="hidden md:flex flex-1 max-w-md mx-8">
+              <div className="relative w-full">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-accent-400 w-4 h-4" />
+                <input
+                  type="text"
+                  placeholder={user ? "Search for restaurant, cuisine, or dish" : "Search menu (Sign in for personalized results)"}
+                  className="w-full pl-10 pr-4 py-2 border border-primary-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-400 focus:border-transparent bg-primary-800 text-accent-100 placeholder-accent-200"
+                />
+                {!user && (
+                  <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+                    <Link
+                      to="/login"
+                      className="text-xs text-accent-400 hover:text-accent-500 font-medium"
+                    >
+                      Sign in
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Right side */}
           <div className="flex items-center space-x-4">
-            {/* Cart Button */}
-            <button
-              onClick={onCartClick}
-              className="relative p-2 hover:bg-primary-800 rounded-lg transition-colors"
-            >
-              <ShoppingBag className="w-5 h-5 text-accent-400" />
-              {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 bg-accent-500 text-primary-900 text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
-                  {totalItems}
-                </span>
-              )}
-            </button>
+            {/* Cart Button - Hidden for admin */}
+            {!isAdmin && (
+              <button
+                onClick={onCartClick}
+                className="relative p-2 hover:bg-primary-800 rounded-lg transition-colors"
+              >
+                <ShoppingBag className="w-5 h-5 text-accent-400" />
+                {totalItems > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-accent-500 text-primary-900 text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
+                    {totalItems}
+                  </span>
+                )}
+              </button>
+            )}
 
             {/* User Menu */}
             {user ? (
@@ -98,38 +140,56 @@ export default function Navbar({ onCartClick }) {
                 {/* Dropdown Menu */}
                 {isMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-primary-900 rounded-lg shadow-lg border border-primary-800 py-1 z-50">
-                    <Link
-                      to="/orders"
-                      className="block px-4 py-2 text-sm text-accent-200 hover:bg-primary-800"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Your Orders
-                    </Link>
-                    <Link
-                      to="/reservations"
-                      className="block px-4 py-2 text-sm text-accent-200 hover:bg-primary-800"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Reservations
-                    </Link>
-                    <Link
-                      to="/payments"
-                      className="block px-4 py-2 text-sm text-accent-200 hover:bg-primary-800"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Payment Methods
-                    </Link>
-                    {user.role === 'ADMIN' && (
+                    {isAdmin ? (
                       <>
-                        <div className="border-t border-gray-100 my-1"></div>
                         <Link
-                          to="/admin"
+                          to="/"
+                          className="block px-4 py-2 text-sm text-accent-200 hover:bg-primary-800"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          Home
+                        </Link>
+                        <Link
+                          to="/admin/dashboard"
                           className="block px-4 py-2 text-sm text-accent-400 hover:bg-primary-800 font-medium"
                           onClick={() => setIsMenuOpen(false)}
                         >
-                          Admin Dashboard
+                          Admin Panel
                         </Link>
                       </>
+                    ) : (
+                      <>
+                        <Link
+                          to="/order-history"
+                          className="block px-4 py-2 text-sm text-accent-200 hover:bg-primary-800"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          Your Orders
+                        </Link>
+                        <Link
+                          to="/reservations"
+                          className="block px-4 py-2 text-sm text-accent-200 hover:bg-primary-800"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          Reservations
+                        </Link>
+                        <Link
+                          to="/profile"
+                          className="block px-4 py-2 text-sm text-accent-200 hover:bg-primary-800"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          Profile
+                        </Link>
+                      </>
+                    )}
+                    {!isAdmin && (
+                      <Link
+                        to="/payments"
+                        className="block px-4 py-2 text-sm text-accent-200 hover:bg-primary-800"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Payment Methods
+                      </Link>
                     )}
                     <div className="border-t border-primary-800 my-1"></div>
                     <button
@@ -179,46 +239,60 @@ export default function Navbar({ onCartClick }) {
         {isMobileMenuOpen && (
           <div className="md:hidden bg-primary-900 border-t border-primary-800">
             <div className="px-4 py-2 space-y-1">
-              {/* Mobile Navigation Links */}
-              <Link
-                to="/menu"
-                className="block px-3 py-2 text-base font-medium text-accent-200 hover:text-accent-100 hover:bg-primary-800 rounded-md"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Menu
-              </Link>
+              {/* Mobile Navigation Links - Hidden for admin */}
+              {!isAdmin && (
+                <Link
+                  to="/menu"
+                  className="block px-3 py-2 text-base font-medium text-accent-200 hover:text-accent-100 hover:bg-primary-800 rounded-md"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Menu
+                </Link>
+              )}
               
               {user && (
                 <>
-                  <Link
-                    to="/orders"
-                    className="block px-3 py-2 text-base font-medium text-accent-200 hover:text-accent-100 hover:bg-primary-800 rounded-md"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Your Orders
-                  </Link>
-                  <Link
-                    to="/reservations"
-                    className="block px-3 py-2 text-base font-medium text-accent-200 hover:text-accent-100 hover:bg-primary-800 rounded-md"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Reservations
-                  </Link>
-                  <Link
-                    to="/profile"
-                    className="block px-3 py-2 text-base font-medium text-accent-200 hover:text-accent-100 hover:bg-primary-800 rounded-md"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Profile
-                  </Link>
-                  {user.role === 'ADMIN' && (
-                    <Link
-                      to="/admin"
-                      className="block px-3 py-2 text-base font-medium text-accent-400 hover:text-accent-500 hover:bg-primary-800 rounded-md"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      Admin Dashboard
-                    </Link>
+                  {isAdmin ? (
+                    <>
+                      <Link
+                        to="/"
+                        className="block px-3 py-2 text-base font-medium text-accent-200 hover:text-accent-100 hover:bg-primary-800 rounded-md"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        Home
+                      </Link>
+                      <Link
+                        to="/admin/dashboard"
+                        className="block px-3 py-2 text-base font-medium text-accent-400 hover:text-accent-100 hover:bg-primary-800 rounded-md"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        Admin Panel
+                      </Link>
+                    </>
+                  ) : (
+                    <>
+                      <Link
+                        to="/order-history"
+                        className="block px-3 py-2 text-base font-medium text-accent-200 hover:text-accent-100 hover:bg-primary-800 rounded-md"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        Your Orders
+                      </Link>
+                      <Link
+                        to="/reservations"
+                        className="block px-3 py-2 text-base font-medium text-accent-200 hover:text-accent-100 hover:bg-primary-800 rounded-md"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        Reservations
+                      </Link>
+                      <Link
+                        to="/profile"
+                        className="block px-3 py-2 text-base font-medium text-accent-200 hover:text-accent-100 hover:bg-primary-800 rounded-md"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        Profile
+                      </Link>
+                    </>
                   )}
                 </>
               )}

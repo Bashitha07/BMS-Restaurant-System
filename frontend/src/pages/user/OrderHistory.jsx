@@ -12,7 +12,6 @@ import {
   CheckCircle,
   XCircle,
   Eye,
-  RotateCcw,
   Download,
   Search,
   Filter,
@@ -36,6 +35,16 @@ export default function OrderHistory() {
   const [showOrderDetails, setShowOrderDetails] = useState(false);
 
   // Helper functions for safely displaying order information
+  const extractCity = (address) => {
+    if (!address || typeof address !== 'string') return '';
+    // Try to extract city from address string (assuming format: "street, city")
+    const parts = address.split(',');
+    if (parts.length >= 2) {
+      return parts[parts.length - 1].trim();
+    }
+    return '';
+  };
+
   const formatDate = (dateString) => {
     try {
       const date = new Date(dateString);
@@ -192,10 +201,10 @@ export default function OrderHistory() {
             status,
             items: items.map(item => ({
               id: item.id || Math.random().toString(36).substr(2, 9),
-              name: String(item.name || 'Unknown Item'),
-              price: typeof item.price === 'number' ? item.price : 0,
+              name: String(item.menuName || item.name || 'Unknown Item'),
+              price: typeof item.unitPrice === 'number' ? item.unitPrice : (typeof item.price === 'number' ? item.price : 0),
               quantity: typeof item.quantity === 'number' ? item.quantity : 0,
-              image: item.imageUrl || item.image || null
+              image: item.menuImageUrl || item.imageUrl || item.image || null
             })),
             subtotal,
             tax,
@@ -203,10 +212,19 @@ export default function OrderHistory() {
             total,
             paymentMethod: String(order.paymentMethod || 'Not specified'),
             deliveryAddress: order.deliveryAddress || { street: '', city: '', state: '', zipCode: '' },
-            customerName: String(order.customerName || user.username || 'Customer'),
-            customerPhone: String(order.customerPhone || 'Not provided'),
+            // Add deliveryInfo object for UI display using correct backend field names
+            deliveryInfo: {
+              fullName: order.userName || user.username || 'Customer',
+              email: order.userEmail || user.email || 'Not provided',
+              phone: order.deliveryPhone || user.phone || 'Not provided',
+              address: order.deliveryAddress || 'Not provided',
+              city: extractCity(order.deliveryAddress) || 'Not provided',
+              instructions: order.specialInstructions || ''
+            },
+            customerName: String(order.userName || user.username || 'Customer'),
+            customerPhone: String(order.deliveryPhone || user.phone || 'Not provided'),
             trackingUpdates: generateTrackingUpdates(orderDate, status),
-            estimatedDelivery: order.estimatedDelivery || new Date(Date.now() + 45 * 60 * 1000).toISOString()
+            estimatedDelivery: order.estimatedDeliveryTime || order.estimatedDelivery || new Date(Date.now() + 45 * 60 * 1000).toISOString()
           };
         } catch (orderError) {
           console.error('Error processing order:', orderError, order);
@@ -384,14 +402,6 @@ export default function OrderHistory() {
   };
 
   // These helper functions have been moved to the top of the component
-
-  const reorderItems = (order) => {
-    order.items.forEach(item => {
-      addItem({ ...item, quantity: item.quantity });
-    });
-    toast.success(`Added ${order.items.length} items to cart for reorder`);
-    navigate('/cart');
-  };
 
   const viewOrderDetails = (order) => {
     setSelectedOrder(order);
@@ -661,7 +671,7 @@ export default function OrderHistory() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Order History</h1>
-          <p className="text-gray-600">Track your orders and reorder your favorites</p>
+          <p className="text-gray-600">Track your orders and view order details</p>
         </div>
 
         {/* Search and Filter */}
@@ -793,7 +803,7 @@ export default function OrderHistory() {
                       </div>
                       <div className="flex items-center gap-1">
                         <CreditCard className="w-4 h-4" />
-                        <span>{order.paymentMethod === 'cash' ? 'Cash on Delivery' : 'Bank Deposit'}</span>
+                        <span>{order.paymentMethod === 'CASH_ON_DELIVERY' ? 'Cash on Delivery' : 'Bank Deposit'}</span>
                       </div>
                       {order.status !== 'delivered' && order.status !== 'cancelled' && (
                         <div className="flex items-center gap-1">
@@ -812,7 +822,7 @@ export default function OrderHistory() {
                         <Eye className="w-4 h-4" />
                         View Details
                       </button>
-                      {order.paymentMethod === 'deposit' && 
+                      {order.paymentMethod === 'DEPOSIT_SLIP' && 
                         (order.paymentStatus === 'failed' || order.paymentStatus === 'awaiting_verification') && (
                           <button
                             onClick={() => navigate(`/payment/${order.id}`)}
@@ -823,13 +833,6 @@ export default function OrderHistory() {
                           </button>
                         )
                       }
-                      <button
-                        onClick={() => reorderItems(order)}
-                        className="flex items-center gap-2 px-4 py-2 text-green-600 border border-green-600 rounded-md hover:bg-green-50 transition-colors"
-                      >
-                        <RotateCcw className="w-4 h-4" />
-                        Reorder
-                      </button>
                       <button
                         onClick={() => downloadInvoice(order)}
                         className="flex items-center gap-2 px-4 py-2 text-blue-600 border border-blue-600 rounded-md hover:bg-blue-50 transition-colors"
@@ -872,7 +875,7 @@ export default function OrderHistory() {
                       <p><strong>Order ID:</strong> #{selectedOrder.id}</p>
                       <p><strong>Date:</strong> {formatDate(selectedOrder.orderDate)}</p>
                       <p><strong>Status:</strong> {selectedOrder.status}</p>
-                      <p><strong>Payment:</strong> {selectedOrder.paymentMethod === 'cash' ? 'Cash on Delivery' : 'Bank Deposit'}</p>
+                      <p><strong>Payment:</strong> {selectedOrder.paymentMethod === 'CASH_ON_DELIVERY' ? 'Cash on Delivery' : 'Bank Deposit'}</p>
                     </div>
                   </div>
                   <div>
@@ -925,35 +928,6 @@ export default function OrderHistory() {
                       <span>Total</span>
                       <span className="text-purple-600">{formatPrice(selectedOrder.total)}</span>
                     </div>
-                  </div>
-                </div>
-
-                {/* Order Tracking */}
-                <div>
-                  <h3 className="font-semibold mb-4 flex items-center gap-2">
-                    <Truck className="w-5 h-5" />
-                    Order Tracking
-                  </h3>
-                  <div className="space-y-4">
-                    {selectedOrder.trackingUpdates?.map((update, index) => (
-                      <div key={index} className="flex items-start gap-4">
-                        <div className={`w-3 h-3 rounded-full mt-1 ${
-                          update.completed ? 'bg-green-500' : 'bg-gray-300'
-                        }`}></div>
-                        <div className="flex-1">
-                          <p className="font-medium">{update.title}</p>
-                          <p className="text-sm text-gray-600">{update.description}</p>
-                          {update.actor && (
-                            <p className="text-xs text-indigo-600 mt-1">
-                              By: {update.actor}
-                            </p>
-                          )}
-                          <p className="text-xs text-gray-500 mt-1">
-                            {formatDate(update.timestamp)}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
                   </div>
                 </div>
               </div>

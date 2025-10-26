@@ -53,8 +53,38 @@ public class ReservationService {
     public ReservationDTO updateReservation(Long id, ReservationDTO reservationDTO) {
         Reservation existingReservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + id));
-        existingReservation.setStatus(Reservation.ReservationStatus.valueOf(reservationDTO.status()));
-        existingReservation.setNumberOfPeople(reservationDTO.numberOfPeople());
+        
+        // Update all editable fields
+        if (reservationDTO.numberOfPeople() != null) {
+            existingReservation.setNumberOfPeople(reservationDTO.numberOfPeople());
+        }
+        if (reservationDTO.tableNumber() != null) {
+            existingReservation.setTableNumber(reservationDTO.tableNumber());
+        }
+        if (reservationDTO.reservationDate() != null) {
+            existingReservation.setReservationDate(reservationDTO.reservationDate());
+        }
+        if (reservationDTO.reservationTime() != null) {
+            existingReservation.setReservationTime(reservationDTO.reservationTime());
+        }
+        if (reservationDTO.specialRequests() != null) {
+            existingReservation.setSpecialRequests(reservationDTO.specialRequests());
+        }
+        if (reservationDTO.status() != null) {
+            existingReservation.setStatus(Reservation.ReservationStatus.valueOf(reservationDTO.status()));
+        }
+        
+        // Customer info can also be updated
+        if (reservationDTO.customerName() != null) {
+            existingReservation.setCustomerName(reservationDTO.customerName());
+        }
+        if (reservationDTO.customerEmail() != null) {
+            existingReservation.setCustomerEmail(reservationDTO.customerEmail());
+        }
+        if (reservationDTO.customerPhone() != null) {
+            existingReservation.setCustomerPhone(reservationDTO.customerPhone());
+        }
+        
         existingReservation = reservationRepository.save(existingReservation);
         return convertToDTO(existingReservation);
     }

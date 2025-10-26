@@ -16,6 +16,25 @@ const AppRouter = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   const renderRoute = (route) => {
+    // Check if user is a driver (logged in via driver portal)
+    const driverToken = localStorage.getItem('driverToken');
+    const driver = localStorage.getItem('driver');
+    const isDriverUser = driverToken && driver;
+
+    // If driver is trying to access user/admin/kitchen/manager routes, redirect to driver dashboard
+    if (isDriverUser && !route.requireDriver && 
+        route.path !== '/driver/login' && route.path !== '/driver/register') {
+      return <Navigate to="/driver/dashboard" />;
+    }
+
+    // Check for driver authentication separately (drivers don't use AuthContext)
+    if (route.requireDriver) {
+      if (!isDriverUser) {
+        return <Navigate to="/driver/login" />;
+      }
+      return <route.Component />;
+    }
+
     // Add a check to prevent redirection during page refresh or when backend is unavailable
     const isPageRefresh = performance.navigation && performance.navigation.type === 1;
     const hasLocalStorageUser = localStorage.getItem('user') !== null;
@@ -38,9 +57,6 @@ const AppRouter = () => {
         return <route.Component />;
       }
       return <Navigate to="/" />;
-    }
-    if (route.requireDriver && !isDriver) {
-      return <Navigate to="/driver/login" />;
     }
     if (route.requireKitchen && !isKitchen) {
       return <Navigate to="/" />;

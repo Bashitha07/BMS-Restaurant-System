@@ -2,6 +2,8 @@ package com.bms.restaurant_system.controller.auth;
 
 import com.bms.restaurant_system.dto.auth.LoginRequest;
 import com.bms.restaurant_system.dto.auth.LoginResponse;
+import com.bms.restaurant_system.dto.UserDTO;
+import com.bms.restaurant_system.dto.UserResponseDTO;
 import com.bms.restaurant_system.entity.User;
 import com.bms.restaurant_system.service.user.UserService;
 import com.bms.restaurant_system.util.JwtUtil;
@@ -44,11 +46,40 @@ public class AuthController {
             String token = jwtUtil.generateToken(user.getUsername(), user.getRole().name());
 
             logger.info("Login successful for user: {}", loginRequest.getUsername());
-            return ResponseEntity.ok(new LoginResponse(user.getId(), token, user.getUsername(), user.getRole().name()));
+            return ResponseEntity.ok(new LoginResponse(
+                user.getId(), 
+                token, 
+                user.getUsername(), 
+                user.getRole().name(),
+                user.getEmail(),
+                user.getPhone()
+            ));
 
         } catch (AuthenticationException e) {
             logger.warn("Login failed for user: {}", loginRequest.getUsername());
             return ResponseEntity.status(401).body("Invalid username or password");
+        }
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody UserDTO userDTO) {
+        logger.info("Registration attempt for user: {}", userDTO.username());
+
+        try {
+            UserResponseDTO createdUser = userService.createUser(userDTO);
+            logger.info("Registration successful for user: {}", createdUser.username());
+            
+            return ResponseEntity.ok(java.util.Map.of(
+                "success", true,
+                "message", "Registration successful",
+                "user", createdUser
+            ));
+        } catch (Exception e) {
+            logger.error("Registration failed for user: {}", userDTO.username(), e);
+            return ResponseEntity.status(400).body(java.util.Map.of(
+                "success", false,
+                "message", e.getMessage()
+            ));
         }
     }
 

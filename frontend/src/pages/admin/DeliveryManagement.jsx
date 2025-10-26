@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import AdminDeliveryDrivers from '../../components/admin/AdminDeliveryDrivers';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/Tabs';
-import { Truck, Users, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { Truck, Clock, CheckCircle, XCircle } from 'lucide-react';
 import adminService from '../../services/adminService';
 
 const DeliveryManagement = () => {
-  const [activeTab, setActiveTab] = useState('pending');
   const [stats, setStats] = useState({
     pendingCount: 0,
     activeCount: 0,
@@ -18,20 +16,16 @@ const DeliveryManagement = () => {
     try {
       setLoading(true);
       
-      // Fetch all driver data in parallel
-      const [pendingDrivers, activeDrivers, allDrivers] = await Promise.all([
-        adminService.getPendingDrivers(),
-        adminService.getActiveDrivers(),
-        adminService.getAllDrivers()
-      ]);
+      // Fetch all drivers with enabled field
+      const allDrivers = await adminService.getAllDrivers();
+      
+      // Filter drivers by enabled status (pending vs active)
+      const pendingDrivers = allDrivers.filter(driver => !driver.enabled);
+      const activeDrivers = allDrivers.filter(driver => driver.enabled);
+      const rejectedCount = 0; // No rejection workflow - drivers are deleted instead
 
-      // Calculate rejected count (drivers that are not pending and not active)
-      const rejectedCount = allDrivers.filter(d => 
-        d.status === 'REJECTED' || (d.status !== 'PENDING' && d.status !== 'APPROVED')
-      ).length;
-
-      // For completed deliveries, we'll sum up all deliveries from all drivers
-      const completedCount = allDrivers.reduce((sum, driver) => {
+      // For completed deliveries, sum up all deliveries from active drivers
+      const completedCount = activeDrivers.reduce((sum, driver) => {
         return sum + (driver.totalDeliveries || 0);
       }, 0);
 
@@ -114,44 +108,8 @@ const DeliveryManagement = () => {
         </div>
       </div>
 
-      {/* Tabs for different driver management sections */}
-      <div className="bg-white rounded-lg shadow">
-        <Tabs defaultValue="pending" value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="border-b px-6 py-2">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="pending" className="text-center py-2">
-                Pending Applications
-              </TabsTrigger>
-              <TabsTrigger value="active" className="text-center py-2">
-                Active Drivers
-              </TabsTrigger>
-              <TabsTrigger value="history" className="text-center py-2">
-                Delivery History
-              </TabsTrigger>
-            </TabsList>
-          </div>
-          
-          <TabsContent value="pending" className="p-0">
-            <AdminDeliveryDrivers onUpdate={updateDriverStats} />
-          </TabsContent>
-          
-          <TabsContent value="active" className="p-6">
-            <div className="text-center py-8">
-              <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-              <h3 className="text-xl font-medium text-gray-900">Active Drivers</h3>
-              <p className="text-gray-500">Active drivers management will be implemented soon.</p>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="history" className="p-6">
-            <div className="text-center py-8">
-              <Truck className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-              <h3 className="text-xl font-medium text-gray-900">Delivery History</h3>
-              <p className="text-gray-500">Delivery history tracking will be implemented soon.</p>
-            </div>
-          </TabsContent>
-        </Tabs>
-      </div>
+      {/* Driver Management Component with built-in tabs */}
+      <AdminDeliveryDrivers onUpdate={updateDriverStats} />
     </div>
   );
 };

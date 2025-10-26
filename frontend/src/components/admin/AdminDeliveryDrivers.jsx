@@ -118,12 +118,6 @@ export default function AdminDeliveryDrivers({ onUpdate }) {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Delivery Driver Management</h1>
-        <p className="mt-2 text-gray-600">Manage delivery driver applications and active drivers</p>
-      </div>
-
       {/* Tabs */}
       <div className="mb-6">
         <div className="border-b border-gray-200">
@@ -213,7 +207,7 @@ export default function AdminDeliveryDrivers({ onUpdate }) {
                   <div key={driver.id} className="border rounded-lg p-4 hover:bg-gray-50">
                     <div className="flex justify-between items-start mb-4">
                       <div>
-                        <h3 className="font-medium text-gray-900">{driver.name}</h3>
+                        <h3 className="font-medium text-gray-900">{driver.username}</h3>
                         <p className="text-sm text-gray-600">ID: {driver.id}</p>
                       </div>
                       <div className="flex items-center space-x-2">
@@ -223,32 +217,18 @@ export default function AdminDeliveryDrivers({ onUpdate }) {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600 mb-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600 mb-4">
                       <div>
-                        <strong>Phone:</strong> {driver.phone}
+                        <strong>Email:</strong> {driver.email || 'N/A'}
                       </div>
                       <div>
-                        <strong>Vehicle:</strong> {driver.vehicleNumber} ({driver.vehicleType})
-                      </div>
-                      <div>
-                        <strong>License:</strong> {driver.licenseNumber}
-                      </div>
-                      <div>
-                        <strong>Email:</strong> {driver.email}
-                      </div>
-                      <div>
-                        <strong>Address:</strong> {driver.address}
-                      </div>
-                      <div>
-                        <strong>Emergency:</strong> {driver.emergencyContact} ({driver.emergencyPhone})
+                        <strong>Phone:</strong> {driver.phone || 'N/A'}
                       </div>
                     </div>
 
-                    {driver.notes && (
-                      <div className="mb-4 p-3 bg-blue-50 rounded text-sm text-blue-800">
-                        <strong>Notes:</strong> {driver.notes}
-                      </div>
-                    )}
+                    <div className="mb-4 p-3 bg-gray-50 rounded text-sm text-gray-600">
+                      <p className="italic">Additional driver details not available in current system</p>
+                    </div>
 
                     <div className="flex items-center justify-end space-x-3">
                       <button
@@ -308,7 +288,7 @@ export default function AdminDeliveryDrivers({ onUpdate }) {
                   <div key={driver.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
                     <div className="flex justify-between items-start mb-3">
                       <div>
-                        <h3 className="font-medium text-gray-900">{driver.name}</h3>
+                        <h3 className="font-medium text-gray-900">{driver.username}</h3>
                         <p className="text-xs text-gray-500">ID: {driver.id}</p>
                       </div>
                       <span className="px-2 py-1 text-xs font-medium rounded-full text-green-800 bg-green-100">
@@ -318,15 +298,28 @@ export default function AdminDeliveryDrivers({ onUpdate }) {
 
                     <div className="space-y-2 text-sm text-gray-600">
                       <div className="flex items-center">
+                        <User className="w-4 h-4 mr-2 text-gray-400" />
+                        {driver.email || 'N/A'}
+                      </div>
+                      <div className="flex items-center">
                         <Phone className="w-4 h-4 mr-2 text-gray-400" />
-                        {driver.phone}
+                        {driver.phone || 'N/A'}
                       </div>
                       <div className="flex items-center">
                         <Car className="w-4 h-4 mr-2 text-gray-400" />
-                        {driver.vehicleNumber} - {driver.vehicleType}
+                        {driver.vehicleNumber ? (
+                          <span>{driver.vehicleType || 'Vehicle'}: {driver.vehicleNumber}</span>
+                        ) : (
+                          <span className="text-gray-500 text-xs">Vehicle info not available</span>
+                        )}
                       </div>
-                      <div className="text-xs">
-                        <strong>License:</strong> {driver.licenseNumber}
+                      <div className="flex items-center text-xs">
+                        <span className="mr-2">🪪</span>
+                        {driver.licenseNumber ? (
+                          <span>License: {driver.licenseNumber}</span>
+                        ) : (
+                          <span className="text-gray-500">License info not available</span>
+                        )}
                       </div>
                     </div>
 
@@ -403,14 +396,14 @@ export default function AdminDeliveryDrivers({ onUpdate }) {
                               <User className="h-5 w-5 text-primary-600" />
                             </div>
                             <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900">{driver.name}</div>
+                              <div className="text-sm font-medium text-gray-900">{driver.username}</div>
                               <div className="text-sm text-gray-500">ID: {driver.id}</div>
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{driver.phone}</div>
-                          <div className="text-sm text-gray-500">{driver.email}</div>
+                          <div className="text-sm text-gray-900">{driver.phone || 'N/A'}</div>
+                          <div className="text-sm text-gray-500">{driver.email || 'N/A'}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center text-sm">

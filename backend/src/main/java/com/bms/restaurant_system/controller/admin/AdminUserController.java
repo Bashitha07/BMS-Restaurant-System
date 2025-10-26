@@ -96,6 +96,54 @@ public class AdminUserController {
         }
     }
 
+    // Enable user account (approve driver)
+    @PutMapping("/{id}/enable")
+    public ResponseEntity<?> enableUser(@PathVariable Long id) {
+        logger.info("✅ [DRIVER APPROVAL] Admin approving driver - User ID: {}", id);
+        try {
+            UserResponseDTO currentUser = userService.getUserById(id);
+            logger.info("📊 [DRIVER APPROVAL] Current driver state: User[id={}, username={}, role={}, enabled={}]", 
+                id, currentUser.username(), currentUser.role(), currentUser.enabled());
+            
+            UserResponseDTO updatedUser = userService.updateUserStatus(id, true);
+            
+            logger.info("✅ [DRIVER APPROVAL] Driver approved successfully: User[id={}, username={}, enabled={}]", 
+                id, updatedUser.username(), updatedUser.enabled());
+            
+            return ResponseEntity.ok(Map.of(
+                "message", "Driver approved successfully",
+                "user", updatedUser
+            ));
+        } catch (Exception e) {
+            logger.error("❌ [DRIVER APPROVAL] Failed to approve driver {}: {}", id, e.getMessage(), e);
+            return ResponseEntity.status(400).body(Map.of("error", "Failed to approve driver: " + e.getMessage()));
+        }
+    }
+
+    // Disable user account (reject driver)
+    @PutMapping("/{id}/disable")
+    public ResponseEntity<?> disableUser(@PathVariable Long id) {
+        logger.info("❌ [DRIVER REJECTION] Admin rejecting driver - User ID: {}", id);
+        try {
+            UserResponseDTO currentUser = userService.getUserById(id);
+            logger.info("📊 [DRIVER REJECTION] Current driver state: User[id={}, username={}, role={}, enabled={}]", 
+                id, currentUser.username(), currentUser.role(), currentUser.enabled());
+            
+            UserResponseDTO updatedUser = userService.updateUserStatus(id, false);
+            
+            logger.info("✅ [DRIVER REJECTION] Driver rejected successfully: User[id={}, username={}, enabled={}]", 
+                id, updatedUser.username(), updatedUser.enabled());
+            
+            return ResponseEntity.ok(Map.of(
+                "message", "Driver rejected successfully",
+                "user", updatedUser
+            ));
+        } catch (Exception e) {
+            logger.error("❌ [DRIVER REJECTION] Failed to reject driver {}: {}", id, e.getMessage(), e);
+            return ResponseEntity.status(400).body(Map.of("error", "Failed to reject driver: " + e.getMessage()));
+        }
+    }
+
     // Delete user account
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {

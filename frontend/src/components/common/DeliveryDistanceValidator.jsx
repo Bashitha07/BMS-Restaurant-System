@@ -54,8 +54,8 @@ const DeliveryDistanceValidator = ({
 
   const getDeliveryFee = (dist) => {
     if (!dist || dist <= 0) return 0;
-    // Example: Rs. 100 base + Rs. 50 per km
-    return 100 + Math.round(dist * 50);
+    // Flat delivery fee of LKR 400 for all distances within range
+    return 400;
   };
 
   return (

@@ -104,6 +104,30 @@ public class AdminController {
         return ResponseEntity.ok(orderService.updateOrderStatus(id, status));
     }
 
+    // Assign a driver to a delivery
+    @PostMapping("/deliveries/{deliveryId}/assign-driver/{driverId}")
+    public ResponseEntity<?> assignDriverToDelivery(
+            @PathVariable Long deliveryId,
+            @PathVariable Long driverId) {
+        try {
+            DeliveryDTO delivery = deliveryService.assignDriverToDelivery(deliveryId, driverId);
+            return ResponseEntity.ok(delivery);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // Unassign a driver from a delivery
+    @DeleteMapping("/deliveries/{deliveryId}/unassign-driver")
+    public ResponseEntity<?> unassignDriverFromDelivery(@PathVariable Long deliveryId) {
+        try {
+            DeliveryDTO delivery = deliveryService.unassignDriverFromDelivery(deliveryId);
+            return ResponseEntity.ok(delivery);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     // Note: User management endpoints have been moved to AdminUserController
     // to avoid duplicate mappings and provide better separation of concerns
 }

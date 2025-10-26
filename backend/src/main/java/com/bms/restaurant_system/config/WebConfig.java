@@ -28,6 +28,11 @@ public class WebConfig implements WebMvcConfigurer {
                 .addResourceLocations("classpath:/static/images/")
                 .setCachePeriod(3600); // Cache for 1 hour
         
+        // Handle menu images
+        registry.addResourceHandler("/images/menu/**")
+                .addResourceLocations("classpath:/static/images/menu/")
+                .setCachePeriod(3600);
+        
         // Handle specific category images
         registry.addResourceHandler("/images/food/**")
                 .addResourceLocations("classpath:/static/images/food/")
@@ -39,6 +44,11 @@ public class WebConfig implements WebMvcConfigurer {
                 
         registry.addResourceHandler("/images/desserts/**")
                 .addResourceLocations("classpath:/static/images/desserts/")
+                .setCachePeriod(3600);
+        
+        // Handle payment slips
+        registry.addResourceHandler("/images/payment-slips/**")
+                .addResourceLocations("classpath:/static/images/payment-slips/")
                 .setCachePeriod(3600);
                 
         // Map frontend asset paths to backend static resources

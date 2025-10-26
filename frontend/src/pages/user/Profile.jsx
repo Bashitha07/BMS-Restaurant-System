@@ -5,7 +5,9 @@ import { Button } from '../../components/ui/Button';
 import adminService from '../../services/adminService';
 import AdminMenuManagement from '../../components/admin/AdminMenuManagement';
 import AdminDeliveryDrivers from '../../components/admin/AdminDeliveryDrivers';
-import { Users, UserCheck, Shield, Eye, Edit, Save, X, ChefHat, Settings, Truck } from 'lucide-react';
+import AdminReservationManagement from '../../components/admin/AdminReservationManagement';
+import AdminOrders from '../../components/admin/AdminOrders';
+import { Users, UserCheck, Shield, Eye, Edit, Save, X, ChefHat, Settings, Truck, Calendar, ShoppingCart } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 export default function Profile() {
@@ -278,32 +280,6 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* System Overview Header for Admin */}
-        {isAdmin && (
-          <div className="mb-6 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-6 text-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-2xl font-bold mb-2">Restaurant Management System</h1>
-                <p className="text-blue-100">Multi-user platform supporting concurrent operations for customers, drivers, and administrators</p>
-              </div>
-              <div className="flex items-center gap-4 text-sm">
-                <div className="text-center">
-                  <div className="text-2xl font-bold">{users.length}</div>
-                  <div className="text-blue-200">Total Users</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold">{users.filter(u => u.enabled).length}</div>
-                  <div className="text-blue-200">Active</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold">{users.filter(u => new Date(u.lastLogin) > new Date(Date.now() - 24*60*60*1000)).length}</div>
-                  <div className="text-blue-200">Online Today</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Admin Tab Navigation */}
         {isAdmin && (
           <div className="mb-6 bg-white rounded-lg shadow-sm overflow-hidden">
@@ -332,6 +308,17 @@ export default function Profile() {
                   User Management
                 </button>
                 <button
+                  onClick={() => handleTabChange('orders')}
+                  className={`py-4 px-6 border-b-2 font-medium text-sm ${
+                    activeTab === 'orders'
+                      ? 'border-purple-500 text-purple-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <ShoppingCart className="w-4 h-4 inline mr-2" />
+                  Order Management
+                </button>
+                <button
                   onClick={() => handleTabChange('menu')}
                   className={`py-4 px-6 border-b-2 font-medium text-sm ${
                     activeTab === 'menu'
@@ -341,6 +328,17 @@ export default function Profile() {
                 >
                   <ChefHat className="w-4 h-4 inline mr-2" />
                   Menu Management
+                </button>
+                <button
+                  onClick={() => handleTabChange('reservations')}
+                  className={`py-4 px-6 border-b-2 font-medium text-sm ${
+                    activeTab === 'reservations'
+                      ? 'border-purple-500 text-purple-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <Calendar className="w-4 h-4 inline mr-2" />
+                  Reservations
                 </button>
                 <button
                   onClick={() => handleTabChange('drivers')}
@@ -361,38 +359,7 @@ export default function Profile() {
         {/* Tab Content */}
         {activeTab === 'profile' && isAdmin && (
           <div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Admin Statistics Panel */}
-              <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-200">
-                  <h1 className="text-2xl font-bold text-gray-900">System Statistics</h1>
-                </div>
-
-                <div className="px-6 py-6">
-                  {/* System statistics content would go here */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
-                      <div className="text-sm font-medium text-blue-800">Total Orders</div>
-                      <div className="text-2xl font-bold text-blue-900">156</div>
-                    </div>
-                    <div className="bg-green-50 p-3 rounded-lg border border-green-200">
-                      <div className="text-sm font-medium text-green-800">Active Users</div>
-                      <div className="text-2xl font-bold text-green-900">42</div>
-                    </div>
-                    <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
-                      <div className="text-sm font-medium text-purple-800">Menu Items</div>
-                      <div className="text-2xl font-bold text-purple-900">38</div>
-                    </div>
-                    <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
-                      <div className="text-sm font-medium text-yellow-800">Daily Revenue</div>
-                      <div className="text-2xl font-bold text-yellow-900">₹12,500</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-white rounded-lg shadow-sm overflow-hidden mt-6">
+            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-red-50 to-purple-50">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -846,6 +813,50 @@ export default function Profile() {
 
             <div className="p-6">
               <AdminMenuManagement />
+            </div>
+          </div>
+        )}
+
+        {/* Order Management Tab */}
+        {activeTab === 'orders' && isAdmin && (
+          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-cyan-50">
+              <div className="flex items-center gap-2">
+                <ShoppingCart className="h-5 w-5 text-blue-600" />
+                <h2 className="text-xl font-bold text-gray-900">Order Management Dashboard</h2>
+                <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-medium">
+                  Real-time Tracking
+                </span>
+              </div>
+              <p className="text-sm text-gray-600 mt-2">
+                Monitor and manage all customer orders with status updates
+              </p>
+            </div>
+
+            <div className="p-6">
+              <AdminOrders />
+            </div>
+          </div>
+        )}
+
+        {/* Reservations Management Tab */}
+        {activeTab === 'reservations' && isAdmin && (
+          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-pink-50">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-5 w-5 text-purple-600" />
+                <h2 className="text-xl font-bold text-gray-900">Reservations Currently Available</h2>
+                <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full font-medium">
+                  Status Management
+                </span>
+              </div>
+              <p className="text-sm text-gray-600 mt-2">
+                View and manage all customer reservations with status updates
+              </p>
+            </div>
+
+            <div className="p-6">
+              <AdminReservationManagement />
             </div>
           </div>
         )}

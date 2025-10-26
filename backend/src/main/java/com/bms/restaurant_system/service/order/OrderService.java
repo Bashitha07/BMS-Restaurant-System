@@ -8,6 +8,9 @@ import com.bms.restaurant_system.dto.PaymentDTO;
 import com.bms.restaurant_system.entity.*;
 import com.bms.restaurant_system.exception.ResourceNotFoundException;
 import com.bms.restaurant_system.repository.*;
+import com.bms.restaurant_system.service.SystemSettingsService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -20,6 +23,8 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 public class OrderService {
+    private static final Logger logger = LoggerFactory.getLogger(OrderService.class);
+    
     @Autowired
     private OrderRepository orderRepository;
 
@@ -33,7 +38,13 @@ public class OrderService {
     private OrderItemRepository orderItemRepository;
 
     @Autowired
+    private SystemSettingsService settingsService;
+
+    @Autowired
     private DeliveryRepository deliveryRepository;
+
+    @Autowired
+    private DriverRepository driverRepository;
 
     // Basic CRUD Operations
     public List<OrderDTO> getAllOrders() {
@@ -43,7 +54,7 @@ public class OrderService {
     }
 
     public OrderDTO getOrderById(Long id) {
-        Order order = orderRepository.findById(id)
+        Order order = orderRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
         return convertToDTO(order);
     }
@@ -108,6 +119,11 @@ public class OrderService {
         orderItemRepository.saveAll(orderItems);
         order.setItems(orderItems);
 
+        // Set delivery fee from settings if it's a delivery order
+        if (order.isDeliveryOrder()) {
+            order.setDeliveryFee(settingsService.getDeliveryFee());
+        }
+
         // Calculate totals
         order.calculateTotals();
 
@@ -130,6 +146,7 @@ public class OrderService {
     }
 
     public OrderDTO updateOrderStatus(Long id, Order.OrderStatus status) {
+        logger.info("📝 [UPDATE STATUS] Order ID: {}, New Status: {}", id, status);
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
         
@@ -137,24 +154,139 @@ public class OrderService {
         
         // Update delivery status if applicable
         if (order.getDelivery() != null) {
+            logger.info("📦 [UPDATE STATUS] Syncing delivery status for order {}", id);
             switch (status) {
                 case PENDING -> order.getDelivery().setStatus(Delivery.DeliveryStatus.PENDING);
                 case CONFIRMED -> order.getDelivery().setStatus(Delivery.DeliveryStatus.PENDING);
                 case PREPARING -> order.getDelivery().setStatus(Delivery.DeliveryStatus.ASSIGNED);
-                case READY_FOR_PICKUP -> order.getDelivery().setStatus(Delivery.DeliveryStatus.PICKED_UP);
-                case OUT_FOR_DELIVERY -> order.getDelivery().setStatus(Delivery.DeliveryStatus.IN_TRANSIT);
+                case READY_FOR_PICKUP -> order.getDelivery().setStatus(Delivery.DeliveryStatus.ASSIGNED);
+                case OUT_FOR_DELIVERY -> {
+                    order.getDelivery().setStatus(Delivery.DeliveryStatus.IN_TRANSIT);
+                    if (order.getDelivery().getPickupTime() == null) {
+                        order.getDelivery().setPickupTime(LocalDateTime.now());
+                    }
+                }
                 case DELIVERED -> {
                     order.getDelivery().setStatus(Delivery.DeliveryStatus.DELIVERED);
                     order.setActualDeliveryTime(LocalDateTime.now());
+                    if (order.getDelivery().getActualDeliveryTime() == null) {
+                        order.getDelivery().setActualDeliveryTime(LocalDateTime.now());
+                    }
                 }
                 case CANCELLED -> order.getDelivery().setStatus(Delivery.DeliveryStatus.CANCELLED);
                 case REFUNDED -> { /* No delivery status change needed */ }
             }
             deliveryRepository.save(order.getDelivery());
+            logger.info("✅ [UPDATE STATUS] Delivery status updated to: {}", order.getDelivery().getStatus());
         }
         
         order = orderRepository.save(order);
+        logger.info("✅ [UPDATE STATUS] Order {} status updated successfully", id);
         return convertToDTO(order);
+    }
+
+    @Transactional
+    public OrderDTO assignDriver(Long orderId, Long driverId) {
+        logger.info("🚗 [ASSIGN DRIVER] Starting assignment - Order ID: {}, Driver ID: {}", orderId, driverId);
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
+        
+        if (driverId != null) {
+            User driver = userRepository.findById(driverId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Driver not found with id: " + driverId));
+            
+            logger.info("✅ [ASSIGN DRIVER] Found driver user: ID={}, Role={}, Enabled={}", 
+                       driver.getId(), driver.getRole(), driver.isEnabled());
+            
+            // Verify the user is actually a driver
+            if (driver.getRole() != Role.DRIVER) {
+                throw new IllegalArgumentException("User with id " + driverId + " is not a delivery driver");
+            }
+            
+            // Verify driver is enabled/active
+            if (!driver.isEnabled()) {
+                throw new IllegalArgumentException("Driver with id " + driverId + " is not active");
+            }
+            
+            // Find the Driver entity for this user
+            Driver driverEntity = driverRepository.findByUserId(driverId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Driver profile not found for user id: " + driverId));
+            
+            logger.info("✅ [ASSIGN DRIVER] Found driver profile: ID={}, Name={}", 
+                       driverEntity.getId(), driverEntity.getName());
+            
+            order.setDriver(driver);
+            logger.info("📝 [ASSIGN DRIVER] Set driver on order");
+            
+            // Automatically set order status to READY_FOR_PICKUP when driver is assigned
+            // Driver will then pick it up and status will change to OUT_FOR_DELIVERY
+            order.setStatus(Order.OrderStatus.READY_FOR_PICKUP);
+            logger.info("📝 [ASSIGN DRIVER] Set order status to READY_FOR_PICKUP");
+            
+            // Update delivery status and assign driver if applicable
+            if (order.getDelivery() != null) {
+                logger.info("📦 [ASSIGN DRIVER] Updating delivery - Current driver_id: {}", 
+                           order.getDelivery().getDriver() != null ? order.getDelivery().getDriver().getId() : null);
+                order.getDelivery().setDriver(driverEntity);
+                order.getDelivery().setStatus(Delivery.DeliveryStatus.ASSIGNED);
+                deliveryRepository.save(order.getDelivery());
+                logger.info("✅ [ASSIGN DRIVER] Delivery saved with driver_id: {}", driverEntity.getId());
+            } else {
+                logger.warn("⚠️ [ASSIGN DRIVER] Order has no delivery object!");
+            }
+        } else {
+            logger.info("🔄 [ASSIGN DRIVER] Unassigning driver from order");
+            // Allow unassigning driver by passing null
+            order.setDriver(null);
+            // When unassigning, revert to PREPARING status if it was OUT_FOR_DELIVERY
+            if (order.getStatus() == Order.OrderStatus.OUT_FOR_DELIVERY) {
+                order.setStatus(Order.OrderStatus.PREPARING);
+            }
+            // Clear delivery driver assignment
+            if (order.getDelivery() != null) {
+                order.getDelivery().setDriver(null);
+                deliveryRepository.save(order.getDelivery());
+            }
+        }
+        
+        order = orderRepository.save(order);
+        logger.info("✅ [ASSIGN DRIVER] Order saved successfully - Order ID: {}, Driver ID: {}", 
+                   order.getId(), order.getDriver() != null ? order.getDriver().getId() : null);
+        return convertToDTO(order);
+    }
+
+    public List<Map<String, Object>> getAvailableDrivers() {
+        List<User> driverUsers = userRepository.findByRole(Role.DRIVER);
+        return driverUsers.stream()
+                // Don't filter by enabled - return all drivers (pending and active)
+                .map(user -> {
+                    Map<String, Object> driverInfo = new HashMap<>();
+                    driverInfo.put("id", user.getId());
+                    driverInfo.put("username", user.getUsername());
+                    driverInfo.put("email", user.getEmail());
+                    driverInfo.put("phone", user.getPhone());
+                    driverInfo.put("enabled", user.isEnabled()); // Add enabled status for filtering
+                    
+                    // Try to get driver details from drivers table
+                    try {
+                        Driver driver = driverRepository.findByUserId(user.getId())
+                                .orElse(null);
+                        if (driver != null) {
+                            driverInfo.put("name", driver.getName());
+                            driverInfo.put("vehicleNumber", driver.getVehicleNumber());
+                            driverInfo.put("vehicleType", driver.getVehicleType());
+                            driverInfo.put("licenseNumber", driver.getLicenseNumber());
+                            driverInfo.put("available", driver.getAvailable());
+                            driverInfo.put("rating", driver.getRating());
+                            driverInfo.put("totalDeliveries", driver.getTotalDeliveries());
+                        }
+                    } catch (Exception e) {
+                        // Driver details not available, continue with basic info
+                    }
+                    
+                    return driverInfo;
+                })
+                .collect(Collectors.toList());
     }
 
     public OrderDTO cancelOrder(Long id, String reason) {
@@ -317,6 +449,10 @@ public class OrderService {
         String username = order.getUser() != null ? order.getUser().getUsername() : "Unknown";
         String userEmail = order.getUser() != null ? order.getUser().getEmail() : "No email";
 
+        // Safely get driver information with null checks
+        Long driverId = order.getDriver() != null ? order.getDriver().getId() : null;
+        String driverName = order.getDriver() != null ? order.getDriver().getUsername() : null;
+
         return new OrderDTO(
                 order.getId(),
                 order.getOrderDate(),
@@ -339,7 +475,9 @@ public class OrderService {
                 userEmail,
                 items,
                 deliveryDTO,
-                payments
+                payments,
+                driverId,
+                driverName
         );
     }
 
@@ -366,9 +504,10 @@ public class OrderService {
     }
 
     private DeliveryDTO convertDeliveryToDTO(Delivery delivery) {
+        Order order = delivery.getOrder();
         return new DeliveryDTO(
                 delivery.getId(),
-                delivery.getOrder().getId(),
+                order.getId(),
                 delivery.getDriver() != null ? delivery.getDriver().getId() : null,
                 delivery.getDriverName(),
                 delivery.getDriverPhone(),
@@ -392,6 +531,11 @@ public class OrderService {
                 delivery.getCustomerFeedback(),
                 delivery.getDeliveryNotes(),
                 delivery.getProofOfDelivery(),
+                order.getPaymentMethod() != null ? order.getPaymentMethod().name() : null,
+                order.getTotalAmount(),
+                delivery.getCashCollected(),
+                delivery.getCashCollectionConfirmed(),
+                delivery.getCashCollectionTime(),
                 delivery.getCreatedAt(),
                 delivery.getUpdatedAt()
         );

@@ -174,6 +174,30 @@ export const paymentService = {
     } catch (error) {
       throw handleAPIError(error);
     }
+  },
+  uploadPaymentSlip: async (orderId, userId, file, paymentAmount, paymentDate, bankName, transactionReference) => {
+    try {
+      const formData = new FormData();
+      formData.append('orderId', orderId);
+      formData.append('userId', userId);
+      formData.append('file', file);
+      formData.append('paymentAmount', paymentAmount);
+      formData.append('paymentDate', paymentDate);
+      if (bankName) formData.append('bankName', bankName);
+      if (transactionReference) formData.append('transactionReference', transactionReference);
+
+      console.log('Uploading payment slip for order:', orderId);
+      const response = await axios.post('/api/payment-slips/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      console.log('Payment slip uploaded successfully:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to upload payment slip:', error);
+      throw handleAPIError(error);
+    }
   }
 };
 

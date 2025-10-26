@@ -27,5 +27,7 @@ public record OrderDTO(
     String userEmail,
     List<OrderItemDTO> items,
     DeliveryDTO delivery,
-    List<PaymentDTO> payments
+    List<PaymentDTO> payments,
+    Long driverId,
+    String driverName
 ) {}

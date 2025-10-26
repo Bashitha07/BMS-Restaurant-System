@@ -72,6 +72,10 @@ public class Order {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @ManyToOne
+    @JoinColumn(name = "driver_id")
+    private User driver;
+
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "order", fetch = FetchType.LAZY)
     private List<OrderItem> items = new ArrayList<>();
 
@@ -158,12 +162,13 @@ public class Order {
                 .map(item -> item.getMenu().getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
             
-            // Calculate tax (assuming 10% tax rate)
-            this.taxAmount = this.subtotal.multiply(BigDecimal.valueOf(0.10));
+            // Calculate tax (6% tax rate)
+            this.taxAmount = this.subtotal.multiply(BigDecimal.valueOf(0.06));
             
-            // Add delivery fee if it's a delivery order
+            // Delivery fee should be set before calling this method
+            // If not set and it's a delivery order, use zero (will be set by service)
             if (this.orderType == OrderType.DELIVERY && this.deliveryFee == null) {
-                this.deliveryFee = BigDecimal.valueOf(5.00); // Default delivery fee
+                this.deliveryFee = BigDecimal.ZERO;
             }
             
             this.totalAmount = this.subtotal.add(this.taxAmount).add(this.deliveryFee != null ? this.deliveryFee : BigDecimal.ZERO);

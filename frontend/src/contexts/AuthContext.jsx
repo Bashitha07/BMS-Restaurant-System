@@ -15,19 +15,38 @@ function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
+    // Check if user is logged in as a driver - if so, don't restore user context
+    const driverToken = localStorage.getItem('driverToken');
+    const driver = localStorage.getItem('driver');
+    
+    if (driverToken && driver) {
+      console.log('🚗 Driver session detected - skipping user context restoration');
+      return;
+    }
+
     const savedUser = localStorage.getItem('user');
-    if (savedUser) {
+    const token = localStorage.getItem('token');
+    
+    if (savedUser && token) {
       try {
         const parsedUser = JSON.parse(savedUser);
         setUser(parsedUser);
-        console.log('Restored user session from localStorage:', {
+        console.log('✅ Restored user session from localStorage:', {
           username: parsedUser.username,
-          role: parsedUser.role
+          role: parsedUser.role,
+          hasToken: true
         });
       } catch (err) {
         console.error('Error parsing saved user data:', err);
-        // Don't clear localStorage on parse error to allow retry
+        // Clear invalid data
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
       }
+    } else if (savedUser && !token) {
+      // User data exists but no token - this is an invalid state
+      console.warn('⚠️ User data found but no token - clearing invalid session');
+      localStorage.removeItem('user');
+      setUser(null);
     }
   }, []);
 
@@ -53,6 +72,7 @@ function AuthProvider({ children }) {
         id: data?.id || Date.now(),
         username: data?.username || username,
         email: data?.email || '',
+        phone: data?.phone || '',
         role: (data?.role || 'USER').toUpperCase(),
       };
       
@@ -80,21 +100,16 @@ function AuthProvider({ children }) {
 
   const register = async (username, email, password, phone) => {
     try {
+      // Register the user
       const data = await userService.register({ username, email, password, phone });
-      const userData = {
-        id: data?.id ?? Date.now(),
-        username: data?.username || username,
-        email: data?.email || email,
-        phone: data?.phone || phone,
-        role: (data?.role || 'USER').toUpperCase(),
-      };
-      setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
+      
+      // Automatically log in after successful registration
+      console.log('Registration successful, logging in...');
+      await login(username, password);
+      
     } catch (e) {
-      // Fallback: local demo register
-      const userData = { id: Date.now(), username, email, phone, role: 'USER' };
-      setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
+      console.error('Registration failed:', e);
+      throw e; // Re-throw the error so the UI can handle it
     }
   };
 

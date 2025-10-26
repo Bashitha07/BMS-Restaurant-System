@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const instance = axios.create({
-  baseURL: '',  // Using relative URLs to work with Vite's proxy
+  baseURL: 'http://localhost:8084',  // Point directly to backend (temporary fix for proxy issue)
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -14,15 +14,30 @@ instance.interceptors.request.use(
     const token = localStorage.getItem('token');
     const driverToken = localStorage.getItem('driverToken');
     
-    // Debug: Log authentication header being sent
-    console.log('🌐 [AXIOS] Outgoing Request:', {
-      url: config.url,
-      method: config.method?.toUpperCase(),
-      hasToken: !!token,
-      hasDriverToken: !!driverToken,
-      authHeader: token ? 'Bearer token present' : 'NO AUTH HEADER',
-      timestamp: new Date().toISOString()
-    });
+    // Public endpoints that don't require authentication
+    const publicEndpoints = [
+      '/api/auth/login',
+      '/api/auth/register',
+      '/api/auth/refresh',
+      '/api/menus',
+      '/api/menu'
+    ];
+    
+    const isPublicEndpoint = publicEndpoints.some(endpoint => 
+      config.url?.includes(endpoint)
+    );
+    
+    // Debug: Log authentication header being sent (only for authenticated requests)
+    if (!isPublicEndpoint || token || driverToken) {
+      console.log('🌐 [AXIOS] Outgoing Request:', {
+        url: config.url,
+        method: config.method?.toUpperCase(),
+        hasToken: !!token,
+        hasDriverToken: !!driverToken,
+        authHeader: token || driverToken ? 'Bearer token present' : 'Public endpoint',
+        timestamp: new Date().toISOString()
+      });
+    }
     
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -30,8 +45,8 @@ instance.interceptors.request.use(
     } else if (driverToken) {
       config.headers.Authorization = `Bearer ${driverToken}`;
       console.log('✅ [AXIOS] Added Authorization header with driver token');
-    } else {
-      console.error('❌ [AXIOS] NO TOKEN FOUND - Request will be sent without authentication!');
+    } else if (!isPublicEndpoint) {
+      console.warn('⚠️ [AXIOS] No token found for protected endpoint:', config.url);
     }
     
     return config;
@@ -66,47 +81,42 @@ instance.interceptors.response.use(
     // Handle authentication errors
     if (error.response?.status === 401 && !error.config.url.includes('/api/auth/login')) {
       console.error('🚫 [AUTH] 401 Unauthorized - Token may be invalid or expired');
-      console.warn('🔄 [AUTH] Clearing expired session and redirecting to login...');
+      console.error('🔍 [DEBUG] Error details:', {
+        url: error.config?.url,
+        method: error.config?.method,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        responseData: error.response?.data,
+        fullError: error
+      });
       
-      // Clear all auth data
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      localStorage.removeItem('driverToken');
+      // TEMPORARY: Don't logout automatically - just show error
+      console.warn('⚠️ [AUTH] AUTO-LOGOUT DISABLED FOR DEBUGGING');
+      console.warn('⚠️ [AUTH] Please copy the error above and share it!');
       
-      // Redirect to login page
-      window.location.href = '/login';
+      // DON'T clear auth data or redirect - just reject the promise
       return Promise.reject(error);
     }
     
     if (error.response?.status === 403) {
       console.error('🚫 [AUTH] 403 Forbidden - User does not have required permissions');
+      console.error('🔍 [DEBUG] 403 Error details:', {
+        url: error.config?.url,
+        method: error.config?.method,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        responseData: error.response?.data,
+        fullError: error
+      });
+      
       const token = localStorage.getItem('token');
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       
-      if (!token) {
-        console.error('❌ [AUTH] 403 error AND no token found - User must log in!');
-        window.location.href = '/login';
-        return Promise.reject(error);
-      }
+      console.warn('⚠️ [AUTH] AUTO-LOGOUT DISABLED FOR DEBUGGING (403)');
+      console.warn('⚠️ [AUTH] Please copy the error above and share it!');
       
-      // If we have a token but still getting 403, the token is likely expired or invalid
-      console.warn('⚠️ [AUTH] Token exists but access forbidden - Token may be expired');
-      console.warn('🔄 [AUTH] Please log out and log back in to refresh your session');
-      
-      // Show a more helpful error message
-      const message = user.role === 'ADMIN' 
-        ? 'Your session has expired. Please log out and log back in.' 
-        : 'You do not have permission to access this resource.';
-      
-      // If it's an admin with an expired token, auto-logout after 2 seconds
-      if (user.role === 'ADMIN' && token) {
-        setTimeout(() => {
-          console.warn('🔄 [AUTH] Auto-logging out due to expired admin token...');
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          window.location.href = '/login';
-        }, 2000);
-      }
+      // TEMPORARY: Don't logout - just show error
+      return Promise.reject(error);
     }
     
     return Promise.reject(error);

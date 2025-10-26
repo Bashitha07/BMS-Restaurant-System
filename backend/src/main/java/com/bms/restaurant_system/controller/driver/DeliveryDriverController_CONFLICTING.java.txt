@@ -1,6 +1,7 @@
 package com.bms.restaurant_system.controller.driver;
 
 import com.bms.restaurant_system.dto.driver.DeliveryDriverDTO;
+import com.bms.restaurant_system.dto.driver.RegisterDriverDTO;
 import com.bms.restaurant_system.service.delivery.DeliveryDriverService;
 import com.bms.restaurant_system.exception.ResourceNotFoundException;
 import org.slf4j.Logger;
@@ -19,6 +20,20 @@ public class DeliveryDriverController {
 
     @Autowired
     private DeliveryDriverService deliveryDriverService;
+
+    // Public driver registration endpoint (no authentication required)
+    @PostMapping("/register")
+    public ResponseEntity<?> registerDriver(@Valid @RequestBody RegisterDriverDTO registerDriverDTO) {
+        logger.info("Public driver registration request: {}", registerDriverDTO.username());
+        try {
+            DeliveryDriverDTO driver = deliveryDriverService.registerDriver(registerDriverDTO);
+            logger.info("Driver registered successfully: {} (Status: PENDING)", driver.username());
+            return ResponseEntity.ok(driver);
+        } catch (Exception e) {
+            logger.error("Error registering driver {}: {}", registerDriverDTO.username(), e.getMessage());
+            return ResponseEntity.status(400).body("Failed to register driver: " + e.getMessage());
+        }
+    }
 
     @GetMapping
     public ResponseEntity<List<DeliveryDriverDTO>> getAllDeliveryDrivers() {

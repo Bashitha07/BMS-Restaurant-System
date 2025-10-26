@@ -1,542 +1,473 @@
-# Restaurant Management System
+# 🍽️ BMS Kingdom of Taste - Restaurant Management System
 
-A full-stack restaurant management system built with Spring Boot and React.
+## Version 3.0
 
-## 🚀 Quick Start
+A full-stack restaurant management system with online ordering, delivery tracking, table reservations, admin management dashboard, and driver delivery management.
+
+## 📋 Features
+
+- **Customer Portal**: Browse menu, place orders, track deliveries, make reservations
+- **Admin Dashboard**: Manage orders, menus, users, drivers, payment verification, delivery assignment
+- **Driver Portal**: View assigned deliveries, update delivery status (Ready for Pickup → Out for Delivery → Delivered)
+- **Real-time Notifications**: Order status updates, payment confirmations
+- **Payment Methods**: Cash on Delivery, Deposit Slip (Bank Transfer) with image upload
+- **Driver Management**: Auto-assignment, delivery tracking, status updates, COD collection tracking
+
+## 🏗️ Tech Stack
+
+### Backend
+- **Spring Boot 3.5.6** - Java framework
+- **Java 24** - Programming language
+- **MySQL 8.0** - Database
+- **Spring Security** - Authentication & Authorization
+- **JWT** - Token-based authentication
+- **JPA/Hibernate** - ORM
+- **Maven** - Dependency management
+
+### Frontend
+- **React 18** - UI library
+- **Vite** - Build tool & dev server
+- **Tailwind CSS** - Utility-first CSS framework
+- **Axios** - HTTP client
+- **React Router DOM** - Client-side routing
+- **React Hot Toast** - Notifications
+
+## 🚀 Installation & Setup
 
 ### Prerequisites
-- **Java 24** (or JDK 17+)
-- **MySQL 8.0+** 
-- **Node.js 18+** and npm
+- **Java 17+** (JDK 24 recommended)
+- **MySQL 8.0+**
+- **Node.js 18+** with npm
 - **Maven 3.9+**
 
-### Installation
-
-1. **Clone Repository**
-   ```bash
-   git clone https://github.com/Bashitha07/BMS-Restaurant-System.git
-   cd BMS-Restaurant-System
-   ```
-
-2. **Setup Database**
-   
-   **Quick Setup (Recommended)**
-   ```bash
-   # Windows (PowerShell)
-   Get-Content database-setup.sql | mysql -u root
-   
-   # Linux/Mac
-   mysql -u root < database-setup.sql
-   ```
-   
-   **Manual Setup**
-   ```bash
-   # Login to MySQL
-   mysql -u root -p
-   
-   # Create database
-   CREATE DATABASE IF NOT EXISTS restaurant_db 
-   CHARACTER SET utf8mb4 
-   COLLATE utf8mb4_unicode_ci;
-   
-   USE restaurant_db;
-   
-   # Import schema
-   source database-setup.sql;
-   ```
-   
-   **Verify Database Setup:**
-   ```sql
-   -- Check all tables exist (should show 14 tables)
-   SHOW TABLES;
-   
-   -- Verify sample data loaded
-   SELECT COUNT(*) FROM menus;   -- Should have menu items
-   SELECT COUNT(*) FROM users;   -- Should have admin user
-   ```
-
-3. **Configure Backend**
-   ```properties
-   # Edit backend/src/main/resources/application.properties
-   spring.datasource.url=jdbc:mysql://localhost:3306/restaurant_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-   spring.datasource.username=root
-   spring.datasource.password=
-   
-   # Database validation (recommended for production)
-   spring.jpa.hibernate.ddl-auto=validate
-   
-   # Use 'update' only for development (auto-creates missing columns)
-   # spring.jpa.hibernate.ddl-auto=update
-   ```
-   
-   **Important:** Set `ddl-auto=validate` after initial setup to prevent unwanted schema changes.
-
-4. **Start Backend**
-   ```bash
-   cd backend
-   mvn spring-boot:run
-   ```
-
-5. **Start Frontend**
-   ```bash
-   cd frontend
-   npm install
-   npm run dev
-   ```
-
-6. **Access Application**
-   - Frontend: http://localhost:5174
-   - Backend API: http://localhost:8084
-   - Default Login: `admin` / `admin123`
-
----
-
-## 🎯 Technology Stack
-
-- **Backend:** Spring Boot 3.5.6, Java 24, Spring Security, JWT
-- **Frontend:** React 18, Vite, Tailwind CSS
-- **Database:** MySQL 8.0 (14 tables)
-- **Build Tools:** Maven 3.9.11, npm
-
----
-
-## 📊 Database Schema
-
-### Database Overview
-- **Name:** `restaurant_db`
-- **Charset:** utf8mb4_unicode_ci
-- **Tables:** 14
-- **Engine:** InnoDB
-
-### Core Tables
-
-#### 1. **users** - User Authentication & Profiles
-**Columns:**
-- `id` (PK), `username` (UNIQUE), `email` (UNIQUE), `phone`
-- `password` (hashed), `role` (ENUM), `enabled`
-- **Promo Fields:** `promo_code`, `discount_percent`, `promo_expires`, `promo_active`
-- Timestamps: `created_at`, `updated_at`
-
-**Roles:** USER, ADMIN, MANAGER, KITCHEN, DRIVER
-
-#### 2. **menus** - Menu Items & Inventory
-**Columns:**
-- `id` (PK), `name`, `description`, `price`, `category`
-- `is_available`, `image_url`, `preparation_time`
-- **Dietary Info:** `is_vegetarian`, `is_vegan`, `is_gluten_free`, `is_spicy`, `spice_level`
-- **Inventory:** `stock_quantity`, `low_stock_threshold`
-- **Promotions:** `is_featured`, `discount_percentage`, `discounted_price`
-- `ingredients` (TEXT)
-
-#### 3. **orders** - Customer Orders
-**Columns:**
-- `id` (PK), `user_id` (FK), `order_date`
-- **Status:** ENUM (PENDING, CONFIRMED, PREPARING, READY_FOR_PICKUP, OUT_FOR_DELIVERY, DELIVERED, CANCELLED, REFUNDED)
-- **Financial:** `total_amount`, `subtotal`, `tax_amount`, `delivery_fee`
-- **Payment:** `payment_method` (ENUM), `payment_status` (ENUM)
-- **Delivery:** `delivery_address`, `delivery_phone`, `special_instructions`
-- **Type:** `order_type` (DELIVERY, PICKUP, DINE_IN)
-- **Timing:** `estimated_delivery_time`, `actual_delivery_time`
-
-#### 4. **order_items** - Order Line Items
-**Columns:**
-- `id` (PK), `order_id` (FK), `menu_id` (FK)
-- `quantity`, `unit_price`, `total_price`
-- `special_instructions`
-
-#### 5. **order_tracking** - Order Status History
-**Columns:**
-- `id` (PK), `order_id` (FK)
-- `status`, `title`, `description`
-- `timestamp`, `completed`, `actor`
-
-#### 6. **reservations** - Table Bookings
-**Columns:**
-- `id` (PK), `user_id` (FK)
-- `reservation_date`, `reservation_time`, `reservation_date_time`
-- `time_slot`, `number_of_people`
-- **Status:** ENUM (PENDING, CONFIRMED, SEATED, CANCELLED, NO_SHOW, COMPLETED)
-- `customer_name`, `customer_email`, `customer_phone`
-- `special_requests`, `table_number`
-- `confirmed_at`, `cancelled_at`, `cancellation_reason`
-- `reminder_sent`, `admin_notes`
-
-#### 7. **payments** - Payment Transactions
-**Columns:**
-- `id` (PK), `order_id` (FK), `amount`
-- `payment_method` (ENUM), `status` (ENUM)
-- `transaction_id`, `slip_image`, `payment_gateway`
-- `submitted_date`, `processed_date`, `approved_date`
-- **Refunds:** `refund_amount`, `refunded_date`, `refund_reason`
-- `failure_reason`
-
-#### 8. **payment_slips** - Payment Proof Uploads
-**Columns:**
-- `id` (PK), `order_id` (FK), `user_id` (FK)
-- **File Info:** `file_name`, `file_path`, `file_size`, `content_type`
-- `payment_amount`, `payment_date`
-- **Status:** ENUM (PENDING, CONFIRMED, REJECTED, PROCESSING)
-- `uploaded_at`, `confirmed_at`, `confirmed_by`
-- `rejection_reason`, `admin_notes`
-- `bank_name`, `transaction_reference`
-
-#### 9. **drivers** - Delivery Drivers
-**Columns:**
-- `id` (PK), `name`, `phone` (UNIQUE), `email` (UNIQUE)
-- `vehicle_type`, `vehicle_number`, `license_number`
-- **Status:** ENUM (PENDING, APPROVED, REJECTED, AVAILABLE, BUSY, OFFLINE)
-- `rating`, `total_deliveries`, `earnings`
-
-#### 10. **deliveries** - Delivery Tracking
-**Columns:**
-- `id` (PK), `order_id` (FK - ONE-TO-ONE), `driver_id` (FK)
-- `delivery_address`, `delivery_phone`, `delivery_instructions`
-- **Status:** ENUM (PENDING, ASSIGNED, PICKED_UP, IN_TRANSIT, DELIVERED, FAILED, CANCELLED)
-- `delivery_fee`, `distance_km`
-- `estimated_delivery_time`, `actual_delivery_time`, `pickup_time`
-- `proof_of_delivery`, `delivery_notes`
-- GPS tracking fields
-
-#### 11. **delivery_drivers** - Driver Assignments (Join Table)
-**Columns:**
-- `id` (PK), `delivery_id` (FK), `driver_id` (FK)
-- `assigned_at`, `notes`
-
-#### 12. **notifications** - User Notifications
-**Columns:**
-- `id` (PK), `user_id` (FK - nullable for global)
-- `title`, `message`
-- **Type:** ENUM (ORDER_CONFIRMATION, ORDER_STATUS_UPDATE, RESERVATION_CONFIRMATION, etc.)
-- **Status:** ENUM (UNREAD, READ, DISMISSED)
-- `reference_id`, `reference_type`, `is_global`
-- `created_at`, `read_at`
-
-#### 13. **feedbacks** - Customer Feedback
-**Columns:**
-- `id` (PK), `user_id` (FK), `menu_id` (FK)
-- `feedback` (TEXT)
-- `created_at`, `updated_at`
-
-#### 14. **reviews** - Menu Reviews
-**Columns:**
-- `id` (PK), `user_id` (FK), `menu_id` (FK)
-- `rating` (1-5), `feedback` (TEXT)
-- `created_at`, `updated_at`
-
-### Database Relationships
-
-```
-users (1) ─── (*) orders
-users (1) ─── (*) reservations
-users (1) ─── (*) notifications
-users (1) ─── (*) feedbacks/reviews
-users (1) ─── (*) payment_slips
-
-orders (1) ─── (*) order_items
-orders (1) ─── (*) order_tracking
-orders (1) ─── (*) payments
-orders (1) ─── (1) delivery
-orders (1) ─── (*) payment_slips
-
-menus (1) ─── (*) order_items
-menus (1) ─── (*) feedbacks/reviews
-
-drivers (1) ─── (*) deliveries
-deliveries (1) ─── (1) orders
-```
-
-### Schema Migration & Updates
-
-**Latest Version:** 2.0 (October 25, 2025)
-
-**Recent Changes:**
-- Added promo code support to users
-- Added dietary filters and inventory to menus
-- Enhanced order payment tracking
-- Restructured payment_slips table
-- Added comprehensive delivery tracking
-- Improved notification system
-
-**Migration Documentation:**
-- `DATABASE_ANALYSIS.md` - Detailed table analysis
-- `DATABASE_MIGRATION.sql` - Migration script
-- `DATABASE_STRUCTURE_SUMMARY.md` - Quick reference
-- `MIGRATION_EXECUTION_GUIDE.md` - Step-by-step guide
-- `DATABASE_ERD.md` - Visual diagrams
-
-**To migrate from older version:**
+### Step 1: Clone Repository
 ```bash
-# 1. Backup current database
-mysqldump -u root restaurant_db > backup.sql
-
-# 2. Apply migration
-Get-Content DATABASE_MIGRATION.sql | mysql -u root restaurant_db
-
-# 3. Verify changes
-mysql -u root restaurant_db -e "SHOW TABLES; DESCRIBE orders;"
+git clone https://github.com/Bashitha07/BMS-Restaurant-System.git
+cd BMS-Restaurant-System
 ```
 
----
+### Step 2: Database Setup
 
-## 📋 Key Features
-
-- User authentication with JWT
-- Role-based access control (USER, ADMIN, MANAGER, KITCHEN, DRIVER)
-- Menu management with categories and inventory
-- Order processing with status tracking
-- Table reservations
-- Payment processing with slip upload
-- Delivery tracking with driver assignment
-- Real-time notifications
-
----
-
-## � Documentation
-
-### Database Documentation
-- **`DATABASE_ANALYSIS.md`** - Comprehensive table-by-table analysis
-- **`DATABASE_MIGRATION.sql`** - SQL migration script
-- **`DATABASE_STRUCTURE_SUMMARY.md`** - Quick reference guide
-- **`MIGRATION_EXECUTION_GUIDE.md`** - Step-by-step migration tutorial
-- **`DATABASE_ERD.md`** - Entity relationship diagrams
-- **`DATABASE_COMPARISON_TABLE.md`** - Field-by-field comparison
-- **`README_DATABASE_DOCS.md`** - Documentation index
-- **`verify-database.sql`** - Database verification script
-
-### API Testing
-- **Bruno API Collection:** `backend/bruno-api-tests/`
-- Test all endpoints with pre-configured requests
-- Includes authentication, CRUD operations, file uploads
-
----
-
-## 📦 Project Structure
-
-```
-restaurant-system/
-├── backend/                    # Spring Boot application
-│   ├── src/
-│   │   ├── main/
-│   │   │   ├── java/          # Java source code
-│   │   │   │   └── com/bms/restaurant_system/
-│   │   │   │       ├── controller/    # REST controllers
-│   │   │   │       ├── service/       # Business logic
-│   │   │   │       ├── entity/        # JPA entities
-│   │   │   │       ├── repository/    # Data access
-│   │   │   │       ├── config/        # Configuration
-│   │   │   │       └── security/      # Security & JWT
-│   │   │   └── resources/
-│   │   │       ├── application.properties
-│   │   │       └── static/images/     # Uploaded files
-│   │   └── test/              # Unit tests
-│   ├── database/
-│   │   └── RESTAURANT_DB_COMPLETE.sql
-│   ├── bruno-api-tests/       # API test collection
-│   ├── pom.xml                # Maven dependencies
-│   └── mvnw.cmd               # Maven wrapper
-│
-├── frontend/                   # React application
-│   ├── src/
-│   │   ├── components/        # Reusable components
-│   │   ├── pages/             # Page components
-│   │   ├── services/          # API services
-│   │   ├── contexts/          # React contexts
-│   │   ├── utils/             # Utilities
-│   │   └── assets/
-│   │       └── images/        # Menu & payment images
-│   ├── public/                # Static files
-│   ├── package.json           # npm dependencies
-│   └── vite.config.js         # Vite configuration
-│
-├── DATABASE_*.md              # Database documentation
-├── verify-database.sql        # DB verification script
-└── README.md                  # This file
-```
-
----
-
-## �🔧 Configuration
-
-### Backend (`application.properties`)
-```properties
-server.port=8084
-spring.datasource.url=jdbc:mysql://localhost:3306/restaurant_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-spring.datasource.username=root
-spring.datasource.password=
-spring.jpa.hibernate.ddl-auto=validate
-
-# File upload
-spring.servlet.multipart.max-file-size=10MB
-spring.servlet.multipart.max-request-size=10MB
-
-# JWT
-jwt.secret=your-secret-key-minimum-256-bits
-jwt.expiration=3600000
-```
-
-### Frontend Environment Variables
-```javascript
-// src/services/api.js
-const API_BASE_URL = 'http://localhost:8084';
-```
-
----
-
-## 🐛 Troubleshooting
-
-### Database Issues
-
-**Error: "Unknown column in 'field list'"**
+**Run the database script:**
 ```bash
-# Your database schema is outdated. Run migration:
-mysqldump -u root restaurant_db > backup.sql
-Get-Content DATABASE_MIGRATION.sql | mysql -u root restaurant_db
-
-# Or verify current schema:
-Get-Content verify-database.sql | mysql -u root restaurant_db
-```
-
-**Error: "Schema-validation: missing column"**
-```bash
-# Check which columns are missing:
-mysql -u root restaurant_db -e "DESCRIBE orders;"
-mysql -u root restaurant_db -e "DESCRIBE menus;"
-mysql -u root restaurant_db -e "DESCRIBE payment_slips;"
-
-# Ensure ddl-auto is set correctly:
-# For production: spring.jpa.hibernate.ddl-auto=validate
-# For development: spring.jpa.hibernate.ddl-auto=update
-```
-
-**Database connection failed:**
-```bash
-# Verify MySQL is running
-mysql -u root -e "SHOW DATABASES;"
-
-# Check connection string in application.properties
-spring.datasource.url=jdbc:mysql://localhost:3306/restaurant_db?createDatabaseIfNotExist=true
-```
-
-**Fresh database setup:**
-```bash
-# Drop and recreate (⚠️ WARNING: This deletes all data!)
-mysql -u root -e "DROP DATABASE IF EXISTS restaurant_db;"
-mysql -u root -e "CREATE DATABASE restaurant_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-Get-Content backend/database/RESTAURANT_DB_COMPLETE.sql | mysql -u root restaurant_db
-```
-
-### Application Issues
-
-**Port already in use:**
-```bash
-# Windows
-netstat -ano | findstr :8084
-taskkill /PID <PID> /F
+# Windows PowerShell
+Get-Content database-setup.sql | mysql -u root
 
 # Linux/Mac
-lsof -i :8084
-kill -9 <PID>
+mysql -u root < database-setup.sql
 ```
 
-**Backend won't start:**
+**Verify installation:**
+```sql
+-- Login to MySQL
+mysql -u root
+
+-- Check database
+USE restaurant_db;
+SHOW TABLES;
+-- Should show 14 tables
+
+-- Check sample data
+SELECT COUNT(*) FROM users;    -- Should have 11 users
+SELECT COUNT(*) FROM menus;    -- Should have 15 menu items
+SELECT COUNT(*) FROM drivers;  -- Should have 8 drivers
+```
+
+### Step 3: Configure Backend
+
+Edit `backend/src/main/resources/application.properties`:
+```properties
+# Database connection (no password for root)
+spring.datasource.url=jdbc:mysql://localhost:3306/restaurant_db
+spring.datasource.username=root
+spring.datasource.password=
+
+# Server port
+server.port=8084
+
+# JPA settings - use validate after initial setup
+spring.jpa.hibernate.ddl-auto=validate
+```
+
+### Step 4: Start Backend Server
+
 ```bash
-# Clean build
 cd backend
-mvn clean install -DskipTests
-mvn spring-boot:run
-
-# Check logs
-tail -f backend/logs/application.log
+mvnw spring-boot:run
 ```
 
-**Frontend dependencies:**
+Backend will start on `http://localhost:8084`
+
+### Step 5: Start Frontend
+
 ```bash
 cd frontend
-rm -rf node_modules package-lock.json
 npm install
 npm run dev
 ```
 
-**CORS errors:**
-```javascript
-// Verify API base URL in frontend/src/services/api.js
-const API_BASE_URL = 'http://localhost:8084';
+Frontend will start on `http://localhost:5174`
 
-// Check backend CORS configuration in application.properties
-```
+### Step 6: Login
 
-### Verification Commands
+**Default Admin Credentials:**
+- Username: `admin`
+- Password: `password123`
 
-**Check database schema:**
-```bash
-# Run verification script
-Get-Content verify-database.sql | mysql -u root restaurant_db
+**Test User Accounts:**
+- Username: `john.doe` / Password: `password123`
+- Username: `jane.smith` / Password: `password123`
 
-# Should show:
-# - 14 tables
-# - 0 orphaned records
-# - All required columns present
-```
+**Test Driver Accounts:**
+- Username: `DrivTest` / Password: `password123`
+- Username: `driver1` / Password: `password123`
+- Login at: `http://localhost:5174/driver/login`
 
-**Test API endpoints:**
-```bash
-# Health check
-curl http://localhost:8084/actuator/health
-
-# Login test
-curl -X POST http://localhost:8084/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"admin123"}'
-```
-
-**Check table row counts:**
-```sql
-USE restaurant_db;
-SELECT TABLE_NAME, TABLE_ROWS 
-FROM INFORMATION_SCHEMA.TABLES 
-WHERE TABLE_SCHEMA = 'restaurant_db';
-```
-
----
-
-## � Project Structure
+## 📂 Project Structure
 
 ```
 restaurant-system/
-├── README.md                    # This file - project documentation
-├── database-setup.sql           # Complete database schema with sample data
-├── backend/                     # Spring Boot application
+├── backend/                 # Spring Boot backend
+│   ├── src/main/java/
+│   │   └── com/bms/restaurant_system/
+│   │       ├── controller/  # REST API endpoints
+│   │       │   ├── admin/   # Admin-specific endpoints
+│   │       │   ├── auth/    # Authentication endpoints
+│   │       │   └── user/    # User endpoints
+│   │       ├── service/     # Business logic
+│   │       │   ├── order/   # Order management
+│   │       │   ├── menu/    # Menu management
+│   │       │   └── user/    # User management
+│   │       ├── entity/      # Database models (JPA entities)
+│   │       ├── repository/  # Data access layer (Spring Data JPA)
+│   │       ├── dto/         # Data transfer objects
+│   │       └── config/      # Security & application config
+│   ├── src/main/resources/
+│   │   └── application.properties  # Backend configuration
+│   └── bruno-api-tests/     # API testing collection
+│
+├── frontend/                # React frontend
+│   ├── public/
+│   │   └── images/          # 📁 Menu item images (46 food images)
 │   ├── src/
-│   │   ├── main/
-│   │   │   ├── java/           # Java source code
-│   │   │   └── resources/      # Configuration files
-│   │   └── test/               # Unit tests
-│   ├── pom.xml                 # Maven dependencies
-│   └── bruno-api-tests/        # API testing collection
-└── frontend/                    # React application
-    ├── src/
-    │   ├── pages/              # Page components
-    │   ├── components/         # Reusable components
-    │   ├── contexts/           # React contexts
-    │   ├── services/           # API services
-    │   └── utils/              # Utility functions
-    ├── package.json            # npm dependencies
-    └── vite.config.js          # Vite configuration
+│   │   ├── components/      # UI components
+│   │   │   ├── admin/       # Admin dashboard components
+│   │   │   ├── driver/      # Driver portal components
+│   │   │   ├── layouts/     # Layout wrappers
+│   │   │   └── common/      # Shared components
+│   │   ├── pages/           # Page components
+│   │   │   ├── admin/       # Admin pages
+│   │   │   ├── driver/      # Driver pages
+│   │   │   ├── user/        # Customer pages
+│   │   │   └── public/      # Public pages
+│   │   ├── services/        # API service layer
+│   │   │   ├── driverService.js   # Driver API calls
+│   │   │   ├── orderService.js    # Order API calls
+│   │   │   └── authService.js     # Auth API calls
+│   │   ├── contexts/        # React contexts (Auth, Cart, Notifications)
+│   │   ├── routes/          # Route configuration
+│   │   └── App.jsx
+│   └── package.json
+│
+├── database-setup.sql       # Complete DB schema + sample data
+└── *.sql                    # Additional SQL scripts for setup
+
 ```
 
----
+## 📁 File Storage Locations
 
-## 📄 License
+### Payment Slip Uploads
+- **Storage Path**: `${user.home}/restaurant-system/uploads/payment-slips/`
+- **Windows Example**: `C:\Users\YourUsername\restaurant-system\uploads\payment-slips\`
+- **Linux/Mac Example**: `/home/username/restaurant-system/uploads/payment-slips/`
+- **File Format**: JPEG, PNG, PDF
+- **Max Size**: 10MB per file
+- **Access**: Admin can view/verify uploaded slips in Payment Management section
 
-Educational purposes only.
+### Menu Item Images
+- **Storage Path**: `frontend/public/images/`
+- **Full Path**: `c:\SpringBoot\restaurant-system\frontend\public\images\`
+- **Files**: 46 menu item images (JPG format)
+- **Access**: Publicly accessible via frontend at `/images/filename.jpg`
+- **Examples**: 
+  - Biryani.jpg
+  - Cheese Chicken Burger.jpg
+  - Margherita Pizza.jpg
+  - Mango Juice.jpg
 
----
+### Configuration
+Located in `backend/src/main/resources/application.properties`:
+```properties
+# File upload settings
+spring.servlet.multipart.max-file-size=10MB
+spring.servlet.multipart.max-request-size=10MB
+app.upload.dir=${user.home}/restaurant-system/uploads
+```
+
+## 🗄️ Database Schema
+
+The system uses **17 tables**:
+
+### Core Tables
+1. **users** - User accounts (customers, admins, drivers, kitchen staff, managers)
+2. **menus** - Restaurant menu items with pricing and images
+3. **orders** - Customer orders with status tracking
+4. **order_items** - Individual items in orders (quantity, price)
+5. **drivers** - Driver profiles with vehicle info and availability
+6. **deliveries** - Delivery tracking, assignment, and status updates
+7. **reservations** - Table reservation bookings
+8. **payment_slips** - Bank deposit slip uploads and verification
+
+### Supporting Tables
+9. **notifications** - User notification system
+10. **order_tracking** - Order status change history with timestamps
+11. **system_settings** - Application configuration (auto-enable drivers, etc.)
+12. **delivery_drivers** - Legacy driver table (consolidated with drivers)
+13. **feedbacks** - Customer feedback (future use)
+14. **reviews** - Menu/service reviews (future use)
+15. **payments** - Payment transactions (future use)
+16. **categories** - Menu categories
+17. **audit_log** - System activity logging
+
+## 🔐 User Roles
+
+1. **ADMIN** - Full system access, manage everything
+2. **USER** - Customers who place orders
+3. **DRIVER** - Delivery drivers with vehicle tracking
+4. **MANAGER** - Restaurant manager (future use)
+5. **KITCHEN** - Kitchen staff (future use)
+
+## 🎯 Key Features
+
+### For Customers
+- Browse menu with categories, images, and search
+- Add items to cart with quantity selection
+- Place orders with multiple payment methods
+- Upload bank deposit slips for verification
+- Track order status in real-time (Pending → Confirmed → Preparing → Ready for Pickup → Out for Delivery → Delivered)
+- Make table reservations with date/time selection
+- View order history with reorder option
+- Receive notifications for order updates
+
+### For Admins
+- Comprehensive dashboard with statistics (orders, revenue, users, drivers)
+- Manage menu items (CRUD operations) with image upload
+- View and update order status
+- Assign drivers to deliveries with driver selection
+- Verify and approve/reject payment slips
+- Manage user accounts and roles
+- Driver approval workflow (enable/disable drivers)
+- View and manage reservations
+- System settings configuration
+
+### For Drivers
+- Dedicated driver login portal (`/driver/login`)
+- View assigned deliveries with customer details
+- Update delivery status workflow:
+  - **Ready for Pickup** → Mark as picked up → **Out for Delivery**
+  - **Out for Delivery** → Mark as delivered → **Delivered**
+- Handle Cash on Delivery (COD) payments with collection confirmation
+- View customer phone numbers for contact
+- Delivery address and instructions display
+- Active delivery filtering (completed orders removed from view)
+- Performance metrics and delivery history
+
+## 🚦 API Endpoints
+
+### Authentication
+- `POST /api/auth/login` - User login
+- `POST /api/auth/register` - New user registration
+- `GET /api/auth/validate` - Validate JWT token
+- `POST /api/driver/login` - Driver login (separate auth)
+
+### Orders
+- `GET /api/orders` - Get all orders (admin)
+- `GET /api/orders/my-orders` - Get user's orders
+- `POST /api/orders` - Create new order
+- `PATCH /api/orders/{id}/status` - Update order status
+- `PUT /api/orders/{id}/assign-driver` - Assign driver to delivery
+- `POST /api/orders/{id}/payment-slip` - Upload payment slip
+
+### Menu
+- `GET /api/menu` - Get all menu items
+- `GET /api/menu/{id}` - Get specific item
+- `POST /api/menu` - Create menu item (admin)
+- `PUT /api/menu/{id}` - Update menu item (admin)
+- `DELETE /api/menu/{id}` - Delete menu item (admin)
+
+### Drivers
+- `GET /api/orders/admin/drivers` - Get all drivers
+- `GET /api/drivers/my-deliveries` - Get driver's assigned deliveries
+- `PUT /api/admin/users/{id}/enable` - Approve/enable driver
+- `PUT /api/admin/users/{id}/disable` - Reject/disable driver
+
+### Reservations
+- `GET /api/reservations` - Get all reservations
+- `POST /api/reservations` - Create reservation
+- `PUT /api/reservations/{id}` - Update reservation status
+
+### Notifications
+- `GET /api/notifications/my-notifications` - Get user notifications
+- `POST /api/notifications/mark-read/{id}` - Mark notification as read
+
+## 🧪 Testing
+
+**Sample Data Included:**
+- 11 user accounts (1 admin, 2 customers, 8 drivers)
+- 46 menu item images stored in `frontend/public/images/`
+- 15+ menu items across categories (Mains, Appetizers, Beverages, Desserts)
+- Sample orders with different statuses
+- 8 driver profiles with vehicle details
+- Table reservations
+
+**Test Payment Slip Upload:**
+1. Login as customer
+2. Place order and select "Deposit Slip" payment method
+3. Upload a sample image (JPEG/PNG/PDF, max 10MB)
+4. Image saved to `${user.home}/restaurant-system/uploads/payment-slips/`
+5. Admin can view and approve/reject from Payment Management
+
+**Test Driver Workflow:**
+1. Admin creates order and assigns driver (user_id 19: `DrivTest`)
+2. Driver logs in at `/driver/login`
+3. Driver sees assigned delivery in dashboard
+4. Driver updates status: Ready for Pickup → Out for Delivery → Delivered
+5. For COD orders, driver confirms cash collection
+6. Database updated with delivery status and timestamps
+
+**Test Driver Portal Restrictions:**
+1. Login as driver at `/driver/login`
+2. Attempt to navigate to `/` or `/menu` (user pages)
+3. Driver automatically redirected to `/driver/dashboard`
+4. Drivers can only access driver-specific routes
+
+## 📱 Screenshots
+
+*(Add screenshots here of:)*
+- Home page with menu
+- Admin dashboard
+- Order tracking
+- Driver management
+
+## ⚙️ Configuration
+
+### File Upload Configuration
+**Payment Slips:** `${user.home}/restaurant-system/uploads/payment-slips/`
+- Windows: `C:\Users\YourUsername\restaurant-system\uploads\payment-slips\`
+- Linux/Mac: `/home/username/restaurant-system/uploads/payment-slips/`
+
+**Menu Images:** `frontend/public/images/`
+- 46 food images included (JPG format)
+- Accessible at: `http://localhost:5174/images/filename.jpg`
+
+### Ports
+- **Backend**: `8084` (Spring Boot)
+- **Frontend**: `5174` (Vite dev server)
+- **Database**: `3306` (MySQL)
+
+## 🐛 Troubleshooting
+
+**Database Connection Failed:**
+- Verify MySQL is running
+- Check username/password in `application.properties`
+- Ensure `restaurant_db` exists
+
+**Port Already in Use:**
+- Backend: Change port in `application.properties`
+- Frontend: Kill process on port 5174 or change in `vite.config.js`
+
+**Import Errors in IDE:**
+- Run `mvn clean install` in backend folder
+- Reload Maven/Gradle project
+- Clean Java Language Server workspace
+
+**Cannot Login:**
+- Verify database has users (run `SELECT * FROM users;`)
+- Check password is `password123` (default BCrypt hash)
+- Clear browser cookies and localStorage
+- For drivers, use `/driver/login` instead of `/login`
+
+**Driver Can't Update Status:**
+- Verify order is assigned to driver (`driver_id` in orders table)
+- Check backend logs for transaction errors
+- Ensure delivery record exists for the order
+- Verify JWT token is valid (check localStorage)
+
+**Payment Slip Upload Fails:**
+- Check file size is under 10MB
+- Verify upload directory exists: `${user.home}/restaurant-system/uploads/payment-slips/`
+- Check file permissions on upload directory
+- Supported formats: JPEG, PNG, PDF
+
+**Images Not Loading:**
+- Menu images should be in `frontend/public/images/`
+- Verify image filenames match database `image_url` column
+- Check file extensions are correct (case-sensitive)
+- Restart frontend dev server after adding new images
+
+## 📝 Development Notes
+
+**System Architecture:**
+- **Backend**: RESTful API with JWT authentication, role-based access control
+- **Frontend**: SPA with protected routes, context-based state management
+- **Database**: Relational schema with foreign keys and constraints
+- **File Storage**: Local filesystem for uploads, public directory for static images
+
+**Adding New Features:**
+1. **Backend**: Entity → Repository → Service → Controller → DTO
+2. **Frontend**: Service → Component → Route → Context (if needed)
+3. **Database**: Update schema in SQL file, use `ddl-auto=validate`
+4. Test API with Bruno API client (collection in `backend/bruno-api-tests/`)
+
+**Database Management:**
+- **Never** use `ddl-auto=create` (drops all data)
+- Use `ddl-auto=validate` for production
+- Use `ddl-auto=update` cautiously for development
+- Make schema changes in `database-setup.sql` or dedicated migration scripts
+
+**Security Notes:**
+- JWT tokens stored in localStorage (user: `token`, driver: `driverToken`)
+- Passwords hashed with BCrypt (strength: 12)
+- CORS enabled for frontend origin
+- File upload validation and sanitization implemented
+- Role-based route protection on frontend and backend
+
+## 🆕 Version 3.0 Updates
+
+### New Features
+✅ **Driver Portal Isolation** - Drivers redirected to dashboard, cannot access user pages
+✅ **Enhanced Status Workflow** - Ready for Pickup → Out for Delivery → Delivered
+✅ **COD Payment Tracking** - Cash collection confirmation for COD orders
+✅ **Delivery Synchronization** - Order and delivery status automatically synced
+✅ **Active Delivery Filtering** - Completed deliveries removed from driver view
+✅ **Improved File Organization** - Removed obsolete script files
+
+### Technical Improvements
+- Updated delivery status mapping logic in `OrderService.java`
+- Enhanced driver authentication with separate login portal
+- Added route protection to prevent cross-role access
+- Implemented timestamp tracking for pickup and delivery times
+- Consolidated driver table structure (removed legacy tables)
+- Added comprehensive logging for debugging
+
+### File Structure Changes
+- **Removed**: `update-images.bat`, `start-backend.bat`, `start-servers.sh`
+- **Added**: Driver portal components and services
+- **Updated**: README with version 3.0 documentation
 
 ## 👥 Contributors
 
-Bashitha07 - Project Owner
+- Bashitha07 - Full Stack Development
+
+## 📄 License
+
+This project is for educational purposes.
+
+## 🔗 Links
+
+- GitHub: https://github.com/Bashitha07/BMS-Restaurant-System
+- Contact: bashitha.m@example.com
 
 ---
 
-**Version:** 2.0.0  
-**Last Updated:** October 25, 2025
+**Made with ❤️ for Database Management Systems Course**

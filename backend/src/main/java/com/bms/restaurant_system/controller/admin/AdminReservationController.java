@@ -91,7 +91,7 @@ public class AdminReservationController {
         logger.info("Admin updating reservation: {}", id);
         try {
             ReservationDTO updated = reservationService.updateReservation(id, reservationDTO);
-            logger.info("Reservation updated successfully: {}", id);
+            logger.info("Reservation {} updated successfully", id);
             return ResponseEntity.ok(updated);
         } catch (Exception e) {
             logger.error("Error updating reservation {}: {}", id, e.getMessage());

@@ -1,7 +1,9 @@
 package com.bms.restaurant_system.controller.user;
 
+import com.bms.restaurant_system.dto.AssignDriverRequest;
 import com.bms.restaurant_system.dto.OrderCreateDTO;
 import com.bms.restaurant_system.dto.OrderDTO;
+import com.bms.restaurant_system.entity.Order;
 import com.bms.restaurant_system.service.order.OrderService;
 import com.bms.restaurant_system.exception.ResourceNotFoundException;
 import org.slf4j.Logger;
@@ -110,6 +112,62 @@ public class OrderController {
             return ResponseEntity.ok(groupedOrders);
         } catch (Exception e) {
             logger.error("Error fetching grouped orders for admin", e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/admin/drivers")
+    public ResponseEntity<List<Map<String, Object>>> getAvailableDrivers() {
+        logger.info("Fetching available drivers");
+        try {
+            List<Map<String, Object>> drivers = orderService.getAvailableDrivers();
+            logger.info("Found {} available drivers", drivers.size());
+            return ResponseEntity.ok(drivers);
+        } catch (Exception e) {
+            logger.error("Error fetching available drivers", e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<OrderDTO> updateOrderStatus(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> statusUpdate) {
+        logger.info("Updating status for order {} to {}", id, statusUpdate.get("status"));
+        try {
+            Order.OrderStatus newStatus = Order.OrderStatus.valueOf(statusUpdate.get("status"));
+            OrderDTO updatedOrder = orderService.updateOrderStatus(id, newStatus);
+            logger.info("Successfully updated order {} status", id);
+            return ResponseEntity.ok(updatedOrder);
+        } catch (IllegalArgumentException e) {
+            logger.warn("Invalid status value: {}", statusUpdate.get("status"));
+            return ResponseEntity.badRequest().build();
+        } catch (ResourceNotFoundException e) {
+            logger.warn("Order not found: {}", e.getMessage());
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            logger.error("Error updating order status", e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @PutMapping("/{id}/assign-driver")
+    public ResponseEntity<OrderDTO> assignDriver(
+            @PathVariable Long id, 
+            @RequestBody AssignDriverRequest request) {
+        logger.info("Assigning driver {} to order {}", request.getDriverId(), id);
+        try {
+            OrderDTO updatedOrder = orderService.assignDriver(id, request.getDriverId());
+            logger.info("Successfully assigned driver to order {}", id);
+            return ResponseEntity.ok(updatedOrder);
+        } catch (ResourceNotFoundException e) {
+            logger.warn("Order or driver not found: {}", e.getMessage());
+            return ResponseEntity.notFound().build();
+        } catch (IllegalArgumentException e) {
+            logger.warn("Invalid driver assignment: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            logger.error("Error assigning driver to order", e);
             return ResponseEntity.internalServerError().build();
         }
     }

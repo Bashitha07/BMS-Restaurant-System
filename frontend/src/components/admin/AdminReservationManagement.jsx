@@ -12,7 +12,7 @@ const AdminReservationManagement = () => {
   const [filters, setFilters] = useState({
     status: 'ALL',
     date: '',
-    dateRange: 'TODAY',
+    dateRange: 'ALL',
     customerName: ''
   });
 
@@ -31,6 +31,7 @@ const AdminReservationManagement = () => {
 
   const statusOptions = ['PENDING', 'CONFIRMED', 'SEATED', 'COMPLETED', 'CANCELLED', 'NO_SHOW'];
   const dateRangeOptions = [
+    { value: 'ALL', label: 'All Reservations' },
     { value: 'TODAY', label: 'Today' },
     { value: 'TOMORROW', label: 'Tomorrow' },
     { value: 'THIS_WEEK', label: 'This Week' },

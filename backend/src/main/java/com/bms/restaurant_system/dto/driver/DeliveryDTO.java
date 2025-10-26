@@ -29,6 +29,11 @@ public record DeliveryDTO(
     String customerFeedback,
     String deliveryNotes,
     String proofOfDelivery,
+    String paymentMethod,
+    BigDecimal totalAmount,
+    BigDecimal cashCollected,
+    Boolean cashCollectionConfirmed,
+    LocalDateTime cashCollectionTime,
     LocalDateTime createdAt,
     LocalDateTime updatedAt
 ) {}

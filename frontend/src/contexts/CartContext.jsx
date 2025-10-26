@@ -1,4 +1,4 @@
-import React, { useEffect, useState, createContext, useContext } from 'react'
+import React, { useEffect, useState, createContext, useContext, useMemo } from 'react'
 import { toast } from 'react-hot-toast'
 
 const CartContext = createContext(undefined)
@@ -9,12 +9,15 @@ export const CartProvider = ({ children }) => {
   const [tax, setTax] = useState(0)
   const [total, setTotal] = useState(0)
 
-  const getTotalItems = () => {
+  // Memoize total items calculation to avoid recalculating on every render
+  const totalItems = useMemo(() => {
     return items.reduce((total, item) => {
       const q = Number(item?.quantity)
       return total + (Number.isFinite(q) ? q : 0)
     }, 0)
-  }
+  }, [items])
+  
+  const getTotalItems = () => totalItems
 
   // Load cart from localStorage on component mount
   useEffect(() => {
@@ -46,16 +49,18 @@ export const CartProvider = ({ children }) => {
     const qNum = Number(quantity)
     const safeQuantity = Number.isFinite(qNum) && qNum > 0 ? qNum : 1
     if (!item.isAvailable) {
-      toast.error(`${item.name} is currently unavailable`)
+      toast.error(`${item.name} is currently unavailable`, { id: `unavailable-${item.id}` })
       return
     }
 
+    // Check if item already exists in cart before updating state
+    const existingItem = items.find((i) => i.id === item.id)
+    
     setItems((prevItems) => {
-      // Check if item already exists in cart
-      const existingItem = prevItems.find((i) => i.id === item.id)
-      if (existingItem) {
+      const existing = prevItems.find((i) => i.id === item.id)
+      if (existing) {
         // Update quantity if item exists
-        const updatedItems = prevItems.map((i) =>
+        return prevItems.map((i) =>
           i.id === item.id
             ? {
                 ...i,
@@ -63,11 +68,8 @@ export const CartProvider = ({ children }) => {
               }
             : i,
         )
-        toast.success(`Updated ${item.name} quantity in cart`)
-        return updatedItems
       } else {
         // Add new item if it doesn't exist
-        toast.success(`Added ${item.name} to cart`)
         return [
           ...prevItems,
           {
@@ -77,16 +79,25 @@ export const CartProvider = ({ children }) => {
         ]
       }
     })
+    
+    // Show toast after state update is queued
+    if (existingItem) {
+      toast.success(`Updated ${item.name} quantity in cart`, { id: `update-${item.id}` })
+    } else {
+      toast.success(`Added ${item.name} to cart`, { id: `add-${item.id}` })
+    }
   }
 
   const removeItem = (id) => {
-    setItems((prevItems) => {
-      const itemToRemove = prevItems.find((item) => item.id === id)
-      if (itemToRemove) {
-        toast.success(`Removed ${itemToRemove.name} from cart`)
-      }
-      return prevItems.filter((item) => item.id !== id)
-    })
+    // Find the item before removing it
+    const itemToRemove = items.find((item) => item.id === id)
+    
+    setItems((prevItems) => prevItems.filter((item) => item.id !== id))
+    
+    // Show toast after state update is queued
+    if (itemToRemove) {
+      toast.success(`Removed ${itemToRemove.name} from cart`, { id: `remove-${id}` })
+    }
   }
 
   const updateQuantity = (id, quantity) => {
@@ -108,7 +119,7 @@ export const CartProvider = ({ children }) => {
 
   const clearCart = () => {
     setItems([])
-    toast.success('Cart cleared')
+    toast.success('Cart cleared', { id: 'clear-cart' })
   }
 
   return (

@@ -14,6 +14,17 @@ const UserLayout = ({ children, onCartClick }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // Check if current session is a driver
+  const driverToken = localStorage.getItem('driverToken');
+  const isDriverSession = driverToken !== null;
+
+  // If this is a driver session, redirect to driver dashboard
+  React.useEffect(() => {
+    if (isDriverSession) {
+      navigate('/driver/dashboard', { replace: true });
+    }
+  }, [isDriverSession, navigate]);
+
   const handleLogout = () => {
     const confirmed = window.confirm('Are you sure you want to logout?');
     if (confirmed) {
@@ -32,25 +43,30 @@ const UserLayout = ({ children, onCartClick }) => {
 
   const navItems = [
     { path: '/', icon: Home, label: 'Home', public: true },
-    { path: '/menu', icon: Menu, label: 'Menu', public: true },
-    { path: '/cart', icon: ShoppingCart, label: 'Cart', public: true },
-    { path: '/order-history', icon: Receipt, label: 'Orders', public: false },
-    { path: '/reservations', icon: Calendar, label: 'Reservations', public: false },
-    { path: '/profile', icon: User, label: 'Profile', public: false },
+    { path: '/menu', icon: Menu, label: 'Menu', public: true, customerOnly: true },
+    { path: '/cart', icon: ShoppingCart, label: 'Cart', public: true, customerOnly: true },
+    { path: '/order-history', icon: Receipt, label: 'Orders', public: false, customerOnly: true },
+    { path: '/reservations', icon: Calendar, label: 'Reservations', public: false, customerOnly: true },
+    { path: '/profile', icon: User, label: 'Profile', public: false, customerOnly: true },
   ];
 
   // Add admin-specific navigation items for admin users
   const adminNavItems = [
-    { path: '/admin/orders', icon: ClipboardList, label: 'Order Management', public: false, adminOnly: true },
-    { path: '/profile?tab=users', icon: Users, label: 'User Management', public: false, adminOnly: true },
-    { path: '/profile?tab=menu', icon: ChefHat, label: 'Menu Management', public: false, adminOnly: true },
+    { path: '/admin/dashboard', icon: Settings, label: 'Admin Panel', public: false, adminOnly: true },
   ];
 
   // Check if user is admin (case-insensitive)
   const isAdmin = user?.role?.toLowerCase() === 'admin' || user?.role === 'ADMIN';
   
-  // Combine nav items with admin items if user is admin
-  const allNavItems = isAdmin ? [...navItems, ...adminNavItems] : navItems;
+  // Check if current route is an admin route
+  const isAdminRoute = location.pathname.startsWith('/admin');
+  
+  // Combine nav items: show only Home for admins on home page, hide nav on admin routes
+  const allNavItems = isAdmin && !isAdminRoute
+    ? [navItems[0], ...adminNavItems] // Home + Admin Panel (only on home page)
+    : !isAdmin 
+    ? navItems // All customer items
+    : []; // Empty for admin on admin routes
 
   return (
   <div className="min-h-screen bg-white">
@@ -110,10 +126,11 @@ const UserLayout = ({ children, onCartClick }) => {
         <div className="absolute left-0 bottom-0 w-full h-1 bg-gradient-to-r from-transparent via-orange-400 to-transparent pointer-events-none" />
       </header>
 
-      {/* Navigation */}
-  <nav className="bg-orange-500 shadow-md relative border-b-2 border-orange-600">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-8">
+      {/* Navigation - Hidden on admin routes */}
+      {!isAdminRoute && (
+        <nav className="bg-orange-500 shadow-md relative border-b-2 border-orange-600">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex space-x-8">
             {allNavItems
               .filter(item => {
                 // Show public items to everyone
@@ -149,7 +166,8 @@ const UserLayout = ({ children, onCartClick }) => {
           </div>
         </div>
         <div className="absolute left-0 bottom-0 w-full h-1 bg-gradient-to-r from-transparent via-accent-400 to-transparent pointer-events-none" />
-      </nav>
+        </nav>
+      )}
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">

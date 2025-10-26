@@ -1,39 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { getBestMatchImage, validateImageWithRetry, getFallbackImage } from '../../utils/specificFoodImages';
+import React, { useState, useEffect, useRef } from 'react';
 
-// Try to dynamically import images from assets directory
-const getLocalAssetImage = (category, itemName) => {
-  let categoryFolder = '';
-  
-  // Determine category folder
-  switch (category?.toLowerCase()) {
-    case 'beverage':
-    case 'beverages':
-    case 'drinks':
-      categoryFolder = 'beverages';
-      break;
-    case 'dessert':
-    case 'desserts':
-    case 'sweets':
-      categoryFolder = 'desserts';
-      break;
-    case 'food':
-    case 'main':
-    case 'main dish':
-    case 'main course':
-    default:
-      categoryFolder = 'food';
-      break;
-  }
-  
-  // Check if the image path starts with /assets/images/ (locally uploaded)
-  // If it does, return as is since it's already a local asset path
-  if (itemName?.startsWith('/assets/images/')) {
-    return itemName;
-  }
-  
-  return null; // No local asset match found
-};
+// Placeholder image - simple 1px transparent GIF
+const PLACEHOLDER_IMAGE = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
 const FoodImage = ({ 
   src, 
@@ -51,87 +19,64 @@ const FoodImage = ({
   const effectiveItemName = itemName || foodName || '';
   const effectiveSrc = src || imageUrl || '';
   
-  const [imageSrc, setImageSrc] = useState(effectiveSrc);
+  console.log('[FoodImage] Props received:', { src, imageUrl, effectiveSrc, itemName: effectiveItemName });
+  
+  const [imageSrc, setImageSrc] = useState(effectiveSrc || PLACEHOLDER_IMAGE);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const currentUrlRef = useRef(effectiveSrc);
 
   useEffect(() => {
-    const checkImage = async () => {
-      setIsLoading(true);
-      setHasError(false);
+    // Only update if the URL actually changed
+    if (effectiveSrc !== currentUrlRef.current) {
+      console.log('[FoodImage] effectiveSrc changed from', currentUrlRef.current, 'to', effectiveSrc);
+      currentUrlRef.current = effectiveSrc;
       
-      // First check if the src is a local asset path
-      if (effectiveSrc && effectiveSrc.startsWith('/assets/images/')) {
+      if (effectiveSrc) {
         setImageSrc(effectiveSrc);
+        setIsLoading(true);
+        setHasError(false);
+      } else {
+        setImageSrc(PLACEHOLDER_IMAGE);
         setIsLoading(false);
-        return;
-      }
-      
-      // Otherwise try to get a local asset based on category and name
-      const localAsset = getLocalAssetImage(category, effectiveItemName);
-      if (localAsset) {
-        setImageSrc(localAsset);
-        setIsLoading(false);
-        return;
-      }
-      
-      // If no local asset, try the original image with enhanced validation
-      const isValid = await validateImageWithRetry(effectiveSrc);
-      
-      if (!isValid) {
-        // If original fails, use best match (specific food or consistent category image)
-        const bestMatchImage = effectiveItemName && category ? 
-          getBestMatchImage(effectiveItemName, category) : 
-          getFallbackImage(category);
-        setImageSrc(bestMatchImage);
         setHasError(true);
-        console.warn(`Failed to load image: ${effectiveSrc}, using best match for ${effectiveItemName} in category: ${category}`);
       }
-      
-      setIsLoading(false);
-    };
-
-    if (effectiveSrc) {
-      checkImage();
     }
-  }, [effectiveSrc, category, effectiveItemName]);
+  }, [effectiveSrc]);
 
   const handleImageLoad = () => {
+    console.log('[FoodImage] Image loaded successfully:', imageSrc);
     setIsLoading(false);
+    setHasError(false);
   };
 
   const handleImageError = () => {
-    if (!hasError) {
-      // Try best match (specific food or consistent category image)
-      const bestMatchImage = itemName && category ? 
-        getBestMatchImage(itemName, category) : 
-        getFallbackImage(category);
-      setImageSrc(bestMatchImage);
-      setHasError(true);
-      console.warn(`Image failed to load: ${src}, using best match for ${itemName} in category: ${category}`);
-    }
+    console.log('[FoodImage] Image failed to load:', imageSrc);
+    // Only show placeholder, no fallback images
+    setImageSrc(PLACEHOLDER_IMAGE);
+    setHasError(true);
     setIsLoading(false);
   };
 
   return (
     <div className={`relative ${className}`}>
-      {isLoading && (
+      {isLoading && effectiveSrc && effectiveSrc !== PLACEHOLDER_IMAGE && (
         <div className="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center">
           <div className="text-gray-400 text-sm">Loading...</div>
         </div>
       )}
       <img
         src={imageSrc}
-        alt={alt}
+        alt={alt || effectiveItemName || 'Food item'}
         className={`${className} ${hasError ? fallbackClassName : ''}`}
         onLoad={handleImageLoad}
         onError={handleImageError}
         loading={loading}
         {...props}
       />
-      {hasError && (
-        <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 text-center">
-          Using fallback image
+      {hasError && effectiveSrc && effectiveSrc !== PLACEHOLDER_IMAGE && (
+        <div className="absolute bottom-0 left-0 right-0 bg-red-500 bg-opacity-75 text-white text-xs p-1 text-center">
+          Image not found
         </div>
       )}
     </div>
