@@ -112,15 +112,8 @@ Frontend will start on `http://localhost:5174`
 
 **Default Admin Credentials:**
 - Username: `admin`
-- Password: `password123`
+- Password: `admin123`
 
-**Test User Accounts:**
-- Username: `john.doe` / Password: `password123`
-- Username: `jane.smith` / Password: `password123`
-
-**Test Driver Accounts:**
-- Username: `DrivTest` / Password: `password123`
-- Username: `driver1` / Password: `password123`
 - Login at: `http://localhost:5174/driver/login`
 
 ## 📂 Project Structure
@@ -341,14 +334,6 @@ The system uses **17 tables**:
 3. Driver automatically redirected to `/driver/dashboard`
 4. Drivers can only access driver-specific routes
 
-## 📱 Screenshots
-
-*(Add screenshots here of:)*
-- Home page with menu
-- Admin dashboard
-- Order tracking
-- Driver management
-
 ## ⚙️ Configuration
 
 ### File Upload Configuration
@@ -413,12 +398,6 @@ The system uses **17 tables**:
 - **Database**: Relational schema with foreign keys and constraints
 - **File Storage**: Local filesystem for uploads, public directory for static images
 
-**Adding New Features:**
-1. **Backend**: Entity → Repository → Service → Controller → DTO
-2. **Frontend**: Service → Component → Route → Context (if needed)
-3. **Database**: Update schema in SQL file, use `ddl-auto=validate`
-4. Test API with Bruno API client (collection in `backend/bruno-api-tests/`)
-
 **Database Management:**
 - **Never** use `ddl-auto=create` (drops all data)
 - Use `ddl-auto=validate` for production
@@ -432,42 +411,7 @@ The system uses **17 tables**:
 - File upload validation and sanitization implemented
 - Role-based route protection on frontend and backend
 
-## 🆕 Version 3.0 Updates
-
-### New Features
-✅ **Driver Portal Isolation** - Drivers redirected to dashboard, cannot access user pages
-✅ **Enhanced Status Workflow** - Ready for Pickup → Out for Delivery → Delivered
-✅ **COD Payment Tracking** - Cash collection confirmation for COD orders
-✅ **Delivery Synchronization** - Order and delivery status automatically synced
-✅ **Active Delivery Filtering** - Completed deliveries removed from driver view
-✅ **Improved File Organization** - Removed obsolete script files
-
-### Technical Improvements
-- Updated delivery status mapping logic in `OrderService.java`
-- Enhanced driver authentication with separate login portal
-- Added route protection to prevent cross-role access
-- Implemented timestamp tracking for pickup and delivery times
-- Consolidated driver table structure (removed legacy tables)
-- Added comprehensive logging for debugging
-
-### File Structure Changes
-- **Removed**: `update-images.bat`, `start-backend.bat`, `start-servers.sh`
-- **Added**: Driver portal components and services
-- **Updated**: README with version 3.0 documentation
-
-## 👥 Contributors
-
-- Bashitha07 - Full Stack Development
-
-## 📄 License
-
-This project is for educational purposes.
-
 ## 🔗 Links
 
 - GitHub: https://github.com/Bashitha07/BMS-Restaurant-System
-- Contact: bashitha.m@example.com
 
----
-
-**Made with ❤️ for Database Management Systems Course**
