@@ -179,15 +179,38 @@ export const paymentService = {
     try {
       const formData = new FormData();
       formData.append('orderId', orderId);
-      formData.append('userId', userId);
       formData.append('file', file);
       formData.append('paymentAmount', paymentAmount);
-      formData.append('paymentDate', paymentDate);
-      if (bankName) formData.append('bankName', bankName);
-      if (transactionReference) formData.append('transactionReference', transactionReference);
+      
+      // Convert ISO string to LocalDateTime format (remove milliseconds and timezone)
+      const formattedDate = paymentDate.split('.')[0];
+      formData.append('paymentDate', formattedDate);
+      
+      formData.append('bankName', bankName || 'Bank Transfer');
+      formData.append('transactionReference', transactionReference || '');
+
+      // Debug logging
+      console.log('=== PAYMENT SLIP UPLOAD DEBUG ===');
+      console.log('orderId:', orderId);
+      console.log('userId:', userId);
+      console.log('file:', file);
+      console.log('file.name:', file?.name);
+      console.log('file.type:', file?.type);
+      console.log('file.size:', file?.size);
+      console.log('paymentAmount:', paymentAmount);
+      console.log('paymentDate (original):', paymentDate);
+      console.log('paymentDate (formatted):', formattedDate);
+      console.log('bankName:', bankName);
+      console.log('transactionReference:', transactionReference);
+      console.log('FormData entries:');
+      for (let pair of formData.entries()) {
+        console.log(pair[0] + ':', pair[1]);
+      }
+      console.log('=================================');
 
       console.log('Uploading payment slip for order:', orderId);
-      const response = await axios.post('/api/payment-slips/upload', formData, {
+      // userId is sent as query parameter, not in FormData
+      const response = await axios.post(`/api/payment-slips/upload?userId=${userId}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -216,7 +239,12 @@ export const userService = {
   },
   register: async (userData) => {
     try {
-      const response = await axios.post('/api/users/register', userData);
+      // Ensure role is set to USER for new registrations
+      const registrationData = {
+        ...userData,
+        role: 'USER'
+      };
+      const response = await axios.post('/api/users/register', registrationData);
       return response.data;
     } catch (error) {
       throw handleAPIError(error);

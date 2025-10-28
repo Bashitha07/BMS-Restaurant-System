@@ -95,20 +95,18 @@ export const driverService = {
   },
 
   logout: async () => {
-    try {
-      // Clear all auth tokens
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      localStorage.removeItem('driver');
-      localStorage.removeItem('driverToken');
-    } catch (error) {
-      // Always clear local storage
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      localStorage.removeItem('driver');
-      localStorage.removeItem('driverToken');
-      throw error.response?.data || 'Logout failed';
-    }
+    // Clear all auth tokens IMMEDIATELY and SYNCHRONOUSLY
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('driver');
+    localStorage.removeItem('driverToken');
+    
+    // Trigger a custom event to notify AuthContext to clear user state
+    // Using CustomEvent works in the same tab, unlike 'storage' event
+    window.dispatchEvent(new CustomEvent('auth-logout'));
+    
+    // No try-catch - we want this to be synchronous and fast
+    // The page reload will handle any cleanup needed
   },
 
   // Get orders assigned to this driver (by user ID)

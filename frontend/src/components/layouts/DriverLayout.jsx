@@ -12,17 +12,16 @@ import driverService from '../../services/driverService';
 const DriverLayout = ({ children }) => {
   const navigate = useNavigate();
 
-  const handleLogout = async () => {
-    try {
-      await driverService.logout();
-      navigate('/driver/login');
-    } catch (error) {
-      console.error('Logout failed:', error);
-      // Force logout even if API call fails
-      localStorage.removeItem('driverToken');
-      localStorage.removeItem('driver');
-      navigate('/driver/login');
-    }
+  const handleLogout = () => {
+    // Clear ALL storage IMMEDIATELY
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // Dispatch logout event
+    window.dispatchEvent(new CustomEvent('auth-logout'));
+    
+    // Immediate redirect - no async, no waiting
+    window.location.replace('/driver/login');
   };
 
   const driver = JSON.parse(localStorage.getItem('driver') || '{}');

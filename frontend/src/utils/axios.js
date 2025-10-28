@@ -74,6 +74,7 @@ instance.interceptors.response.use(
       status: error.response?.status,
       statusText: error.response?.statusText,
       errorMessage: error.message,
+      responseData: error.response?.data,
       hadAuthHeader: !!error.config?.headers?.Authorization,
       timestamp: new Date().toISOString()
     });

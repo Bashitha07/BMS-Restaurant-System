@@ -3,6 +3,9 @@ import React, { useState, useEffect, useRef } from 'react';
 // Placeholder image - simple 1px transparent GIF
 const PLACEHOLDER_IMAGE = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
+// Backend URL for images
+const BACKEND_URL = 'http://localhost:8084';
+
 const FoodImage = ({ 
   src, 
   alt, 
@@ -17,7 +20,12 @@ const FoodImage = ({
 }) => {
   // Handle compatibility with both naming conventions
   const effectiveItemName = itemName || foodName || '';
-  const effectiveSrc = src || imageUrl || '';
+  let effectiveSrc = src || imageUrl || '';
+  
+  // Prepend backend URL if path starts with /images/
+  if (effectiveSrc && effectiveSrc.startsWith('/images/')) {
+    effectiveSrc = `${BACKEND_URL}${effectiveSrc}`;
+  }
   
   console.log('[FoodImage] Props received:', { src, imageUrl, effectiveSrc, itemName: effectiveItemName });
   

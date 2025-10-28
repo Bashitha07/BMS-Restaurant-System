@@ -21,6 +21,8 @@ function AuthProvider({ children }) {
     
     if (driverToken && driver) {
       console.log('🚗 Driver session detected - skipping user context restoration');
+      // Also clear any user state to prevent showing logged-in user on home page
+      setUser(null);
       return;
     }
 
@@ -48,6 +50,22 @@ function AuthProvider({ children }) {
       localStorage.removeItem('user');
       setUser(null);
     }
+  }, []);
+
+  // Listen for logout events from driver portal or other sources
+  useEffect(() => {
+    const handleAuthLogout = () => {
+      // When driver logs out, clear user state immediately
+      console.log('🔄 [AUTH] Logout event received - clearing user state');
+      setUser(null);
+    };
+
+    // Listen for custom logout events (triggered by driver logout in same tab)
+    window.addEventListener('auth-logout', handleAuthLogout);
+
+    return () => {
+      window.removeEventListener('auth-logout', handleAuthLogout);
+    };
   }, []);
 
   const login = async (username, password) => {

@@ -75,16 +75,21 @@ const DriverDashboard = ({ driver, onLogout }) => {
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      await driverService.logout(driver.id);
+  const handleLogout = () => {
+    // Clear ALL storage IMMEDIATELY
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // Dispatch logout event
+    window.dispatchEvent(new CustomEvent('auth-logout'));
+    
+    // Call onLogout callback if provided
+    if (onLogout) {
       onLogout();
-      navigate('/driver/login');
-    } catch (err) {
-      console.error('Logout error:', err);
-      onLogout(); // Force logout even if server request fails
-      navigate('/driver/login');
     }
+    
+    // Immediate redirect - no async, no waiting
+    window.location.replace('/driver/login');
   };
 
   const getStatusColor = (status) => {
